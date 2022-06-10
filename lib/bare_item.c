@@ -17,13 +17,13 @@ void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item) {
   switch (bare_item->type) {
   case HSFV_BARE_ITEM_TYPE_STRING:
-    allocator->free(allocator, (void *)bare_item->data.string.base);
+    allocator->free(allocator, (void *)bare_item->string.base);
     break;
   case HSFV_BARE_ITEM_TYPE_TOKEN:
-    allocator->free(allocator, (void *)bare_item->data.token.base);
+    allocator->free(allocator, (void *)bare_item->token.base);
     break;
   case HSFV_BARE_ITEM_TYPE_BINARY:
-    allocator->free(allocator, (void *)bare_item->data.bytes.base);
+    allocator->free(allocator, (void *)bare_item->bytes.base);
     break;
   }
 }
@@ -129,7 +129,7 @@ static const char *parse_integer(const char *buf, const char *buf_end, int neg,
   }
 
   item->type = HSFV_BARE_ITEM_TYPE_INTEGER;
-  item->data.integer = neg ? -i : i;
+  item->integer = neg ? -i : i;
   *ret = HSFV_OK;
   return buf_end;
 }
@@ -152,7 +152,7 @@ static const char *parse_decimal(const char *buf, const char *buf_end,
   }
 
   item->type = HSFV_BARE_ITEM_TYPE_DECIMAL;
-  item->data.decimal = neg ? -d : d;
+  item->decimal = neg ? -d : d;
   *ret = HSFV_OK;
   return buf_end;
 }
@@ -196,8 +196,8 @@ hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
       }
     } else if (c == '"') {
       item->type = HSFV_BARE_ITEM_TYPE_STRING;
-      item->data.string.base = buf.bytes.base;
-      item->data.string.len = buf.bytes.len;
+      item->string.base = buf.bytes.base;
+      item->string.len = buf.bytes.len;
       if (out_rest) {
         *out_rest = input;
       }
@@ -262,8 +262,8 @@ hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
   }
 
   item->type = HSFV_BARE_ITEM_TYPE_TOKEN;
-  item->data.token.base = buf.bytes.base;
-  item->data.token.len = buf.bytes.len;
+  item->token.base = buf.bytes.base;
+  item->token.len = buf.bytes.len;
   if (out_rest) {
     *out_rest = input;
   }
@@ -367,8 +367,8 @@ hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
         return HSFV_ERR_INVALID;
       }
       item->type = HSFV_BARE_ITEM_TYPE_BINARY;
-      item->data.bytes.base = temp.base;
-      item->data.bytes.len = temp.len;
+      item->bytes.base = temp.base;
+      item->bytes.len = temp.len;
       if (out_rest) {
         *out_rest = ++input;
       }

@@ -40,7 +40,7 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]") {
     buf = parse_number(input, buf_end, &item, &ret);                           \
     CHECK(ret == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);                           \
-    CHECK(item.data.integer == want);                                          \
+    CHECK(item.integer == want);                                               \
   }
 
   OK_HELPER("positive", "1871", 1871) OK_HELPER("negative", "-1871", -1871);
@@ -80,7 +80,7 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
     buf = parse_number(input, buf_end, &item, &ret);                           \
     CHECK(ret == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);                           \
-    CHECK(item.data.decimal == want);                                          \
+    CHECK(item.decimal == want);                                               \
   }
 
   OK_HELPER("positive", "18.71", 18.71);
@@ -124,7 +124,7 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                            \
     want_s.base = want;                                                        \
     want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(item.data.string, want_s));                      \
+    CHECK(hsfv_iovec_const_eq(item.string, want_s));                           \
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 
@@ -171,7 +171,7 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_TOKEN);                             \
     want_s.base = want;                                                        \
     want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(item.data.token, want_s));                       \
+    CHECK(hsfv_iovec_const_eq(item.token, want_s));                            \
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 
@@ -214,7 +214,7 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_BINARY);                            \
     want_s.base = want;                                                        \
     want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(item.data.bytes, want_s));                       \
+    CHECK(hsfv_iovec_const_eq(item.bytes, want_s));                            \
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 

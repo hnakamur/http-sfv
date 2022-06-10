@@ -110,7 +110,7 @@ typedef struct st_hsfv_bare_item_t {
     hsfv_token_t token;
     hsfv_bytes_t bytes;
     int boolean;
-  } data;
+  };
 } hsfv_bare_item_t;
 
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
@@ -155,7 +155,7 @@ typedef struct st_hsfv_list_member_t {
   union {
     hsfv_item_t item;
     hsfv_inner_list_t inner_list;
-  } data;
+  };
 } hsfv_list_member_t;
 
 typedef struct st_hsfv_list_t {
@@ -175,7 +175,7 @@ typedef struct st_hsfv_dict_member_value_t {
   union {
     hsfv_item_t item;
     hsfv_inner_list_t inner_list;
-  } data;
+  };
 } hsfv_dict_member_value_t;
 
 typedef struct st_hsfv_dict_member_t {
