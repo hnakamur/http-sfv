@@ -199,6 +199,53 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
 #undef NG_HELPER
 }
 
+TEST_CASE("binary can be parsed", "[bare_item][binary]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    const char *rest;                                                          \
+    hsfv_string_t s, want_s;                                                   \
+    hsfv_bare_item_t item;                                                     \
+    hsfv_err_t err;                                                            \
+    s.base = input;                                                            \
+    s.len = strlen(input);                                                     \
+    err = parse_binary(&htsv_global_allocator, input, input + s.len, &item,    \
+                       &rest);                                                 \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(item.type == HSFV_BARE_ITEM_TYPE_BINARY);                            \
+    want_s.base = want;                                                        \
+    want_s.len = strlen(want);                                                 \
+    CHECK(hsfv_iovec_const_eq(item.data.bytes, want_s));                       \
+    hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
+  }
+
+  OK_HELPER("case 1", ":YWJj:", "abc");
+  OK_HELPER("case 2", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:", "any carnal pleasure");
+  OK_HELPER("case 3", ":YW55IGNhcm5hbCBwbGVhc3Vy:", "any carnal pleasur");
+#undef OK_HELPER
+
+#define NG_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    const char *rest;                                                          \
+    hsfv_string_t s;                                                           \
+    hsfv_bare_item_t item;                                                     \
+    hsfv_err_t err;                                                            \
+    s.base = input;                                                            \
+    s.len = strlen(input);                                                     \
+    err = parse_binary(&htsv_global_allocator, input, input + s.len, &item,    \
+                       &rest);                                                 \
+    CHECK(err == want);                                                        \
+  }
+
+  NG_HELPER("empty", "", HSFV_ERR_EOF);
+  NG_HELPER("just opening colon", ":", HSFV_ERR_EOF);
+  NG_HELPER("no closing colon case 1", ":YW55IGNhcm5hbCBwbGVhc3Vy",
+            HSFV_ERR_EOF);
+  NG_HELPER("no closing colon case 2", ":YW55IGNhcm5hbCBwbGVhc3Vy~",
+            HSFV_ERR_INVALID);
+  NG_HELPER("bad encoded", ":YW55IGNhcm5hbCBwbGVhc3VyZQ!=:", HSFV_ERR_INVALID);
+#undef NG_HELPER
+}
+
 TEST_CASE("key can be parsed", "[key]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \

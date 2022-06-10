@@ -1,5 +1,4 @@
 #include "hsfv.h"
-#include "hsfv/ctype.h"
 
 /*
  * TCHAR is defined at https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
@@ -326,4 +325,60 @@ hsfv_err_t parse_key(hsfv_allocator_t *allocator, const char *input,
 error:
   htsv_buffer_free_bytes(allocator, &buf);
   return err;
+}
+
+#define BINARY_INITIAL_CAPACITY 8
+
+hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
+                        const char *input_end, hsfv_bare_item_t *item,
+                        const char **out_rest) {
+  hsfv_err_t err;
+  const char *start;
+  char c;
+  hsfv_iovec_t temp;
+  u_int64_t encoded_len, decoded_len;
+  hsfv_iovec_const_t src;
+
+  if (input == input_end) {
+    return HSFV_ERR_EOF;
+  }
+  if (*input != ':') {
+    return HSFV_ERR_INVALID;
+  }
+  ++input;
+  start = input;
+
+  for (; input < input_end; ++input) {
+    c = *input;
+    if (c == ':') {
+      encoded_len = input - start;
+      decoded_len = hfsv_base64_decoded_length(encoded_len);
+      temp.base = allocator->alloc(allocator, decoded_len);
+      if (temp.base == NULL) {
+        return HSFV_ERR_OUT_OF_MEMORY;
+      }
+      temp.len = decoded_len;
+
+      src.base = start;
+      src.len = encoded_len;
+      err = hsfv_decode_base64(&temp, &src);
+      if (err) {
+        allocator->free(allocator, temp.base);
+        return HSFV_ERR_INVALID;
+      }
+      item->type = HSFV_BARE_ITEM_TYPE_BINARY;
+      item->data.bytes.base = temp.base;
+      item->data.bytes.len = temp.len;
+      if (out_rest) {
+        *out_rest = ++input;
+      }
+      return HSFV_OK;
+    }
+
+    if (!hsfv_is_alpha(c) && !hsfv_is_digit(c) && c != '+' && c != '/' &&
+        c != '=') {
+      return HSFV_ERR_INVALID;
+    }
+  }
+  return HSFV_ERR_EOF;
 }
