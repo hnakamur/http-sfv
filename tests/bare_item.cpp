@@ -105,3 +105,48 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
         NG_HELPER("more than twelve int digits", "1234567890123.0", HSFV_ERR_NUMBER_OUT_OF_RANGE)
     #undef NG_HELPER
 }
+
+TEST_CASE("string can be parsed", "[bare_item][string]") {
+    #define OK_HELPER(section, input, want)                                                 \
+        SECTION(section) {                                                                  \
+            const char *rest;                                                               \
+            hsfv_string_t s, want_s;                                                        \
+            hsfv_bare_item_t item;                                                          \
+            hsfv_err_t err;                                                                 \
+            s.base = input;                                                                 \
+            s.len = strlen(input);                                                          \
+            err = parse_string(&htsv_global_allocator, input, input + s.len, &item, &rest); \
+            CHECK(err == HSFV_OK);                                                          \
+            CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                                 \
+            want_s.base = want;                                                             \
+            want_s.len = strlen(want);                                                      \
+            CHECK(hsfv_string_eq(item.data.string, want_s));                                \
+            hsfv_bare_item_deinit(&htsv_global_allocator, &item);                           \
+        }
+
+        OK_HELPER("no escape", "\"foo\"", "foo")
+        OK_HELPER("escape", "\"b\\\"a\\\\r\"", "b\"a\\r")
+        OK_HELPER("empty", "\"\"", "")
+    #undef OK_HELPER
+
+    #define NG_HELPER(section, input, want)                                                 \
+        SECTION(section) {                                                                  \
+            const char *rest;                                                               \
+            hsfv_string_t s;                                                                \
+            hsfv_bare_item_t item;                                                          \
+            hsfv_err_t err;                                                                 \
+            s.base = input;                                                                 \
+            s.len = strlen(input);                                                          \
+            err = parse_string(&htsv_global_allocator, input, input + s.len, &item, &rest); \
+            CHECK(err == want);                                                             \
+        }
+
+        NG_HELPER("empty", "", HSFV_ERR_INVALID)
+        NG_HELPER("no double quote", "a", HSFV_ERR_INVALID)
+        NG_HELPER("no characer after escape", "\"\\", HSFV_ERR_INVALID)
+        NG_HELPER("invalid characer after escape", "\"\\o", HSFV_ERR_INVALID)
+        NG_HELPER("invalid control characer", "\x1f", HSFV_ERR_INVALID)
+        NG_HELPER("invalid control characer DEL", "\x7f", HSFV_ERR_INVALID)
+        NG_HELPER("unclosed string", "\"foo", HSFV_ERR_EOF)
+    #undef NG_HELPER
+}

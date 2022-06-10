@@ -1,5 +1,20 @@
 #include "hsfv.h"
 
+void hsfv_bare_item_deinit(hsfv_allocator_t *allocator, hsfv_bare_item_t *bare_item)
+{
+    switch (bare_item->type) {
+    case HSFV_BARE_ITEM_TYPE_STRING:
+        allocator->free(allocator, (void *)bare_item->data.string.base);
+        break;
+    case HSFV_BARE_ITEM_TYPE_TOKEN:
+        allocator->free(allocator, (void *)bare_item->data.token.base);
+        break;
+    case HSFV_BARE_ITEM_TYPE_BINARY:
+        allocator->free(allocator, (void *)bare_item->data.bytes.base);
+        break;
+    }
+}
+
 static const char *parse_integer(const char *buf, const char *buf_end, int neg, hsfv_bare_item_t *item, int *ret);
 static const char *parse_decimal(const char *buf, const char *buf_end, int dec_sep_off, int neg, hsfv_bare_item_t *item, int *ret);
 
@@ -128,4 +143,66 @@ static const char *parse_decimal(const char *buf, const char *buf_end, int dec_s
     item->data.decimal = neg ? -d : d;
     *ret = HSFV_OK;
     return buf_end;
+}
+
+#define STRING_INITIAL_CAPACITY 8
+
+hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input, const char *input_end, hsfv_bare_item_t *item, const char **out_rest)
+{
+    hsfv_err_t err;
+    hsfv_buffer_t buf;
+    char c;
+
+    err = htsv_buffer_alloc_bytes(allocator, &buf, STRING_INITIAL_CAPACITY);
+    if (err) {
+        return err;
+    }
+
+    c = *input;
+    if (c != '"') {
+        err = HSFV_ERR_INVALID;
+        goto error;
+    }
+    ++input;
+
+    for (; input < input_end; ++input) {
+        c = *input;
+        if (c == '\\') {
+            if (input == input_end) {
+                err = HSFV_ERR_INVALID;
+                goto error;
+            }
+            c = *++input;
+            if (c != '"' && c != '\\') {
+                err = HSFV_ERR_INVALID;
+                goto error;
+            }
+            err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+            if (err) {
+                goto error;
+            }
+        } else if (c == '"') {
+            item->type = HSFV_BARE_ITEM_TYPE_STRING;
+            item->data.string.base = buf.bytes.base;
+            item->data.string.len = buf.bytes.len;
+            if (out_rest) {
+                *out_rest = input;
+            }
+            return HSFV_OK;
+        } else if (c <= '\x1f' || '\x7f' <= c) {
+            err = HSFV_ERR_INVALID;
+            goto error;
+        } else {
+            err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+            if (err) {
+                goto error;
+            }
+        }
+    }
+
+    err = HSFV_ERR_EOF;
+
+error:
+    htsv_buffer_free_bytes(allocator, &buf);
+    return err;
 }
