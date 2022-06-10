@@ -24,13 +24,6 @@ enum {
     HSFV_ERR_NUMBER_OUT_OF_RANGE = -4,
 };
 
-/**
- * buffer structure compatible with iovec
- */
-typedef struct st_hsfv_iovec_t {
-    char *base;
-    size_t len;
-} hsfv_iovec_t;
 
 typedef struct st_hsfv_allocator_t hsfv_allocator_t;
 
@@ -41,6 +34,21 @@ struct st_hsfv_allocator_t {
 };
 
 extern hsfv_allocator_t htsv_global_allocator;
+
+/**
+ * buffer structure compatible with iovec
+ */
+typedef struct st_hsfv_iovec_t {
+    char *base;
+    size_t len;
+} hsfv_iovec_t;
+
+typedef hsfv_iovec_t hsfv_key_t;
+typedef hsfv_iovec_t hsfv_string_t;
+typedef hsfv_iovec_t hsfv_token_t;
+typedef hsfv_iovec_t hsfv_bytes_t;
+
+/* Bare Item */
 
 typedef enum {
     HSFV_BARE_ITEM_TYPE_INTEGER = 0,
@@ -53,16 +61,88 @@ typedef enum {
 
 typedef struct st_hsfv_bare_item_t {
     hsfv_bare_item_type_t type;
-
     union {
         int64_t integer;
         double decimal;
-        hsfv_iovec_t string;
-        hsfv_iovec_t token;
-        hsfv_iovec_t bytes;
+        hsfv_string_t string;
+        hsfv_token_t token;
+        hsfv_bytes_t bytes;
         int boolean;
     } data;
 } hsfv_bare_item_t;
+
+/* Parameters */
+
+typedef struct st_hsfv_parameter_t {
+    hsfv_key_t key;
+    hsfv_bare_item_t value;
+} hsfv_parameter_t;
+
+typedef struct st_hsfv_parameters_t {
+    hsfv_parameter_t *params;
+    size_t len;
+} hsfv_parameters_t;
+
+/* Item */
+
+typedef struct st_hsfv_item_t {
+    hsfv_bare_item_t bare_item;
+    hsfv_parameters_t parameters;
+} hsfv_item_t;
+
+/* Inner List */
+
+typedef struct st_hsfv_inner_list_t {
+    hsfv_item_t *items;
+    size_t len;
+    hsfv_parameters_t parameters;
+} hsfv_inner_list_t;
+
+/* List */
+
+typedef enum {
+    HSFV_LIST_MEMBER_TYPE_ITEM = 0,
+    HSFV_LIST_MEMBER_TYPE_INNER_LIST,
+} hsfv_list_member_type_t;
+
+typedef struct st_hsfv_list_member_t {
+    hsfv_list_member_type_t type;
+    union {
+        hsfv_item_t item;
+        hsfv_inner_list_t inner_list;
+    } data;
+} hsfv_list_member_t;
+
+typedef struct st_hsfv_list_t {
+    hsfv_list_member_t *members;
+    size_t len;
+} hsfv_list_t;
+
+/* Dictionary */
+
+typedef enum {
+    HSFV_DICT_MEMBER_TYPE_ITEM = 0,
+    HSFV_DICT_MEMBER_TYPE_INNER_LIST,
+} hsfv_dict_member_type_t;
+
+typedef struct st_hsfv_dict_member_value_t {
+    hsfv_dict_member_type_t type;
+    union {
+        hsfv_item_t item;
+        hsfv_inner_list_t inner_list;
+    } data;
+} hsfv_dict_member_value_t;
+
+typedef struct st_hsfv_dict_member_t {
+    hsfv_key_t key;
+    hsfv_parameters_t parameters;
+    hsfv_dict_member_value_t value;
+} hsfv_dict_member_t;
+
+typedef struct st_hsfv_dict_t {
+    hsfv_dict_member_t *members;
+    size_t len;
+} hsfv_dict_t;
 
 const char *parse_number(const char *buf, const char *buf_end, hsfv_bare_item_t *item, int *ret);
 const char *parse_boolean(const char *buf, const char *buf_end, int *boolean, int *ret);
