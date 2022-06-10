@@ -9,6 +9,9 @@ extern "C" {
 #define hsfv_is_lcalpha(c) (('a' <= (c) && (c) <= 'z'))
 #define hsfv_is_alpha(c)                                                       \
   (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
+#define hsfv_is_key_char(c)                                                    \
+  (hsfv_is_lcalpha(c) || hsfv_is_digit(c) || (c) == '_' || (c) == '-' ||       \
+   (c) == '.' || (c) == '*')
 
 extern const char *hsfv_token_char_map;
 #define hsfv_is_token_char(c) hsfv_token_char_map[(unsigned char)(c)]

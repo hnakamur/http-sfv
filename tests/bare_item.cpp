@@ -178,7 +178,7 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
   OK_HELPER("single character", "t", "t");
   OK_HELPER("multipel characters", "tok", "tok");
   OK_HELPER("starts with asterisk", "*t!o&k", "*t!o&k");
-  OK_HELPER("starts with alpha followed with symbol", "t=", "t");
+  OK_HELPER("starts with alpha followed with equal sign", "t=", "t");
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
@@ -191,6 +191,48 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
     s.len = strlen(input);                                                     \
     err = parse_token(&htsv_global_allocator, input, input + s.len, &item,     \
                       &rest);                                                  \
+    CHECK(err == want);                                                        \
+  }
+
+  NG_HELPER("empty", "", HSFV_ERR_EOF);
+  NG_HELPER("non ASCII character", "é", HSFV_ERR_INVALID);
+#undef NG_HELPER
+}
+
+TEST_CASE("key can be parsed", "[key]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    const char *rest;                                                          \
+    hsfv_string_t s, want_s;                                                   \
+    hsfv_key_t key;                                                            \
+    hsfv_err_t err;                                                            \
+    s.base = input;                                                            \
+    s.len = strlen(input);                                                     \
+    err =                                                                      \
+        parse_key(&htsv_global_allocator, input, input + s.len, &key, &rest);  \
+    CHECK(err == HSFV_OK);                                                     \
+    want_s.base = want;                                                        \
+    want_s.len = strlen(want);                                                 \
+    CHECK(hsfv_iovec_const_eq(key, want_s));                                   \
+    hsfv_iovec_const_free(&htsv_global_allocator, &key);                       \
+  }
+
+  OK_HELPER("single character", "t", "t");
+  OK_HELPER("multipel characters", "tok", "tok");
+  OK_HELPER("starts with asterisk", "*k-.*", "*k-.*");
+  OK_HELPER("starts with alpha followed with equal sign", "k=", "k");
+#undef OK_HELPER
+
+#define NG_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    const char *rest;                                                          \
+    hsfv_string_t s;                                                           \
+    hsfv_key_t key;                                                            \
+    hsfv_err_t err;                                                            \
+    s.base = input;                                                            \
+    s.len = strlen(input);                                                     \
+    err =                                                                      \
+        parse_key(&htsv_global_allocator, input, input + s.len, &key, &rest);  \
     CHECK(err == want);                                                        \
   }
 

@@ -274,3 +274,56 @@ error:
   htsv_buffer_free_bytes(allocator, &buf);
   return err;
 }
+
+#define KEY_INITIAL_CAPACITY 8
+
+hsfv_err_t parse_key(hsfv_allocator_t *allocator, const char *input,
+                     const char *input_end, hsfv_key_t *key,
+                     const char **out_rest) {
+  hsfv_err_t err;
+  hsfv_buffer_t buf;
+  char c;
+
+  err = htsv_buffer_alloc_bytes(allocator, &buf, KEY_INITIAL_CAPACITY);
+  if (err) {
+    return err;
+  }
+
+  if (input == input_end) {
+    return HSFV_ERR_EOF;
+  }
+
+  c = *input;
+  if (!hsfv_is_lcalpha(c) && c != '*') {
+    err = HSFV_ERR_INVALID;
+    goto error;
+  }
+  err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+  if (err) {
+    goto error;
+  }
+  ++input;
+
+  for (; input < input_end; ++input) {
+    c = *input;
+    if (!hsfv_is_key_char(c)) {
+      break;
+    }
+
+    err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+    if (err) {
+      goto error;
+    }
+  }
+
+  key->base = buf.bytes.base;
+  key->len = buf.bytes.len;
+  if (out_rest) {
+    *out_rest = input;
+  }
+  return HSFV_OK;
+
+error:
+  htsv_buffer_free_bytes(allocator, &buf);
+  return err;
+}

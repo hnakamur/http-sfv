@@ -53,6 +53,16 @@ typedef struct st_hsfv_iovec_const_t {
   size_t len;
 } hsfv_iovec_const_t;
 
+static inline void hsfv_iovec_free(hsfv_allocator_t *allocator,
+                                   hsfv_iovec_t *v) {
+  allocator->free(allocator, (void *)v->base);
+}
+
+static inline void hsfv_iovec_const_free(hsfv_allocator_t *allocator,
+                                         hsfv_iovec_const_t *v) {
+  allocator->free(allocator, (void *)v->base);
+}
+
 typedef hsfv_iovec_const_t hsfv_key_t;
 typedef hsfv_iovec_const_t hsfv_string_t;
 typedef hsfv_iovec_const_t hsfv_token_t;
@@ -188,6 +198,10 @@ hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
 hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
                        const char *input_end, hsfv_bare_item_t *item,
                        const char **out_rest);
+hsfv_err_t parse_key(hsfv_allocator_t *allocator, const char *input,
+                     const char *input_end, hsfv_key_t *key,
+                     const char **out_rest);
+
 #ifdef __cplusplus
 }
 #endif
