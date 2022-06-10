@@ -16,17 +16,42 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+option(FORMAT_FILES_WITH_CLANG_FORMAT_BEFORE_EACH_BUILD
+  "If the command clang-format is avilable, format source files before each build.\
+Turn this off if the build time is too slow."
+  ON)
+find_program(CLANG_FORMAT_EXE NAMES clang-format clang-format-14 clang-format-13 clang-format-12)
+
+function(clang_format target)
+  if(CLANG_FORMAT_EXE)
+    message(STATUS "Enable Clang-Format ${target}")
+    get_target_property(MY_SOURCES ${target} SOURCES)
+    add_custom_target(
+      "${target}_format-with-clang-format"
+      COMMAND "${CLANG_FORMAT_EXE}" -i -style=file ${MY_SOURCES}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      )
+    if(FORMAT_FILES_WITH_CLANG_FORMAT_BEFORE_EACH_BUILD)
+      add_dependencies(${target} "${target}_format-with-clang-format")
+    endif()
+  else()
+    message(STATUS "clang-format executable not found")
+  endif()
+endfunction()
+
 include_directories(
   include
 )
 
 file(GLOB SRC_FILES lib/*.c)
 file(GLOB TEST_FILES tests/*.cpp)
-add_executable(tests ${TEST_FILES} ${SRC_FILES})
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+set(target tests)
+add_executable(${target} ${TEST_FILES} ${SRC_FILES})
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
-catch_discover_tests(tests)
+catch_discover_tests(${target})
 
+clang_format(${target})
