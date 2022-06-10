@@ -3,26 +3,30 @@
 
 TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
 #define OK_HELPER(section, input, want)                                        \
-  SECTION("section") {                                                         \
-    const char *buf;                                                           \
-    const char *buf_end = input + strlen(input);                               \
-    int boolean, ret;                                                          \
-    buf = parse_boolean(input, buf_end, &boolean, &ret);                       \
-    CHECK(boolean == want);                                                    \
-    CHECK(ret == HSFV_OK);                                                     \
-    CHECK(buf == buf_end);                                                     \
+  SECTION(section) {                                                           \
+    hsfv_bare_item_t item;                                                     \
+    hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    const char *input_end = input + strlen(input);                             \
+    err = parse_boolean(input, input_end, &item, &rest);                       \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(item.type == HSFV_BARE_ITEM_TYPE_BOOLEAN);                           \
+    CHECK(item.boolean == want);                                               \
+    CHECK(rest == input_end);                                                  \
   }
 
-  OK_HELPER("false", "?0", 0) OK_HELPER("true", "?1", 1);
+  OK_HELPER("false", "?0", 0);
+  OK_HELPER("true", "?1", 1);
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
   SECTION("section") {                                                         \
-    const char *buf;                                                           \
-    const char *buf_end = input + strlen(input);                               \
-    int boolean, ret;                                                          \
-    buf = parse_boolean(input, buf_end, &boolean, &ret);                       \
-    CHECK(ret == want);                                                        \
+    hsfv_bare_item_t item;                                                     \
+    hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    const char *input_end = input + strlen(input);                             \
+    err = parse_boolean(input, input_end, &item, &rest);                       \
+    CHECK(err == want);                                                        \
   }
 
   NG_HELPER("unexpected EOF", "?", HSFV_ERR_EOF);
@@ -33,12 +37,12 @@ TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
 TEST_CASE("integer can be parsed", "[bare_item][integer]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
-    const char *buf;                                                           \
-    const char *buf_end = input + strlen(input);                               \
     hsfv_bare_item_t item;                                                     \
-    int ret;                                                                   \
-    buf = parse_number(input, buf_end, &item, &ret);                           \
-    CHECK(ret == HSFV_OK);                                                     \
+    hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    const char *input_end = input + strlen(input);                             \
+    err = parse_number(input, input_end, &item, &rest);                        \
+    CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);                           \
     CHECK(item.integer == want);                                               \
   }
@@ -51,12 +55,12 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]") {
 
 #define NG_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
-    const char *buf;                                                           \
-    const char *buf_end = input + strlen(input);                               \
     hsfv_bare_item_t item;                                                     \
-    int ret;                                                                   \
-    buf = parse_number(input, buf_end, &item, &ret);                           \
-    CHECK(ret == want);                                                        \
+    hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    const char *input_end = input + strlen(input);                             \
+    err = parse_number(input, input_end, &item, &rest);                        \
+    CHECK(err == want);                                                        \
   }
 
   NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
@@ -73,12 +77,12 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]") {
 TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
-    const char *buf;                                                           \
-    const char *buf_end = input + strlen(input);                               \
     hsfv_bare_item_t item;                                                     \
-    int ret;                                                                   \
-    buf = parse_number(input, buf_end, &item, &ret);                           \
-    CHECK(ret == HSFV_OK);                                                     \
+    hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    const char *input_end = input + strlen(input);                             \
+    err = parse_number(input, input_end, &item, &rest);                        \
+    CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);                           \
     CHECK(item.decimal == want);                                               \
   }
@@ -91,12 +95,12 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
 
 #define NG_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
-    const char *buf;                                                           \
-    const char *buf_end = input + strlen(input);                               \
     hsfv_bare_item_t item;                                                     \
-    int ret;                                                                   \
-    buf = parse_number(input, buf_end, &item, &ret);                           \
-    CHECK(ret == want);                                                        \
+    hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    const char *input_end = input + strlen(input);                             \
+    err = parse_number(input, input_end, &item, &rest);                        \
+    CHECK(err == want);                                                        \
   }
 
   NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
@@ -112,10 +116,10 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
 TEST_CASE("string can be parsed", "[bare_item][string]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
-    const char *rest;                                                          \
-    hsfv_string_t s, want_s;                                                   \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
+    const char *rest;                                                          \
+    hsfv_string_t s, want_s;                                                   \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
     err = parse_string(&htsv_global_allocator, input, input + s.len, &item,    \

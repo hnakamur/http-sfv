@@ -189,10 +189,10 @@ typedef struct st_hsfv_dict_t {
   size_t len;
 } hsfv_dict_t;
 
-const char *parse_number(const char *buf, const char *buf_end,
-                         hsfv_bare_item_t *item, int *ret);
-const char *parse_boolean(const char *buf, const char *buf_end, int *boolean,
-                          int *ret);
+hsfv_err_t parse_boolean(const char *input, const char *input_end,
+                         hsfv_bare_item_t *item, const char **out_rest);
+hsfv_err_t parse_number(const char *input, const char *input_end,
+                        hsfv_bare_item_t *item, const char **out_rest);
 hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
                         const char *input_end, hsfv_bare_item_t *item,
                         const char **out_rest);
