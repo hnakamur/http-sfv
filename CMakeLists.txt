@@ -43,7 +43,7 @@ include_directories(
   include
 )
 
-file(GLOB SRC_FILES lib/*.c include/*.cmake_host_system_information())
+file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
 file(GLOB TEST_FILES tests/*.cpp)
 set(target tests)
 add_executable(${target} ${TEST_FILES} ${SRC_FILES})

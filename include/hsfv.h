@@ -58,7 +58,7 @@ typedef hsfv_iovec_const_t hsfv_string_t;
 typedef hsfv_iovec_const_t hsfv_token_t;
 typedef hsfv_iovec_const_t hsfv_bytes_t;
 
-#define hsfv_iovec_const_eq(self, other) \
+#define hsfv_iovec_const_eq(self, other)                                       \
   ((self).len == (other).len && !memcmp((self).base, (other).base, (self).len))
 
 typedef struct st_hsfv_buffer_t {

@@ -1,6 +1,10 @@
 #include "hsfv.h"
+#include "hsfv/ctype.h"
 
-static const char *token_char_map =
+/*
+ * TCHAR is defined at https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
+ */
+const char *hsfv_token_char_map =
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
     "\0\1\0\1\1\1\1\1\0\0\1\1\0\1\1\0\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0\0"
     "\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\1\1"
@@ -9,11 +13,6 @@ static const char *token_char_map =
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-
-#define is_digit(c) ('0' <= (c) && (c) <= '9')
-#define is_lcalpha(c) (('a' <= (c) && (c) <= 'z'))
-#define is_alpha(c) (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
-#define is_token_char(c) token_char_map[(unsigned char)(c)]
 
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item) {
@@ -75,7 +74,7 @@ const char *parse_number(const char *buf, const char *buf_end,
     *ret = HSFV_ERR_EOF;
     return NULL;
   }
-  if (!is_digit(*buf)) {
+  if (!hsfv_is_digit(*buf)) {
     *ret = HSFV_ERR_INVALID;
     return NULL;
   }
@@ -90,7 +89,7 @@ const char *parse_number(const char *buf, const char *buf_end,
     }
 
     ch = *buf;
-    if (is_digit(ch)) {
+    if (hsfv_is_digit(ch)) {
       ++buf;
       continue;
     }
@@ -241,7 +240,7 @@ hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
   }
 
   c = *input;
-  if (!is_alpha(c) && c != '*') {
+  if (!hsfv_is_alpha(c) && c != '*') {
     err = HSFV_ERR_INVALID;
     goto error;
   }
@@ -253,7 +252,7 @@ hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
 
   for (; input < input_end; ++input) {
     c = *input;
-    if (!is_token_char(c)) {
+    if (!hsfv_is_token_char(c)) {
       break;
     }
 
