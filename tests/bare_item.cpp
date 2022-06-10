@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("booleans can be parsed", "[bare_item][boolean]"){
+TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION("section") {                                                         \
     const char *buf;                                                           \
@@ -13,7 +13,7 @@ TEST_CASE("booleans can be parsed", "[bare_item][boolean]"){
     CHECK(buf == buf_end);                                                     \
   }
 
-    OK_HELPER("false", "?0", 0) OK_HELPER("true", "?1", 1)
+  OK_HELPER("false", "?0", 0) OK_HELPER("true", "?1", 1);
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
@@ -25,12 +25,12 @@ TEST_CASE("booleans can be parsed", "[bare_item][boolean]"){
     CHECK(ret == want);                                                        \
   }
 
-        NG_HELPER("unexpected EOF", "?", HSFV_ERR_EOF)
-            NG_HELPER("invalid value", "?2", HSFV_ERR_INVALID)
+  NG_HELPER("unexpected EOF", "?", HSFV_ERR_EOF);
+  NG_HELPER("invalid value", "?2", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("integer can be parsed", "[bare_item][integer]"){
+TEST_CASE("integer can be parsed", "[bare_item][integer]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *buf;                                                           \
@@ -43,10 +43,10 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]"){
     CHECK(item.data.integer == want);                                          \
   }
 
-    OK_HELPER("positive", "1871", 1871) OK_HELPER("negative", "-1871", -1871)
-        OK_HELPER("positive followed by non number", "1871next",
-                  1871) OK_HELPER("minimum", "-999999999999999", HSFV_MIN_INT)
-            OK_HELPER("minimum", "999999999999999", HSFV_MAX_INT)
+  OK_HELPER("positive", "1871", 1871) OK_HELPER("negative", "-1871", -1871);
+  OK_HELPER("positive followed by non number", "1871next", 1871)
+  OK_HELPER("minimum", "-999999999999999", HSFV_MIN_INT);
+  OK_HELPER("minimum", "999999999999999", HSFV_MAX_INT);
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
@@ -59,18 +59,18 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]"){
     CHECK(ret == want);                                                        \
   }
 
-                NG_HELPER("not digit", "a", HSFV_ERR_INVALID) NG_HELPER(
-                    "no digit after minus sign", "-", HSFV_ERR_EOF)
-                    NG_HELPER("integer with too many digits",
-                              "1234567890123456", HSFV_ERR_NUMBER_OUT_OF_RANGE)
-                        NG_HELPER("smaller than minimum", "-1000000000000000",
-                                  HSFV_ERR_NUMBER_OUT_OF_RANGE)
-                            NG_HELPER("larger than maximum", "1000000000000000",
-                                      HSFV_ERR_NUMBER_OUT_OF_RANGE)
+  NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
+  NG_HELPER("no digit after minus sign", "-", HSFV_ERR_EOF);
+  NG_HELPER("integer with too many digits", "1234567890123456",
+            HSFV_ERR_NUMBER_OUT_OF_RANGE);
+  NG_HELPER("smaller than minimum", "-1000000000000000",
+            HSFV_ERR_NUMBER_OUT_OF_RANGE);
+  NG_HELPER("larger than maximum", "1000000000000000",
+            HSFV_ERR_NUMBER_OUT_OF_RANGE);
 #undef NG_HELPER
 }
 
-TEST_CASE("decimal can be parsed", "[bare_item][decimal]"){
+TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *buf;                                                           \
@@ -83,10 +83,10 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]"){
     CHECK(item.data.decimal == want);                                          \
   }
 
-    OK_HELPER("positive", "18.71", 18.71) OK_HELPER("negative", "-18.71",
-                                                    -18.71)
-        OK_HELPER("negative followed by non number", "-18.71next", -18.71)
-            OK_HELPER("three frac digits", "-18.710", -18.71)
+  OK_HELPER("positive", "18.71", 18.71);
+  OK_HELPER("negative", "-18.71", -18.71);
+  OK_HELPER("negative followed by non number", "-18.71next", -18.71);
+  OK_HELPER("three frac digits", "-18.710", -18.71);
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
@@ -99,14 +99,13 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]"){
     CHECK(ret == want);                                                        \
   }
 
-                NG_HELPER("not digit", "a", HSFV_ERR_INVALID)
-                    NG_HELPER("starts with digit", ".1", HSFV_ERR_INVALID)
-                        NG_HELPER("ends with digit", "1.", HSFV_ERR_INVALID)
-                            NG_HELPER("more than three fraction digits",
-                                      "10.1234", HSFV_ERR_NUMBER_OUT_OF_RANGE)
-                                NG_HELPER("more than twelve int digits",
-                                          "1234567890123.0",
-                                          HSFV_ERR_NUMBER_OUT_OF_RANGE)
+  NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
+  NG_HELPER("starts with digit", ".1", HSFV_ERR_INVALID);
+  NG_HELPER("ends with digit", "1.", HSFV_ERR_INVALID);
+  NG_HELPER("more than three fraction digits", "10.1234",
+            HSFV_ERR_NUMBER_OUT_OF_RANGE);
+  NG_HELPER("more than twelve int digits", "1234567890123.0",
+            HSFV_ERR_NUMBER_OUT_OF_RANGE);
 #undef NG_HELPER
 }
 
@@ -129,9 +128,9 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 
-  OK_HELPER("no escape", "\"foo\"", "foo")
-  OK_HELPER("escape", "\"b\\\"a\\\\r\"", "b\"a\\r")
-  OK_HELPER("empty", "\"\"", "")
+  OK_HELPER("no escape", "\"foo\"", "foo");
+  OK_HELPER("escape", "\"b\\\"a\\\\r\"", "b\"a\\r");
+  OK_HELPER("empty", "\"\"", "");
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
@@ -147,12 +146,12 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     CHECK(err == want);                                                        \
   }
 
-  NG_HELPER("empty", "", HSFV_ERR_INVALID)
-  NG_HELPER("no double quote", "a", HSFV_ERR_INVALID)
-  NG_HELPER("no characer after escape", "\"\\", HSFV_ERR_INVALID)
-  NG_HELPER("invalid characer after escape", "\"\\o", HSFV_ERR_INVALID)
-  NG_HELPER("invalid control characer", "\x1f", HSFV_ERR_INVALID)
-  NG_HELPER("invalid control characer DEL", "\x7f", HSFV_ERR_INVALID)
-  NG_HELPER("unclosed string", "\"foo", HSFV_ERR_EOF)
+  NG_HELPER("empty", "", HSFV_ERR_INVALID);
+  NG_HELPER("no double quote", "a", HSFV_ERR_INVALID);
+  NG_HELPER("no characer after escape", "\"\\", HSFV_ERR_INVALID);
+  NG_HELPER("invalid characer after escape", "\"\\o", HSFV_ERR_INVALID);
+  NG_HELPER("invalid control characer", "\x1f", HSFV_ERR_INVALID);
+  NG_HELPER("invalid control characer DEL", "\x7f", HSFV_ERR_INVALID);
+  NG_HELPER("unclosed string", "\"foo", HSFV_ERR_EOF);
 #undef NG_HELPER
 }
