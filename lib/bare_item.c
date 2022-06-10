@@ -1,5 +1,20 @@
 #include "hsfv.h"
 
+static const char *token_char_map =
+    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+    "\0\1\0\1\1\1\1\1\0\0\1\1\0\1\1\0\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0\0"
+    "\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\1\1"
+    "\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\1\0\1\0"
+    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+
+#define is_digit(c) ('0' <= (c) && (c) <= '9')
+#define is_lcalpha(c) (('a' <= (c) && (c) <= 'z'))
+#define is_alpha(c) (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
+#define is_token_char(c) token_char_map[(unsigned char)(c)]
+
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item) {
   switch (bare_item->type) {
@@ -45,8 +60,6 @@ const char *parse_boolean(const char *buf, const char *buf_end, int *boolean,
   *ret = HSFV_ERR_INVALID;
   return NULL;
 }
-
-static int is_digit(int ch) { return '0' <= ch && ch <= '9'; }
 
 const char *parse_number(const char *buf, const char *buf_end,
                          hsfv_bare_item_t *item, int *ret) {
@@ -203,6 +216,60 @@ hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
   }
 
   err = HSFV_ERR_EOF;
+
+error:
+  htsv_buffer_free_bytes(allocator, &buf);
+  return err;
+}
+
+#define TOKEN_INITIAL_CAPACITY 8
+
+hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
+                       const char *input_end, hsfv_bare_item_t *item,
+                       const char **out_rest) {
+  hsfv_err_t err;
+  hsfv_buffer_t buf;
+  char c;
+
+  err = htsv_buffer_alloc_bytes(allocator, &buf, TOKEN_INITIAL_CAPACITY);
+  if (err) {
+    return err;
+  }
+
+  if (input == input_end) {
+    return HSFV_ERR_EOF;
+  }
+
+  c = *input;
+  if (!is_alpha(c) && c != '*') {
+    err = HSFV_ERR_INVALID;
+    goto error;
+  }
+  err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+  if (err) {
+    goto error;
+  }
+  ++input;
+
+  for (; input < input_end; ++input) {
+    c = *input;
+    if (!is_token_char(c)) {
+      break;
+    }
+
+    err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+    if (err) {
+      goto error;
+    }
+  }
+
+  item->type = HSFV_BARE_ITEM_TYPE_TOKEN;
+  item->data.token.base = buf.bytes.base;
+  item->data.token.len = buf.bytes.len;
+  if (out_rest) {
+    *out_rest = input;
+  }
+  return HSFV_OK;
 
 error:
   htsv_buffer_free_bytes(allocator, &buf);

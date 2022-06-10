@@ -48,27 +48,18 @@ typedef struct st_hsfv_iovec_t {
   size_t len;
 } hsfv_iovec_t;
 
-typedef struct st_hsfv_key_t {
+typedef struct st_hsfv_iovec_const_t {
   const char *base;
   size_t len;
-} hsfv_key_t;
+} hsfv_iovec_const_t;
 
-typedef struct st_hsfv_string_t {
-  const char *base;
-  size_t len;
-} hsfv_string_t;
+typedef hsfv_iovec_const_t hsfv_key_t;
+typedef hsfv_iovec_const_t hsfv_string_t;
+typedef hsfv_iovec_const_t hsfv_token_t;
+typedef hsfv_iovec_const_t hsfv_bytes_t;
 
-typedef struct st_hsfv_token_t {
-  const char *base;
-  size_t len;
-} hsfv_token_t;
-
-typedef struct st_hsfv_bytes_t {
-  const char *base;
-  size_t len;
-} hsfv_bytes_t;
-
-int hsfv_string_eq(hsfv_string_t self, hsfv_string_t other);
+#define hsfv_iovec_const_eq(self, other) \
+  ((self).len == (other).len && !memcmp((self).base, (other).base, (self).len))
 
 typedef struct st_hsfv_buffer_t {
   hsfv_iovec_t bytes;
@@ -194,7 +185,9 @@ const char *parse_boolean(const char *buf, const char *buf_end, int *boolean,
 hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
                         const char *input_end, hsfv_bare_item_t *item,
                         const char **out_rest);
-
+hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
+                       const char *input_end, hsfv_bare_item_t *item,
+                       const char **out_rest);
 #ifdef __cplusplus
 }
 #endif
