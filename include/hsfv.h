@@ -32,6 +32,16 @@ typedef struct st_hsfv_iovec_t {
     size_t len;
 } hsfv_iovec_t;
 
+typedef struct st_hsfv_allocator_t hsfv_allocator_t;
+
+struct st_hsfv_allocator_t {
+    void *(*alloc)(hsfv_allocator_t *self, size_t size);
+    void *(*realloc)(hsfv_allocator_t *self, void *ptr, size_t size);
+    void (*free)(hsfv_allocator_t *self, void *ptr);
+};
+
+extern hsfv_allocator_t htsv_global_allocator;
+
 typedef enum {
     HSFV_BARE_ITEM_TYPE_INTEGER = 0,
     HSFV_BARE_ITEM_TYPE_DECIMAL,
