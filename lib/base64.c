@@ -1,14 +1,14 @@
-#include "hsfv/base64.h"
+#include "hsfv.h"
 
 static void hsfv_encode_base64_internal(hsfv_iovec_t *dst,
                                         hsfv_iovec_const_t *src,
-                                        const u_char *basis, u_int64_t padding);
+                                        const uint8_t *basis, uint64_t padding);
 static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst,
                                               hsfv_iovec_const_t *src,
-                                              const u_char *basis);
+                                              const uint8_t *basis);
 
 void hsfv_encode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
-  static u_char basis64[] =
+  static uint8_t basis64[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
   hsfv_encode_base64_internal(dst, src, basis64, 1);
@@ -16,8 +16,8 @@ void hsfv_encode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
 
 static void hsfv_encode_base64_internal(hsfv_iovec_t *dst,
                                         hsfv_iovec_const_t *src,
-                                        const u_char *basis,
-                                        u_int64_t padding) {
+                                        const uint8_t *basis,
+                                        uint64_t padding) {
   const char *s;
   char *d;
   size_t len;
@@ -59,7 +59,7 @@ static void hsfv_encode_base64_internal(hsfv_iovec_t *dst,
 }
 
 hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
-  static u_char basis64[] = {
+  static uint8_t basis64[] = {
       77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
       77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
       77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 62, 77, 77, 77, 63,
@@ -83,7 +83,7 @@ hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
 
 static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst,
                                               hsfv_iovec_const_t *src,
-                                              const u_char *basis) {
+                                              const uint8_t *basis) {
   size_t len;
   const char *s;
   char *d;
@@ -106,20 +106,20 @@ static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst,
   d = dst->base;
 
   while (len > 3) {
-    *d++ = (u_char)(basis[s[0]] << 2 | basis[s[1]] >> 4);
-    *d++ = (u_char)(basis[s[1]] << 4 | basis[s[2]] >> 2);
-    *d++ = (u_char)(basis[s[2]] << 6 | basis[s[3]]);
+    *d++ = (uint8_t)(basis[s[0]] << 2 | basis[s[1]] >> 4);
+    *d++ = (uint8_t)(basis[s[1]] << 4 | basis[s[2]] >> 2);
+    *d++ = (uint8_t)(basis[s[2]] << 6 | basis[s[3]]);
 
     s += 4;
     len -= 4;
   }
 
   if (len > 1) {
-    *d++ = (u_char)(basis[s[0]] << 2 | basis[s[1]] >> 4);
+    *d++ = (uint8_t)(basis[s[0]] << 2 | basis[s[1]] >> 4);
   }
 
   if (len > 2) {
-    *d++ = (u_char)(basis[s[1]] << 4 | basis[s[2]] >> 2);
+    *d++ = (uint8_t)(basis[s[1]] << 4 | basis[s[2]] >> 2);
   }
 
   dst->len = d - dst->base;

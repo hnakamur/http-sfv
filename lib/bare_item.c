@@ -336,7 +336,7 @@ hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
   const char *start;
   char c;
   hsfv_iovec_t temp;
-  u_int64_t encoded_len, decoded_len;
+  uint64_t encoded_len, decoded_len;
   hsfv_iovec_const_t src;
 
   if (input == input_end) {
