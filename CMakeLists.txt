@@ -43,7 +43,7 @@ include_directories(
   include
 )
 
-file(GLOB SRC_FILES lib/*.c)
+file(GLOB SRC_FILES lib/*.c include/*.h)
 file(GLOB TEST_FILES tests/*.cpp)
 set(target tests)
 add_executable(${target} ${TEST_FILES} ${SRC_FILES})
