@@ -8,8 +8,8 @@ TEST_CASE("parameters can be parsed", "[parameters]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_parameters(&htsv_global_allocator, input, input_end,      \
-                                &params, &rest);                               \
+    err = hsfv_parse_parameters(&params, &htsv_global_allocator, input,        \
+                                input_end, &rest);                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_parameters_eq(&params, want));                                  \
     CHECK(rest == input + want_len);                                           \
@@ -46,8 +46,8 @@ TEST_CASE("parameters can be parsed", "[parameters]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_parameters(&htsv_global_allocator, input, input_end,      \
-                                &params, &rest);                               \
+    err = hsfv_parse_parameters(&params, &htsv_global_allocator, input,        \
+                                input_end, &rest);                             \
     CHECK(err == want);                                                        \
   }
 

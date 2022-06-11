@@ -8,7 +8,7 @@ TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_boolean(input, input_end, &item, &rest);                  \
+    err = hsfv_parse_boolean(&item, input, input_end, &rest);                  \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_BOOLEAN);                           \
     CHECK(item.boolean == want);                                               \
@@ -25,7 +25,7 @@ TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_boolean(input, input_end, &item, &rest);                  \
+    err = hsfv_parse_boolean(&item, input, input_end, &rest);                  \
     CHECK(err == want);                                                        \
   }
 
@@ -41,7 +41,7 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_number(input, input_end, &item, &rest);                   \
+    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);                           \
     CHECK(item.integer == want);                                               \
@@ -59,7 +59,7 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_number(input, input_end, &item, &rest);                   \
+    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
     CHECK(err == want);                                                        \
   }
 
@@ -81,7 +81,7 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_number(input, input_end, &item, &rest);                   \
+    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);                           \
     CHECK(item.decimal == want);                                               \
@@ -99,7 +99,7 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_number(input, input_end, &item, &rest);                   \
+    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
     CHECK(err == want);                                                        \
   }
 
@@ -122,8 +122,8 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     hsfv_string_t s, want_s;                                                   \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_string(&htsv_global_allocator, input, input + s.len,      \
-                            &item, &rest);                                     \
+    err = hsfv_parse_string(&item, &htsv_global_allocator, input,              \
+                            input + s.len, &rest);                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                            \
     want_s.base = want;                                                        \
@@ -145,8 +145,8 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_string(&htsv_global_allocator, input, input + s.len,      \
-                            &item, &rest);                                     \
+    err = hsfv_parse_string(&item, &htsv_global_allocator, input,              \
+                            input + s.len, &rest);                             \
     CHECK(err == want);                                                        \
   }
 
@@ -169,8 +169,8 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_token(&htsv_global_allocator, input, input + s.len,       \
-                           &item, &rest);                                      \
+    err = hsfv_parse_token(&item, &htsv_global_allocator, input,               \
+                           input + s.len, &rest);                              \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_TOKEN);                             \
     want_t.base = want;                                                        \
@@ -193,8 +193,8 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_token(&htsv_global_allocator, input, input + s.len,       \
-                           &item, &rest);                                      \
+    err = hsfv_parse_token(&item, &htsv_global_allocator, input,               \
+                           input + s.len, &rest);                              \
     CHECK(err == want);                                                        \
   }
 
@@ -212,8 +212,8 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_binary(&htsv_global_allocator, input, input + s.len,      \
-                            &item, &rest);                                     \
+    err = hsfv_parse_binary(&item, &htsv_global_allocator, input,              \
+                            input + s.len, &rest);                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_BINARY);                            \
     want_b.base = want;                                                        \
@@ -235,8 +235,8 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_binary(&htsv_global_allocator, input, input + s.len,      \
-                            &item, &rest);                                     \
+    err = hsfv_parse_binary(&item, &htsv_global_allocator, input,              \
+                            input + s.len, &rest);                             \
     CHECK(err == want);                                                        \
   }
 
@@ -259,7 +259,7 @@ TEST_CASE("key can be parsed", "[key]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_key(&htsv_global_allocator, input, input + s.len, &key,   \
+    err = hsfv_parse_key(&key, &htsv_global_allocator, input, input + s.len,   \
                          &rest);                                               \
     CHECK(err == HSFV_OK);                                                     \
     want_k.base = want;                                                        \
@@ -282,7 +282,7 @@ TEST_CASE("key can be parsed", "[key]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_key(&htsv_global_allocator, input, input + s.len, &key,   \
+    err = hsfv_parse_key(&key, &htsv_global_allocator, input, input + s.len,   \
                          &rest);                                               \
     CHECK(err == want);                                                        \
   }
@@ -300,8 +300,8 @@ TEST_CASE("bare item can be parsed", "[bare_item]") {
     hsfv_err_t err;                                                            \
     const char *input_end = input + strlen(input);                             \
     const char *rest;                                                          \
-    err = hsfv_parse_bare_item(&htsv_global_allocator, input, input_end,       \
-                               &item, &rest);                                  \
+    err = hsfv_parse_bare_item(&item, &htsv_global_allocator, input,           \
+                               input_end, &rest);                              \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_bare_item_eq(&item, &want));                                    \
     hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
@@ -343,8 +343,8 @@ TEST_CASE("bare item can be parsed", "[bare_item]") {
     hsfv_err_t err;                                                            \
     const char *input_end = input + strlen(input);                             \
     const char *rest;                                                          \
-    err = hsfv_parse_bare_item(&htsv_global_allocator, input, input_end,       \
-                               &item, &rest);                                  \
+    err = hsfv_parse_bare_item(&item, &htsv_global_allocator, input,           \
+                               input_end, &rest);                              \
     CHECK(err == want);                                                        \
   }
 

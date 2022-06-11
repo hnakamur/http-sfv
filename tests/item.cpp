@@ -8,7 +8,7 @@ TEST_CASE("items can be parsed", "[item]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_item(&htsv_global_allocator, input, input_end, &item,     \
+    err = hsfv_parse_item(&item, &htsv_global_allocator, input, input_end,     \
                           &rest);                                              \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_item_eq(&item, want));                                          \
@@ -51,7 +51,7 @@ TEST_CASE("items can be parsed", "[item]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_item(&htsv_global_allocator, input, input_end, &item,     \
+    err = hsfv_parse_item(&item, &htsv_global_allocator, input, input_end,     \
                           &rest);                                              \
     CHECK(err == want);                                                        \
   }

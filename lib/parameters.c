@@ -63,9 +63,10 @@ size_t hsfv_parameters_index_of(const hsfv_parameters_t *parameters,
   return -1;
 }
 
-hsfv_err_t hsfv_parse_parameters(hsfv_allocator_t *allocator, const char *input,
+hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters,
+                                 hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end,
-                                 hsfv_parameters_t *parameters,
+
                                  const char **out_rest) {
   hsfv_err_t err;
   char c;
@@ -96,14 +97,14 @@ hsfv_err_t hsfv_parse_parameters(hsfv_allocator_t *allocator, const char *input,
       ++input;
     }
 
-    err = hsfv_parse_key(allocator, input, input_end, &param.key, &input);
+    err = hsfv_parse_key(&param.key, allocator, input, input_end, &input);
     if (err) {
       goto error3;
     }
 
     if (input < input_end && *input == '=') {
       ++input;
-      err = hsfv_parse_bare_item(allocator, input, input_end, &param.value,
+      err = hsfv_parse_bare_item(&param.value, allocator, input, input_end,
                                  &input);
       if (err) {
         goto error2;

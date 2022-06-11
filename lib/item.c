@@ -10,18 +10,18 @@ void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator) {
   hsfv_parameters_deinit(&item->parameters, allocator);
 }
 
-hsfv_err_t hsfv_parse_item(hsfv_allocator_t *allocator, const char *input,
-                           const char *input_end, hsfv_item_t *item,
+hsfv_err_t hsfv_parse_item(hsfv_item_t *item, hsfv_allocator_t *allocator,
+                           const char *input, const char *input_end,
                            const char **out_rest) {
   hsfv_err_t err;
 
-  err = hsfv_parse_bare_item(allocator, input, input_end, &item->bare_item,
+  err = hsfv_parse_bare_item(&item->bare_item, allocator, input, input_end,
                              &input);
   if (err) {
     return err;
   }
 
-  err = hsfv_parse_parameters(allocator, input, input_end, &item->parameters,
+  err = hsfv_parse_parameters(&item->parameters, allocator, input, input_end,
                               &input);
   if (err) {
     goto error;
