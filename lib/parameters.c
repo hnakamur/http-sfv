@@ -65,9 +65,7 @@ size_t hsfv_parameters_index_of(const hsfv_parameters_t *parameters,
 
 hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters,
                                  hsfv_allocator_t *allocator, const char *input,
-                                 const char *input_end,
-
-                                 const char **out_rest) {
+                                 const char *input_end, const char **out_rest) {
   hsfv_err_t err;
   char c;
   hsfv_parameter_t param;
