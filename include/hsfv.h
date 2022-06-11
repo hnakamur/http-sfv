@@ -217,14 +217,19 @@ typedef struct st_hsfv_dict_t {
   size_t capacity;
 } hsfv_dict_t;
 
-void hsfv_parameter_deinit(hsfv_allocator_t *allocator,
-                           hsfv_parameter_t *parameter);
+bool hsfv_item_eq(const hsfv_item_t *self, const hsfv_item_t *other);
+
+void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator);
 void hsfv_parameters_deinit(hsfv_allocator_t *allocator,
                             hsfv_parameters_t *parameters);
-
+void hsfv_parameter_deinit(hsfv_allocator_t *allocator,
+                           hsfv_parameter_t *parameter);
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item);
 
+hsfv_err_t hsfv_parse_item(hsfv_allocator_t *allocator, const char *input,
+                           const char *input_end, hsfv_item_t *item,
+                           const char **out_rest);
 hsfv_err_t hsfv_parse_bare_item(hsfv_allocator_t *allocator, const char *input,
                                 const char *input_end, hsfv_bare_item_t *item,
                                 const char **out_rest);

@@ -73,18 +73,17 @@ hsfv_err_t hsfv_parse_parameters(hsfv_allocator_t *allocator, const char *input,
   hsfv_parameters_t temp;
   size_t i;
 
-  temp.len = 0;
-  temp.capacity = PARAMETERS_INITIAL_CAPACITY;
-  temp.params =
-      allocator->alloc(allocator, temp.capacity * sizeof(hsfv_parameter_t));
-  if (temp.params == NULL) {
-    return HSFV_ERR_OUT_OF_MEMORY;
-  }
+  parameters->params = NULL;
+  parameters->len = 0;
+  parameters->capacity = 0;
 
   if (input == input_end) {
-    err = HSFV_ERR_EOF;
-    goto error3;
+    return HSFV_OK;
   }
+
+  temp.params = NULL;
+  temp.len = 0;
+  temp.capacity = 0;
 
   while (input < input_end) {
     c = *input;
