@@ -203,22 +203,22 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("binary can be parsed", "[bare_item][binary]") {
+TEST_CASE("byte_seq can be parsed", "[bare_item][byte_seq]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *rest;                                                          \
-    hsfv_bytes_t s, want_b;                                                    \
+    hsfv_byte_seq_t s, want_b;                                                 \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_binary(&item, &htsv_global_allocator, input,              \
-                            input + s.len, &rest);                             \
+    err = hsfv_parse_byte_seq(&item, &htsv_global_allocator, input,            \
+                              input + s.len, &rest);                           \
     CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_BINARY);                            \
+    CHECK(item.type == HSFV_BARE_ITEM_TYPE_BYTE_SEQ);                          \
     want_b.base = want;                                                        \
     want_b.len = strlen(want);                                                 \
-    CHECK(hsfv_bytes_eq(&item.bytes, &want_b));                                \
+    CHECK(hsfv_byte_seq_eq(&item.byte_seq, &want_b));                          \
     hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
   }
 
@@ -235,8 +235,8 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
     s.len = strlen(input);                                                     \
-    err = hsfv_parse_binary(&item, &htsv_global_allocator, input,              \
-                            input + s.len, &rest);                             \
+    err = hsfv_parse_byte_seq(&item, &htsv_global_allocator, input,            \
+                              input + s.len, &rest);                           \
     CHECK(err == want);                                                        \
   }
 
@@ -331,10 +331,10 @@ TEST_CASE("bare item can be parsed", "[bare_item]") {
             (hsfv_bare_item_t{
                 .type = HSFV_BARE_ITEM_TYPE_TOKEN,
                 .token = hsfv_token_t{.base = "*abc", .len = strlen("*abc")}}));
-  OK_HELPER("binary", ":YWJj:",
-            (hsfv_bare_item_t{
-                .type = HSFV_BARE_ITEM_TYPE_BINARY,
-                .bytes = hsfv_bytes_t{.base = "abc", .len = strlen("abc")}}));
+  OK_HELPER("byte_seq", ":YWJj:",
+            (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
+                              .byte_seq = hsfv_byte_seq_t{
+                                  .base = "abc", .len = strlen("abc")}}));
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \

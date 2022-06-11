@@ -34,8 +34,8 @@ bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
     return hsfv_string_eq(&self->string, &other->string);
   case HSFV_BARE_ITEM_TYPE_TOKEN:
     return hsfv_token_eq(&self->token, &other->token);
-  case HSFV_BARE_ITEM_TYPE_BINARY:
-    return hsfv_bytes_eq(&self->bytes, &other->bytes);
+  case HSFV_BARE_ITEM_TYPE_BYTE_SEQ:
+    return hsfv_byte_seq_eq(&self->byte_seq, &other->byte_seq);
   case HSFV_BARE_ITEM_TYPE_BOOLEAN:
     return self->boolean == other->boolean;
   }
@@ -50,8 +50,8 @@ void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
   case HSFV_BARE_ITEM_TYPE_TOKEN:
     hsfv_token_deinit(&bare_item->token, allocator);
     break;
-  case HSFV_BARE_ITEM_TYPE_BINARY:
-    hsfv_bytes_deinit(&bare_item->bytes, allocator);
+  case HSFV_BARE_ITEM_TYPE_BYTE_SEQ:
+    hsfv_byte_seq_deinit(&bare_item->byte_seq, allocator);
     break;
   }
 }
@@ -358,9 +358,9 @@ error:
 
 #define BINARY_INITIAL_CAPACITY 8
 
-hsfv_err_t hsfv_parse_binary(hsfv_bare_item_t *item,
-                             hsfv_allocator_t *allocator, const char *input,
-                             const char *input_end, const char **out_rest) {
+hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
+                               hsfv_allocator_t *allocator, const char *input,
+                               const char *input_end, const char **out_rest) {
   hsfv_err_t err;
   const char *start;
   char c;
@@ -395,9 +395,9 @@ hsfv_err_t hsfv_parse_binary(hsfv_bare_item_t *item,
         allocator->free(allocator, temp.base);
         return HSFV_ERR_INVALID;
       }
-      item->type = HSFV_BARE_ITEM_TYPE_BINARY;
-      item->bytes.base = temp.base;
-      item->bytes.len = temp.len;
+      item->type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ;
+      item->byte_seq.base = temp.base;
+      item->byte_seq.len = temp.len;
       if (out_rest) {
         *out_rest = ++input;
       }
@@ -425,7 +425,7 @@ hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
   case '"':
     return hsfv_parse_string(item, allocator, input, input_end, out_rest);
   case ':':
-    return hsfv_parse_binary(item, allocator, input, input_end, out_rest);
+    return hsfv_parse_byte_seq(item, allocator, input, input_end, out_rest);
   case '?':
     return hsfv_parse_boolean(item, input, input_end, out_rest);
   default:

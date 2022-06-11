@@ -69,7 +69,7 @@ static inline void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v,
 typedef hsfv_iovec_const_t hsfv_key_t;
 typedef hsfv_iovec_const_t hsfv_string_t;
 typedef hsfv_iovec_const_t hsfv_token_t;
-typedef hsfv_iovec_const_t hsfv_bytes_t;
+typedef hsfv_iovec_const_t hsfv_byte_seq_t;
 
 static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self,
                                        const hsfv_iovec_const_t *other) {
@@ -79,12 +79,12 @@ static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self,
 #define hsfv_key_eq hsfv_iovec_const_eq
 #define hsfv_string_eq hsfv_iovec_const_eq
 #define hsfv_token_eq hsfv_iovec_const_eq
-#define hsfv_bytes_eq hsfv_iovec_const_eq
+#define hsfv_byte_seq_eq hsfv_iovec_const_eq
 
 #define hsfv_key_deinit hsfv_iovec_const_deinit
 #define hsfv_string_deinit hsfv_iovec_const_deinit
 #define hsfv_token_deinit hsfv_iovec_const_deinit
-#define hsfv_bytes_deinit hsfv_iovec_const_deinit
+#define hsfv_byte_seq_deinit hsfv_iovec_const_deinit
 
 typedef struct st_hsfv_buffer_t {
   hsfv_iovec_t bytes;
@@ -123,7 +123,7 @@ typedef enum {
   HSFV_BARE_ITEM_TYPE_DECIMAL,
   HSFV_BARE_ITEM_TYPE_STRING,
   HSFV_BARE_ITEM_TYPE_TOKEN,
-  HSFV_BARE_ITEM_TYPE_BINARY,
+  HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
   HSFV_BARE_ITEM_TYPE_BOOLEAN,
 } hsfv_bare_item_type_t;
 
@@ -134,7 +134,7 @@ typedef struct st_hsfv_bare_item_t {
     double decimal;
     hsfv_string_t string;
     hsfv_token_t token;
-    hsfv_bytes_t bytes;
+    hsfv_byte_seq_t byte_seq;
     bool boolean;
   };
 } hsfv_bare_item_t;
@@ -297,9 +297,9 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
 hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
                             const char *input, const char *input_end,
                             const char **out_rest);
-hsfv_err_t hsfv_parse_binary(hsfv_bare_item_t *item,
-                             hsfv_allocator_t *allocator, const char *input,
-                             const char *input_end, const char **out_rest);
+hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
+                               hsfv_allocator_t *allocator, const char *input,
+                               const char *input_end, const char **out_rest);
 
 hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,

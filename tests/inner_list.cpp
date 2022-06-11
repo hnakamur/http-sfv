@@ -45,8 +45,8 @@ TEST_CASE("inner list can be parsed", "[inner_list]") {
       .key = hsfv_key_t{.base = "y", .len = 1},
       .value =
           hsfv_bare_item_t{
-              .type = HSFV_BARE_ITEM_TYPE_BINARY,
-              .bytes = hsfv_bytes_t{.base = &bytes[0], .len = 4},
+              .type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
+              .byte_seq = hsfv_byte_seq_t{.base = &bytes[0], .len = 4},
           },
   };
   items[1] = hsfv_item_t{
