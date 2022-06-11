@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,7 @@ struct st_hsfv_allocator_t {
 extern hsfv_allocator_t htsv_global_allocator;
 
 #define hsfv_align(d, a) (((d) + (a - 1)) & ~(a - 1))
+#define hsfv_roundup(d, a) (((d) + (a - 1)) / (a) * (a))
 #define hsfv_max(val1, val2) ((val1 < val2) ? (val2) : (val1))
 #define hsfv_min(val1, val2) ((val1 > val2) ? (val2) : (val1))
 
@@ -69,8 +71,20 @@ typedef hsfv_iovec_const_t hsfv_string_t;
 typedef hsfv_iovec_const_t hsfv_token_t;
 typedef hsfv_iovec_const_t hsfv_bytes_t;
 
-#define hsfv_iovec_const_eq(self, other)                                       \
-  ((self).len == (other).len && !memcmp((self).base, (other).base, (self).len))
+static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self,
+                                       const hsfv_iovec_const_t *other) {
+  return self->len == other->len && !memcmp(self->base, other->base, self->len);
+}
+
+#define hsfv_key_eq hsfv_iovec_const_eq
+#define hsfv_string_eq hsfv_iovec_const_eq
+#define hsfv_token_eq hsfv_iovec_const_eq
+#define hsfv_bytes_eq hsfv_iovec_const_eq
+
+#define hsfv_key_deinit hsfv_iovec_const_free
+#define hsfv_string_deinit hsfv_iovec_const_free
+#define hsfv_token_deinit hsfv_iovec_const_free
+#define hsfv_bytes_deinit hsfv_iovec_const_free
 
 typedef struct st_hsfv_buffer_t {
   hsfv_iovec_t bytes;
@@ -109,12 +123,12 @@ typedef struct st_hsfv_bare_item_t {
     hsfv_string_t string;
     hsfv_token_t token;
     hsfv_bytes_t bytes;
-    int boolean;
+    bool boolean;
   };
 } hsfv_bare_item_t;
 
-int hsfv_bare_item_eq(const hsfv_bare_item_t *self,
-                      const hsfv_bare_item_t *other);
+bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
+                       const hsfv_bare_item_t *other);
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item);
 
@@ -128,8 +142,17 @@ typedef struct st_hsfv_parameter_t {
 typedef struct st_hsfv_parameters_t {
   hsfv_parameter_t *params;
   size_t len;
+  size_t capacity;
 } hsfv_parameters_t;
 
+bool hsfv_parameter_eq(const hsfv_parameter_t *self,
+                       const hsfv_parameter_t *other);
+bool hsfv_parameters_eq(const hsfv_parameters_t *self,
+                        const hsfv_parameters_t *other);
+hsfv_err_t hsfv_parse_parameters(hsfv_allocator_t *allocator, const char *input,
+                                 const char *input_end,
+                                 hsfv_parameters_t *parameters,
+                                 const char **out_rest);
 /* Item */
 
 typedef struct st_hsfv_item_t {
@@ -142,6 +165,7 @@ typedef struct st_hsfv_item_t {
 typedef struct st_hsfv_inner_list_t {
   hsfv_item_t *items;
   size_t len;
+  size_t capacity;
   hsfv_parameters_t parameters;
 } hsfv_inner_list_t;
 
@@ -163,6 +187,7 @@ typedef struct st_hsfv_list_member_t {
 typedef struct st_hsfv_list_t {
   hsfv_list_member_t *members;
   size_t len;
+  size_t capacity;
 } hsfv_list_t;
 
 /* Dictionary */
@@ -189,7 +214,16 @@ typedef struct st_hsfv_dict_member_t {
 typedef struct st_hsfv_dict_t {
   hsfv_dict_member_t *members;
   size_t len;
+  size_t capacity;
 } hsfv_dict_t;
+
+void hsfv_parameter_deinit(hsfv_allocator_t *allocator,
+                           hsfv_parameter_t *parameter);
+void hsfv_parameters_deinit(hsfv_allocator_t *allocator,
+                            hsfv_parameters_t *parameters);
+
+void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
+                           hsfv_bare_item_t *bare_item);
 
 hsfv_err_t hsfv_parse_bare_item(hsfv_allocator_t *allocator, const char *input,
                                 const char *input_end, hsfv_bare_item_t *item,

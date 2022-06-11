@@ -1,0 +1,142 @@
+#include "hsfv.h"
+
+#define PARAMETERS_INITIAL_CAPACITY 8
+
+bool hsfv_parameter_eq(const hsfv_parameter_t *self,
+                       const hsfv_parameter_t *other) {
+  return hsfv_key_eq(&self->key, &other->key) &&
+         hsfv_bare_item_eq(&self->value, &other->value);
+}
+
+bool hsfv_parameters_eq(const hsfv_parameters_t *self,
+                        const hsfv_parameters_t *other) {
+  if (self->len != other->len) {
+    return false;
+  }
+  for (size_t i = 0; i < self->len; i++) {
+    if (!hsfv_parameter_eq(&self->params[i], &other->params[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void hsfv_parameter_deinit(hsfv_allocator_t *allocator,
+                           hsfv_parameter_t *parameter) {
+  hsfv_iovec_const_free(allocator, &parameter->key);
+  hsfv_bare_item_deinit(allocator, &parameter->value);
+}
+
+void hsfv_parameters_deinit(hsfv_allocator_t *allocator,
+                            hsfv_parameters_t *parameters) {
+  for (size_t i = 0; i < parameters->len; i++) {
+    hsfv_parameter_deinit(allocator, &parameters->params[i]);
+  }
+  allocator->free(allocator, parameters->params);
+}
+
+static hsfv_err_t hsfv_parameters_append(hsfv_allocator_t *allocator,
+                                         hsfv_parameters_t *parameters,
+                                         hsfv_parameter_t *param) {
+  if (parameters->len + 1 >= parameters->capacity) {
+    size_t new_capacity =
+        hsfv_align(parameters->len + 1, PARAMETERS_INITIAL_CAPACITY);
+    parameters->params = allocator->realloc(
+        allocator, parameters->params, new_capacity * sizeof(hsfv_parameter_t));
+    if (parameters->params == NULL) {
+      return HSFV_ERR_OUT_OF_MEMORY;
+    }
+    parameters->capacity = new_capacity;
+  }
+  parameters->params[parameters->len] = *param;
+  parameters->len++;
+  return HSFV_OK;
+}
+
+size_t hsfv_parameters_index_of(const hsfv_parameters_t *parameters,
+                                const hsfv_key_t *key) {
+  for (size_t i = 0; i < parameters->len; i++) {
+    if (hsfv_key_eq(&parameters->params[i].key, key)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+hsfv_err_t hsfv_parse_parameters(hsfv_allocator_t *allocator, const char *input,
+                                 const char *input_end,
+                                 hsfv_parameters_t *parameters,
+                                 const char **out_rest) {
+  hsfv_err_t err;
+  char c;
+  hsfv_parameter_t param;
+  hsfv_parameters_t temp;
+  size_t i;
+
+  temp.len = 0;
+  temp.capacity = PARAMETERS_INITIAL_CAPACITY;
+  temp.params =
+      allocator->alloc(allocator, temp.capacity * sizeof(hsfv_parameter_t));
+  if (temp.params == NULL) {
+    return HSFV_ERR_OUT_OF_MEMORY;
+  }
+
+  if (input == input_end) {
+    err = HSFV_ERR_EOF;
+    goto error3;
+  }
+
+  while (input < input_end) {
+    c = *input;
+    if (c != ';') {
+      break;
+    }
+    ++input;
+
+    while (input < input_end && *input == ' ') {
+      ++input;
+    }
+
+    err = hsfv_parse_key(allocator, input, input_end, &param.key, &input);
+    if (err) {
+      goto error3;
+    }
+
+    if (input < input_end && *input == '=') {
+      ++input;
+      err = hsfv_parse_bare_item(allocator, input, input_end, &param.value,
+                                 &input);
+      if (err) {
+        goto error2;
+      }
+    } else {
+      param.value.type = HSFV_BARE_ITEM_TYPE_BOOLEAN;
+      param.value.boolean = 1;
+    }
+    i = hsfv_parameters_index_of(&temp, &param.key);
+    if (i == -1) {
+      err = hsfv_parameters_append(allocator, &temp, &param);
+      if (err) {
+        goto error1;
+      }
+    } else {
+      temp.params[i] = param;
+    }
+  }
+
+  *parameters = temp;
+  if (out_rest) {
+    *out_rest = input;
+  }
+  return HSFV_OK;
+
+error1:
+  hsfv_bare_item_deinit(allocator, &param.value);
+
+error2:
+  hsfv_key_deinit(allocator, &param.key);
+
+error3:
+  hsfv_parameters_deinit(allocator, &temp);
+  return err;
+}

@@ -128,7 +128,7 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                            \
     want_s.base = want;                                                        \
     want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(item.string, want_s));                           \
+    CHECK(hsfv_string_eq(&item.string, &want_s));                              \
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 
@@ -164,7 +164,7 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *rest;                                                          \
-    hsfv_string_t s, want_s;                                                   \
+    hsfv_token_t s, want_t;                                                    \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
@@ -173,9 +173,9 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
                            &item, &rest);                                      \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_TOKEN);                             \
-    want_s.base = want;                                                        \
-    want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(item.token, want_s));                            \
+    want_t.base = want;                                                        \
+    want_t.len = strlen(want);                                                 \
+    CHECK(hsfv_token_eq(&item.token, &want_t));                                \
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 
@@ -207,7 +207,7 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *rest;                                                          \
-    hsfv_string_t s, want_s;                                                   \
+    hsfv_bytes_t s, want_b;                                                    \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
@@ -216,9 +216,9 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
                             &item, &rest);                                     \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_BINARY);                            \
-    want_s.base = want;                                                        \
-    want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(item.bytes, want_s));                            \
+    want_b.base = want;                                                        \
+    want_b.len = strlen(want);                                                 \
+    CHECK(hsfv_bytes_eq(&item.bytes, &want_b));                                \
     hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
   }
 
@@ -254,7 +254,7 @@ TEST_CASE("key can be parsed", "[key]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *rest;                                                          \
-    hsfv_string_t s, want_s;                                                   \
+    hsfv_key_t s, want_k;                                                      \
     hsfv_key_t key;                                                            \
     hsfv_err_t err;                                                            \
     s.base = input;                                                            \
@@ -262,9 +262,9 @@ TEST_CASE("key can be parsed", "[key]") {
     err = hsfv_parse_key(&htsv_global_allocator, input, input + s.len, &key,   \
                          &rest);                                               \
     CHECK(err == HSFV_OK);                                                     \
-    want_s.base = want;                                                        \
-    want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_iovec_const_eq(key, want_s));                                   \
+    want_k.base = want;                                                        \
+    want_k.len = strlen(want);                                                 \
+    CHECK(hsfv_key_eq(&key, &want_k));                                         \
     hsfv_iovec_const_free(&htsv_global_allocator, &key);                       \
   }
 

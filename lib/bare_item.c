@@ -14,16 +14,16 @@ const char *hsfv_token_char_map =
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
 static hsfv_err_t parse_integer(const char *input, const char *input_end,
-                                int neg, hsfv_bare_item_t *item,
+                                bool neg, hsfv_bare_item_t *item,
                                 const char **out_rest);
 static hsfv_err_t parse_decimal(const char *input, const char *input_end,
-                                int dec_sep_off, int neg,
+                                int dec_sep_off, bool neg,
                                 hsfv_bare_item_t *item, const char **out_rest);
 
-int hsfv_bare_item_eq(const hsfv_bare_item_t *self,
-                      const hsfv_bare_item_t *other) {
+bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
+                       const hsfv_bare_item_t *other) {
   if (self->type != other->type) {
-    return 0;
+    return false;
   }
   switch (self->type) {
   case HSFV_BARE_ITEM_TYPE_INTEGER:
@@ -31,11 +31,11 @@ int hsfv_bare_item_eq(const hsfv_bare_item_t *self,
   case HSFV_BARE_ITEM_TYPE_DECIMAL:
     return self->decimal == other->decimal;
   case HSFV_BARE_ITEM_TYPE_STRING:
-    return hsfv_iovec_const_eq(self->string, other->string);
+    return hsfv_string_eq(&self->string, &other->string);
   case HSFV_BARE_ITEM_TYPE_TOKEN:
-    return hsfv_iovec_const_eq(self->token, other->token);
+    return hsfv_token_eq(&self->token, &other->token);
   case HSFV_BARE_ITEM_TYPE_BINARY:
-    return hsfv_iovec_const_eq(self->bytes, other->bytes);
+    return hsfv_bytes_eq(&self->bytes, &other->bytes);
   case HSFV_BARE_ITEM_TYPE_BOOLEAN:
     return self->boolean == other->boolean;
   }
@@ -71,7 +71,7 @@ hsfv_err_t hsfv_parse_boolean(const char *input, const char *input_end,
   }
   if (*input == '1') {
     item->type = HSFV_BARE_ITEM_TYPE_BOOLEAN;
-    item->boolean = 1;
+    item->boolean = true;
     if (out_rest) {
       *out_rest = ++input;
     }
@@ -79,7 +79,7 @@ hsfv_err_t hsfv_parse_boolean(const char *input, const char *input_end,
   }
   if (*input == '0') {
     item->type = HSFV_BARE_ITEM_TYPE_BOOLEAN;
-    item->boolean = 0;
+    item->boolean = false;
     if (out_rest) {
       *out_rest = ++input;
     }
@@ -90,7 +90,8 @@ hsfv_err_t hsfv_parse_boolean(const char *input, const char *input_end,
 
 hsfv_err_t hsfv_parse_number(const char *input, const char *input_end,
                              hsfv_bare_item_t *item, const char **out_rest) {
-  int neg = 0, is_integer = 1, dec_sep_off = 0, size, ch;
+  bool neg = false, is_integer = true;
+  int dec_sep_off = 0, size, ch;
   const char *start;
 
   if (*input == '-') {
@@ -123,7 +124,7 @@ hsfv_err_t hsfv_parse_number(const char *input, const char *input_end,
       if (size > HSFV_MAX_DEC_INT_LEN) {
         return HSFV_ERR_NUMBER_OUT_OF_RANGE;
       }
-      is_integer = 0;
+      is_integer = false;
       dec_sep_off = input - start;
       ++input;
       continue;
@@ -139,7 +140,7 @@ hsfv_err_t hsfv_parse_number(const char *input, const char *input_end,
 }
 
 static hsfv_err_t parse_integer(const char *input, const char *input_end,
-                                int neg, hsfv_bare_item_t *item,
+                                bool neg, hsfv_bare_item_t *item,
                                 const char **out_rest) {
   int64_t i;
   char *end;
@@ -161,7 +162,7 @@ static hsfv_err_t parse_integer(const char *input, const char *input_end,
 }
 
 static hsfv_err_t parse_decimal(const char *input, const char *input_end,
-                                int dec_sep_off, int neg,
+                                int dec_sep_off, bool neg,
                                 hsfv_bare_item_t *item, const char **out_rest) {
   double d;
   char *end;
@@ -225,7 +226,7 @@ hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
       item->string.base = buf.bytes.base;
       item->string.len = buf.bytes.len;
       if (out_rest) {
-        *out_rest = input;
+        *out_rest = ++input;
       }
       return HSFV_OK;
     } else if (c <= '\x1f' || '\x7f' <= c) {
@@ -261,7 +262,8 @@ hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
   }
 
   if (input == input_end) {
-    return HSFV_ERR_EOF;
+    err = HSFV_ERR_EOF;
+    goto error;
   }
 
   c = *input;
@@ -315,7 +317,8 @@ hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
   }
 
   if (input == input_end) {
-    return HSFV_ERR_EOF;
+    err = HSFV_ERR_EOF;
+    goto error;
   }
 
   c = *input;
