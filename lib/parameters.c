@@ -76,10 +76,6 @@ hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters,
   parameters->len = 0;
   parameters->capacity = 0;
 
-  if (input == input_end) {
-    return HSFV_OK;
-  }
-
   temp.params = NULL;
   temp.len = 0;
   temp.capacity = 0;
