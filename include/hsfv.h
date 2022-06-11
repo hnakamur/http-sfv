@@ -191,26 +191,26 @@ typedef struct st_hsfv_dict_t {
   size_t len;
 } hsfv_dict_t;
 
-hsfv_err_t parse_bare_item(hsfv_allocator_t *allocator, const char *input,
-                           const char *input_end, hsfv_bare_item_t *item,
-                           const char **out_rest);
-hsfv_err_t parse_boolean(const char *input, const char *input_end,
-                         hsfv_bare_item_t *item, const char **out_rest);
-hsfv_err_t parse_number(const char *input, const char *input_end,
-                        hsfv_bare_item_t *item, const char **out_rest);
-hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
-                        const char *input_end, hsfv_bare_item_t *item,
-                        const char **out_rest);
-hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
-                       const char *input_end, hsfv_bare_item_t *item,
-                       const char **out_rest);
-hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
-                        const char *input_end, hsfv_bare_item_t *item,
-                        const char **out_rest);
+hsfv_err_t hsfv_parse_bare_item(hsfv_allocator_t *allocator, const char *input,
+                                const char *input_end, hsfv_bare_item_t *item,
+                                const char **out_rest);
+hsfv_err_t hsfv_parse_boolean(const char *input, const char *input_end,
+                              hsfv_bare_item_t *item, const char **out_rest);
+hsfv_err_t hsfv_parse_number(const char *input, const char *input_end,
+                             hsfv_bare_item_t *item, const char **out_rest);
+hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
+                             const char *input_end, hsfv_bare_item_t *item,
+                             const char **out_rest);
+hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
+                            const char *input_end, hsfv_bare_item_t *item,
+                            const char **out_rest);
+hsfv_err_t hsfv_parse_binary(hsfv_allocator_t *allocator, const char *input,
+                             const char *input_end, hsfv_bare_item_t *item,
+                             const char **out_rest);
 
-hsfv_err_t parse_key(hsfv_allocator_t *allocator, const char *input,
-                     const char *input_end, hsfv_key_t *key,
-                     const char **out_rest);
+hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
+                          const char *input_end, hsfv_key_t *key,
+                          const char **out_rest);
 
 #include "hsfv/base64.h"
 #include "hsfv/ctype.h"

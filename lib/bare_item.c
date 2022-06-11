@@ -56,8 +56,8 @@ void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
   }
 }
 
-hsfv_err_t parse_boolean(const char *input, const char *input_end,
-                         hsfv_bare_item_t *item, const char **out_rest) {
+hsfv_err_t hsfv_parse_boolean(const char *input, const char *input_end,
+                              hsfv_bare_item_t *item, const char **out_rest) {
   if (input == input_end) {
     return HSFV_ERR_EOF;
   }
@@ -88,8 +88,8 @@ hsfv_err_t parse_boolean(const char *input, const char *input_end,
   return HSFV_ERR_INVALID;
 }
 
-hsfv_err_t parse_number(const char *input, const char *input_end,
-                        hsfv_bare_item_t *item, const char **out_rest) {
+hsfv_err_t hsfv_parse_number(const char *input, const char *input_end,
+                             hsfv_bare_item_t *item, const char **out_rest) {
   int neg = 0, is_integer = 1, dec_sep_off = 0, size, ch;
   const char *start;
 
@@ -185,9 +185,9 @@ static hsfv_err_t parse_decimal(const char *input, const char *input_end,
 
 #define STRING_INITIAL_CAPACITY 8
 
-hsfv_err_t parse_string(hsfv_allocator_t *allocator, const char *input,
-                        const char *input_end, hsfv_bare_item_t *item,
-                        const char **out_rest) {
+hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
+                             const char *input_end, hsfv_bare_item_t *item,
+                             const char **out_rest) {
   hsfv_err_t err;
   hsfv_buffer_t buf;
   char c;
@@ -248,9 +248,9 @@ error:
 
 #define TOKEN_INITIAL_CAPACITY 8
 
-hsfv_err_t parse_token(hsfv_allocator_t *allocator, const char *input,
-                       const char *input_end, hsfv_bare_item_t *item,
-                       const char **out_rest) {
+hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
+                            const char *input_end, hsfv_bare_item_t *item,
+                            const char **out_rest) {
   hsfv_err_t err;
   hsfv_buffer_t buf;
   char c;
@@ -302,9 +302,9 @@ error:
 
 #define KEY_INITIAL_CAPACITY 8
 
-hsfv_err_t parse_key(hsfv_allocator_t *allocator, const char *input,
-                     const char *input_end, hsfv_key_t *key,
-                     const char **out_rest) {
+hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
+                          const char *input_end, hsfv_key_t *key,
+                          const char **out_rest) {
   hsfv_err_t err;
   hsfv_buffer_t buf;
   char c;
@@ -355,9 +355,9 @@ error:
 
 #define BINARY_INITIAL_CAPACITY 8
 
-hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
-                        const char *input_end, hsfv_bare_item_t *item,
-                        const char **out_rest) {
+hsfv_err_t hsfv_parse_binary(hsfv_allocator_t *allocator, const char *input,
+                             const char *input_end, hsfv_bare_item_t *item,
+                             const char **out_rest) {
   hsfv_err_t err;
   const char *start;
   char c;
@@ -409,9 +409,9 @@ hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
   return HSFV_ERR_EOF;
 }
 
-hsfv_err_t parse_bare_item(hsfv_allocator_t *allocator, const char *input,
-                           const char *input_end, hsfv_bare_item_t *item,
-                           const char **out_rest) {
+hsfv_err_t hsfv_parse_bare_item(hsfv_allocator_t *allocator, const char *input,
+                                const char *input_end, hsfv_bare_item_t *item,
+                                const char **out_rest) {
   char c;
   if (input == input_end) {
     return HSFV_ERR_EOF;
@@ -420,17 +420,17 @@ hsfv_err_t parse_bare_item(hsfv_allocator_t *allocator, const char *input,
   c = *input;
   switch (c) {
   case '"':
-    return parse_string(allocator, input, input_end, item, out_rest);
+    return hsfv_parse_string(allocator, input, input_end, item, out_rest);
   case ':':
-    return parse_binary(allocator, input, input_end, item, out_rest);
+    return hsfv_parse_binary(allocator, input, input_end, item, out_rest);
   case '?':
-    return parse_boolean(input, input_end, item, out_rest);
+    return hsfv_parse_boolean(input, input_end, item, out_rest);
   default:
     if (c == '-' || hsfv_is_digit(c)) {
-      return parse_number(input, input_end, item, out_rest);
+      return hsfv_parse_number(input, input_end, item, out_rest);
     }
     if (hsfv_is_alpha(c) || c == '*') {
-      return parse_token(allocator, input, input_end, item, out_rest);
+      return hsfv_parse_token(allocator, input, input_end, item, out_rest);
     }
     return HSFV_ERR_INVALID;
   }
