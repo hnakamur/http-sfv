@@ -352,3 +352,19 @@ TEST_CASE("bare item can be parsed", "[bare_item]") {
   NG_HELPER("invalid symbol", "~", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
+
+TEST_CASE("serialize boolean", "[serialize][boolean]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_boolean(&buf, &htsv_global_allocator, input);         \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
+    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+  }
+
+  OK_HELPER("false", false, "?0");
+  OK_HELPER("true", true, "?1");
+#undef OK_HELPER
+}

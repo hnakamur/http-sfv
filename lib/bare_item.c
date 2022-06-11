@@ -438,3 +438,17 @@ hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
     return HSFV_ERR_INVALID;
   }
 }
+
+hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
+                                  hsfv_allocator_t *allocator, bool boolean) {
+  hsfv_err_t err;
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator, 2);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_byte_unsafe(dest, '?');
+  htsv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
+  return HSFV_OK;
+}

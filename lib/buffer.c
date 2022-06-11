@@ -31,13 +31,15 @@ void htsv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator) {
   buf->capacity = 0;
 }
 
+#define BUFFER_CAPACITY_ALIGN 8
+
 hsfv_err_t htsv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf,
                                            hsfv_allocator_t *allocator,
                                            size_t len) {
   size_t new_capacity;
 
   if (buf->bytes.len + len > buf->capacity) {
-    new_capacity = hsfv_align(buf->bytes.len + len, buf->capacity);
+    new_capacity = hsfv_align(buf->bytes.len + len, BUFFER_CAPACITY_ALIGN);
     return htsv_buffer_realloc(buf, allocator, new_capacity);
   }
   return HSFV_OK;
@@ -53,8 +55,7 @@ hsfv_err_t htsv_buffer_append_byte(hsfv_buffer_t *buf,
     return err;
   }
 
-  buf->bytes.base[buf->bytes.len] = src;
-  buf->bytes.len++;
+  htsv_buffer_append_byte_unsafe(buf, src);
   return HSFV_OK;
 }
 
@@ -68,7 +69,6 @@ hsfv_err_t htsv_buffer_append_bytes(hsfv_buffer_t *buf,
     return err;
   }
 
-  memcpy(buf->bytes.base + buf->bytes.len, src, len);
-  buf->bytes.len += len;
+  htsv_buffer_append_bytes_unsafe(buf, src, len);
   return HSFV_OK;
 }
