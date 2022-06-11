@@ -113,6 +113,8 @@ typedef struct st_hsfv_bare_item_t {
   };
 } hsfv_bare_item_t;
 
+int hsfv_bare_item_eq(const hsfv_bare_item_t *self,
+                      const hsfv_bare_item_t *other);
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item);
 
@@ -189,6 +191,9 @@ typedef struct st_hsfv_dict_t {
   size_t len;
 } hsfv_dict_t;
 
+hsfv_err_t parse_bare_item(hsfv_allocator_t *allocator, const char *input,
+                           const char *input_end, hsfv_bare_item_t *item,
+                           const char **out_rest);
 hsfv_err_t parse_boolean(const char *input, const char *input_end,
                          hsfv_bare_item_t *item, const char **out_rest);
 hsfv_err_t parse_number(const char *input, const char *input_end,

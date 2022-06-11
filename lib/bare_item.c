@@ -20,6 +20,27 @@ static hsfv_err_t parse_decimal(const char *input, const char *input_end,
                                 int dec_sep_off, int neg,
                                 hsfv_bare_item_t *item, const char **out_rest);
 
+int hsfv_bare_item_eq(const hsfv_bare_item_t *self,
+                      const hsfv_bare_item_t *other) {
+  if (self->type != other->type) {
+    return 0;
+  }
+  switch (self->type) {
+  case HSFV_BARE_ITEM_TYPE_INTEGER:
+    return self->integer == other->integer;
+  case HSFV_BARE_ITEM_TYPE_DECIMAL:
+    return self->decimal == other->decimal;
+  case HSFV_BARE_ITEM_TYPE_STRING:
+    return hsfv_iovec_const_eq(self->string, other->string);
+  case HSFV_BARE_ITEM_TYPE_TOKEN:
+    return hsfv_iovec_const_eq(self->token, other->token);
+  case HSFV_BARE_ITEM_TYPE_BINARY:
+    return hsfv_iovec_const_eq(self->bytes, other->bytes);
+  case HSFV_BARE_ITEM_TYPE_BOOLEAN:
+    return self->boolean == other->boolean;
+  }
+}
+
 void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
                            hsfv_bare_item_t *bare_item) {
   switch (bare_item->type) {
@@ -386,4 +407,31 @@ hsfv_err_t parse_binary(hsfv_allocator_t *allocator, const char *input,
     }
   }
   return HSFV_ERR_EOF;
+}
+
+hsfv_err_t parse_bare_item(hsfv_allocator_t *allocator, const char *input,
+                           const char *input_end, hsfv_bare_item_t *item,
+                           const char **out_rest) {
+  char c;
+  if (input == input_end) {
+    return HSFV_ERR_EOF;
+  }
+
+  c = *input;
+  switch (c) {
+  case '"':
+    return parse_string(allocator, input, input_end, item, out_rest);
+  case ':':
+    return parse_binary(allocator, input, input_end, item, out_rest);
+  case '?':
+    return parse_boolean(input, input_end, item, out_rest);
+  default:
+    if (c == '-' || hsfv_is_digit(c)) {
+      return parse_number(input, input_end, item, out_rest);
+    }
+    if (hsfv_is_alpha(c) || c == '*') {
+      return parse_token(allocator, input, input_end, item, out_rest);
+    }
+    return HSFV_ERR_INVALID;
+  }
 }

@@ -291,3 +291,64 @@ TEST_CASE("key can be parsed", "[key]") {
   NG_HELPER("non ASCII character", "é", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
+
+TEST_CASE("bare item can be parsed", "[bare_item]") {
+#define OK_HELPER(section, input, want_literal)                                \
+  SECTION(section) {                                                           \
+    hsfv_bare_item_t want = want_literal;                                      \
+    hsfv_bare_item_t item;                                                     \
+    hsfv_err_t err;                                                            \
+    const char *input_end = input + strlen(input);                             \
+    const char *rest;                                                          \
+    err = parse_bare_item(&htsv_global_allocator, input, input_end, &item,     \
+                          &rest);                                              \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(hsfv_bare_item_eq(&item, &want));                                    \
+    hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
+  }
+
+  OK_HELPER(
+      "true", "?1",
+      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = 1}));
+  OK_HELPER(
+      "false", "?0",
+      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = 0}));
+  OK_HELPER(
+      "integer", "22",
+      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 22}));
+  OK_HELPER(
+      "decimal", "-2.2",
+      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = -2.2}));
+  OK_HELPER("string", "\"foo\"",
+            (hsfv_bare_item_t{
+                .type = HSFV_BARE_ITEM_TYPE_STRING,
+                .string = hsfv_string_t{.base = "foo", .len = strlen("foo")}}));
+  OK_HELPER("token case 1", "abc",
+            (hsfv_bare_item_t{
+                .type = HSFV_BARE_ITEM_TYPE_TOKEN,
+                .token = hsfv_token_t{.base = "abc", .len = strlen("abc")}}));
+  OK_HELPER("token case 2", "*abc",
+            (hsfv_bare_item_t{
+                .type = HSFV_BARE_ITEM_TYPE_TOKEN,
+                .token = hsfv_token_t{.base = "*abc", .len = strlen("*abc")}}));
+  OK_HELPER("binary", ":YWJj:",
+            (hsfv_bare_item_t{
+                .type = HSFV_BARE_ITEM_TYPE_BINARY,
+                .bytes = hsfv_bytes_t{.base = "abc", .len = strlen("abc")}}));
+#undef OK_HELPER
+
+#define NG_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_bare_item_t item;                                                     \
+    hsfv_err_t err;                                                            \
+    const char *input_end = input + strlen(input);                             \
+    const char *rest;                                                          \
+    err = parse_bare_item(&htsv_global_allocator, input, input_end, &item,     \
+                          &rest);                                              \
+    CHECK(err == want);                                                        \
+  }
+
+  NG_HELPER("empty", "", HSFV_ERR_EOF);
+  NG_HELPER("invalid symbol", "~", HSFV_ERR_INVALID);
+#undef NG_HELPER
+}
