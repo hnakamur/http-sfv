@@ -120,6 +120,7 @@ hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters,
         goto error1;
       }
     } else {
+      hsfv_parameter_deinit(&temp.params[i], allocator);
       temp.params[i] = param;
     }
   }

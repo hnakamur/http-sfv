@@ -38,6 +38,9 @@ TEST_CASE("parameters can be parsed", "[parameters]") {
             strlen(";foo=?1;*bar=\"baz\" foo") - strlen(" foo"), &want);
   OK_HELPER("case 2", ";foo;*bar=\"baz\" foo",
             strlen(";foo;*bar=\"baz\" foo") - strlen(" foo"), &want);
+  OK_HELPER("case 3", ";foo=?1;*bar=tok;*bar=\"baz\" foo",
+            strlen(";foo=?1;*bar=tok;*bar=\"baz\" foo") - strlen(" foo"),
+            &want);
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
