@@ -72,10 +72,7 @@ hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator,
   char c;
   hsfv_list_member_t member;
 
-  list->members = NULL;
-  list->len = 0;
-  list->capacity = 0;
-
+  *list = (hsfv_list_t){0};
   while (input < input_end) {
     if (*input == '(') {
       err = hsfv_parse_inner_list(&member.inner_list, allocator, input,
@@ -97,11 +94,16 @@ hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator,
     }
 
     hsfv_skip_ows(input, input_end);
-    if (input < input_end && *input == ',') {
-      ++input;
-      hsfv_skip_ows(input, input_end);
-      if (input == input_end) {
-        err = HSFV_ERR_EOF;
+    if (input < input_end) {
+      if (*input == ',') {
+        ++input;
+        hsfv_skip_ows(input, input_end);
+        if (input == input_end) {
+          err = HSFV_ERR_EOF;
+          goto error2;
+        }
+      } else {
+        err = HSFV_ERR_INVALID;
         goto error2;
       }
     }

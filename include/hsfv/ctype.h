@@ -12,6 +12,7 @@ extern "C" {
 #define hsfv_is_key_char(c)                                                    \
   (hsfv_is_lcalpha(c) || hsfv_is_digit(c) || (c) == '_' || (c) == '-' ||       \
    (c) == '.' || (c) == '*')
+#define hsfv_is_ascii(c) ((c) <= '\x7f')
 
 extern const char *hsfv_token_char_map;
 #define hsfv_is_token_char(c) hsfv_token_char_map[(unsigned char)(c)]

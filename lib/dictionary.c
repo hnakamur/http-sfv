@@ -147,11 +147,16 @@ hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary,
     }
 
     hsfv_skip_ows(input, input_end);
-    if (input < input_end && *input == ',') {
-      ++input;
-      hsfv_skip_ows(input, input_end);
-      if (input == input_end) {
-        err = HSFV_ERR_EOF;
+    if (input < input_end) {
+      if (*input == ',') {
+        ++input;
+        hsfv_skip_ows(input, input_end);
+        if (input == input_end) {
+          err = HSFV_ERR_EOF;
+          goto error2;
+        }
+      } else {
+        err = HSFV_ERR_INVALID;
         goto error2;
       }
     }

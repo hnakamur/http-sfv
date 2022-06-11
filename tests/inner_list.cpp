@@ -31,11 +31,8 @@ TEST_CASE("inner list can be parsed", "[inner_list]") {
   };
   items[0] = hsfv_item_t{
       .bare_item =
-          hsfv_bare_item_t{
-              .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING,
-                                        .string = hsfv_string_t{.base = "foo",
-                                                                .len = 3}},
-          },
+          hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING,
+                           .string = hsfv_string_t{.base = "foo", .len = 3}},
       .parameters = {.params = &params0params[0], .len = 2, .capacity = 2},
   };
 
@@ -54,11 +51,8 @@ TEST_CASE("inner list can be parsed", "[inner_list]") {
   };
   items[1] = hsfv_item_t{
       .bare_item =
-          hsfv_bare_item_t{
-              .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN,
-                                        .string = hsfv_token_t{.base = "bar",
-                                                               .len = 3}},
-          },
+          hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN,
+                           .string = hsfv_token_t{.base = "bar", .len = 3}},
       .parameters =
           hsfv_parameters_t{.params = &param1, .len = 1, .capacity = 1},
   };

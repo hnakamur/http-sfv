@@ -208,6 +208,25 @@ typedef struct st_hsfv_dict_t {
   size_t capacity;
 } hsfv_dictionary_t;
 
+/* Field Value */
+
+typedef enum {
+  HSFV_FIELD_VALUE_TYPE_LIST = 0,
+  HSFV_FIELD_VALUE_TYPE_DICTIONARY,
+  HSFV_FIELD_VALUE_TYPE_ITEM,
+} hsfv_field_value_type_t;
+
+typedef struct st_hsfv_field_value_t {
+  hsfv_field_value_type_t type;
+  union {
+    hsfv_list_t list;
+    hsfv_dictionary_t dictionary;
+    hsfv_item_t item;
+  };
+} hsfv_field_value_t;
+
+bool hsfv_field_value_eq(const hsfv_field_value_t *self,
+                         const hsfv_field_value_t *other);
 bool hsfv_dictionary_eq(const hsfv_dictionary_t *self,
                         const hsfv_dictionary_t *other);
 bool hsfv_list_eq(const hsfv_list_t *self, const hsfv_list_t *other);
@@ -219,6 +238,8 @@ bool hsfv_parameter_eq(const hsfv_parameter_t *self,
 bool hsfv_parameters_eq(const hsfv_parameters_t *self,
                         const hsfv_parameters_t *other);
 
+void hsfv_field_value_deinit(hsfv_field_value_t *self,
+                             hsfv_allocator_t *allocator);
 void hsfv_dictionary_deinit(hsfv_dictionary_t *self,
                             hsfv_allocator_t *allocator);
 void hsfv_list_deinit(hsfv_list_t *self, hsfv_allocator_t *allocator);
@@ -232,6 +253,11 @@ void hsfv_parameter_deinit(hsfv_parameter_t *parameter,
 void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
                            hsfv_allocator_t *allocator);
 
+hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value,
+                                  hsfv_field_value_type_t field_type,
+                                  hsfv_allocator_t *allocator,
+                                  const char *input, const char *input_end,
+                                  const char **out_rest);
 hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary,
                                  hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest);
