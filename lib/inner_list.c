@@ -17,13 +17,9 @@ bool hsfv_inner_list_eq(const hsfv_inner_list_t *self,
 
 void hsfv_inner_list_deinit(hsfv_inner_list_t *self,
                             hsfv_allocator_t *allocator) {
-  printf("hsfv_inner_list_deinit self=%p, len=%ld\n", self, self->len);
   for (size_t i = 0; i < self->len; i++) {
-    printf("hsfv_inner_list_deinit self=%p, calling hsfv_item_deinit[%ld]=%p\n",
-           self, i, &self->items[i]);
     hsfv_item_deinit(&self->items[i], allocator);
   }
-  printf("hsfv_inner_list_deinit free %p\n", self->items);
   allocator->free(allocator, self->items);
   hsfv_parameters_deinit(&self->parameters, allocator);
 }
@@ -31,23 +27,17 @@ void hsfv_inner_list_deinit(hsfv_inner_list_t *self,
 static hsfv_err_t hsfv_inner_list_append(hsfv_inner_list_t *self,
                                          hsfv_allocator_t *allocator,
                                          const hsfv_item_t *item) {
-  printf("hsfv_inner_list_append start %p\n", self);
   if (self->len + 1 >= self->capacity) {
     size_t new_capacity =
         hsfv_align(self->len + 1, INNER_LIST_INITIAL_CAPACITY);
     self->items = allocator->realloc(allocator, self->items,
                                      new_capacity * sizeof(hsfv_item_t));
-    printf("hsfv_inner_list_append %p, allocated items %p\n", self,
-           self->items);
     if (self->items == NULL) {
       return HSFV_ERR_OUT_OF_MEMORY;
     }
     self->capacity = new_capacity;
   }
   self->items[self->len] = *item;
-  printf(
-      "hsfv_inner_list_append %p, appended at index %d, pointer=%p, src=%p\n",
-      self, self->len, &self->items[self->len], item);
   self->len++;
   return HSFV_OK;
 }
@@ -55,7 +45,6 @@ static hsfv_err_t hsfv_inner_list_append(hsfv_inner_list_t *self,
 hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list,
                                  hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest) {
-  printf("hsfv_parse_inner_list start self=%p\n", inner_list);
   hsfv_err_t err;
   char c;
   hsfv_item_t item;

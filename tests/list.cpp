@@ -126,7 +126,6 @@ TEST_CASE("list can be parsed", "[list]") {
             &want);
 #undef OK_HELPER
 
-#if 0
 #define NG_HELPER(section, input, want)                                        \
   SECTION("section") {                                                         \
     hsfv_list_t innser_list;                                                   \
@@ -138,10 +137,11 @@ TEST_CASE("list can be parsed", "[list]") {
     CHECK(err == want);                                                        \
   }
 
-  NG_HELPER("case 1", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:;é);d=18.71",
-            HSFV_ERR_INVALID);
-  NG_HELPER("case 2", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71;é",
+  NG_HELPER("case 1",
+            "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, ",
+            HSFV_ERR_EOF);
+  NG_HELPER("case 1",
+            "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, é",
             HSFV_ERR_INVALID);
 #undef NG_HELPER
-#endif
 }
