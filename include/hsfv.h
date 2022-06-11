@@ -91,18 +91,19 @@ typedef struct st_hsfv_buffer_t {
   size_t capacity;
 } hsfv_buffer_t;
 
-hsfv_err_t htsv_buffer_alloc_bytes(hsfv_allocator_t *allocator,
-                                   hsfv_buffer_t *buf, size_t capacity);
-hsfv_err_t htsv_buffer_realloc_bytes(hsfv_allocator_t *allocator,
-                                     hsfv_buffer_t *buf, size_t capacity);
-void htsv_buffer_free_bytes(hsfv_allocator_t *allocator, hsfv_buffer_t *buf);
-hsfv_err_t htsv_buffer_ensure_unused_bytes(hsfv_allocator_t *allocator,
-                                           hsfv_buffer_t *buf, size_t len);
-hsfv_err_t htsv_buffer_ensure_append_byte(hsfv_allocator_t *allocator,
-                                          hsfv_buffer_t *buf, const char src);
-hsfv_err_t htsv_buffer_ensure_append_bytes(hsfv_allocator_t *allocator,
-                                           hsfv_buffer_t *buf, const char *src,
+hsfv_err_t htsv_buffer_alloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
+                             size_t capacity);
+hsfv_err_t htsv_buffer_realloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
+                               size_t capacity);
+void htsv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator);
+hsfv_err_t htsv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf,
+                                           hsfv_allocator_t *allocator,
                                            size_t len);
+hsfv_err_t htsv_buffer_append_byte(hsfv_buffer_t *buf,
+                                   hsfv_allocator_t *allocator, const char src);
+hsfv_err_t htsv_buffer_append_bytes(hsfv_buffer_t *buf,
+                                    hsfv_allocator_t *allocator,
+                                    const char *src, size_t len);
 
 /* Bare Item */
 

@@ -193,7 +193,7 @@ hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
   hsfv_buffer_t buf;
   char c;
 
-  err = htsv_buffer_alloc_bytes(allocator, &buf, STRING_INITIAL_CAPACITY);
+  err = htsv_buffer_alloc(&buf, allocator, STRING_INITIAL_CAPACITY);
   if (err) {
     return err;
   }
@@ -217,7 +217,7 @@ hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
         err = HSFV_ERR_INVALID;
         goto error;
       }
-      err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+      err = htsv_buffer_append_byte(&buf, allocator, c);
       if (err) {
         goto error;
       }
@@ -233,7 +233,7 @@ hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
       err = HSFV_ERR_INVALID;
       goto error;
     } else {
-      err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+      err = htsv_buffer_append_byte(&buf, allocator, c);
       if (err) {
         goto error;
       }
@@ -243,7 +243,7 @@ hsfv_err_t hsfv_parse_string(hsfv_allocator_t *allocator, const char *input,
   err = HSFV_ERR_EOF;
 
 error:
-  htsv_buffer_free_bytes(allocator, &buf);
+  htsv_buffer_deinit(&buf, allocator);
   return err;
 }
 
@@ -256,7 +256,7 @@ hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
   hsfv_buffer_t buf;
   char c;
 
-  err = htsv_buffer_alloc_bytes(allocator, &buf, TOKEN_INITIAL_CAPACITY);
+  err = htsv_buffer_alloc(&buf, allocator, TOKEN_INITIAL_CAPACITY);
   if (err) {
     return err;
   }
@@ -271,7 +271,7 @@ hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
     err = HSFV_ERR_INVALID;
     goto error;
   }
-  err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+  err = htsv_buffer_append_byte(&buf, allocator, c);
   if (err) {
     goto error;
   }
@@ -283,7 +283,7 @@ hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
       break;
     }
 
-    err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+    err = htsv_buffer_append_byte(&buf, allocator, c);
     if (err) {
       goto error;
     }
@@ -298,7 +298,7 @@ hsfv_err_t hsfv_parse_token(hsfv_allocator_t *allocator, const char *input,
   return HSFV_OK;
 
 error:
-  htsv_buffer_free_bytes(allocator, &buf);
+  htsv_buffer_deinit(&buf, allocator);
   return err;
 }
 
@@ -311,7 +311,7 @@ hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
   hsfv_buffer_t buf;
   char c;
 
-  err = htsv_buffer_alloc_bytes(allocator, &buf, KEY_INITIAL_CAPACITY);
+  err = htsv_buffer_alloc(&buf, allocator, KEY_INITIAL_CAPACITY);
   if (err) {
     return err;
   }
@@ -326,7 +326,7 @@ hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
     err = HSFV_ERR_INVALID;
     goto error;
   }
-  err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+  err = htsv_buffer_append_byte(&buf, allocator, c);
   if (err) {
     goto error;
   }
@@ -338,7 +338,7 @@ hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
       break;
     }
 
-    err = htsv_buffer_ensure_append_byte(allocator, &buf, c);
+    err = htsv_buffer_append_byte(&buf, allocator, c);
     if (err) {
       goto error;
     }
@@ -352,7 +352,7 @@ hsfv_err_t hsfv_parse_key(hsfv_allocator_t *allocator, const char *input,
   return HSFV_OK;
 
 error:
-  htsv_buffer_free_bytes(allocator, &buf);
+  htsv_buffer_deinit(&buf, allocator);
   return err;
 }
 
