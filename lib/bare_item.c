@@ -43,6 +43,8 @@ bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
 
 void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
                            hsfv_allocator_t *allocator) {
+  printf("hsfv_bare_item_deinit start self=%p, type=%d\n", bare_item,
+         bare_item->type);
   switch (bare_item->type) {
   case HSFV_BARE_ITEM_TYPE_STRING:
     hsfv_string_deinit(&bare_item->string, allocator);

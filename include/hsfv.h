@@ -208,6 +208,7 @@ typedef struct st_hsfv_dict_t {
   size_t capacity;
 } hsfv_dict_t;
 
+bool hsfv_list_eq(const hsfv_list_t *self, const hsfv_list_t *other);
 bool hsfv_inner_list_eq(const hsfv_inner_list_t *self,
                         const hsfv_inner_list_t *other);
 bool hsfv_item_eq(const hsfv_item_t *self, const hsfv_item_t *other);
@@ -216,6 +217,7 @@ bool hsfv_parameter_eq(const hsfv_parameter_t *self,
 bool hsfv_parameters_eq(const hsfv_parameters_t *self,
                         const hsfv_parameters_t *other);
 
+void hsfv_list_deinit(hsfv_list_t *self, hsfv_allocator_t *allocator);
 void hsfv_inner_list_deinit(hsfv_inner_list_t *self,
                             hsfv_allocator_t *allocator);
 void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator);
@@ -226,6 +228,9 @@ void hsfv_parameter_deinit(hsfv_parameter_t *parameter,
 void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
                            hsfv_allocator_t *allocator);
 
+hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator,
+                           const char *input, const char *input_end,
+                           const char **out_rest);
 hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list,
                                  hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest);
