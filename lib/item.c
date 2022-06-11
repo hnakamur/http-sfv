@@ -6,8 +6,8 @@ bool hsfv_item_eq(const hsfv_item_t *self, const hsfv_item_t *other) {
 }
 
 void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator) {
-  hsfv_bare_item_deinit(allocator, &item->bare_item);
-  hsfv_parameters_deinit(allocator, &item->parameters);
+  hsfv_bare_item_deinit(&item->bare_item, allocator);
+  hsfv_parameters_deinit(&item->parameters, allocator);
 }
 
 hsfv_err_t hsfv_parse_item(hsfv_allocator_t *allocator, const char *input,
@@ -33,6 +33,6 @@ hsfv_err_t hsfv_parse_item(hsfv_allocator_t *allocator, const char *input,
   return HSFV_OK;
 
 error:
-  hsfv_bare_item_deinit(allocator, &item->bare_item);
+  hsfv_bare_item_deinit(&item->bare_item, allocator);
   return err;
 }

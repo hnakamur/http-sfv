@@ -129,7 +129,7 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
     want_s.base = want;                                                        \
     want_s.len = strlen(want);                                                 \
     CHECK(hsfv_string_eq(&item.string, &want_s));                              \
-    hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
+    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
   }
 
   OK_HELPER("no escape", "\"foo\"", "foo");
@@ -176,7 +176,7 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
     want_t.base = want;                                                        \
     want_t.len = strlen(want);                                                 \
     CHECK(hsfv_token_eq(&item.token, &want_t));                                \
-    hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
+    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
   }
 
   OK_HELPER("single character", "t", "t");
@@ -219,7 +219,7 @@ TEST_CASE("binary can be parsed", "[bare_item][binary]") {
     want_b.base = want;                                                        \
     want_b.len = strlen(want);                                                 \
     CHECK(hsfv_bytes_eq(&item.bytes, &want_b));                                \
-    hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
+    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
   }
 
   OK_HELPER("case 1", ":YWJj:", "abc");
@@ -265,7 +265,7 @@ TEST_CASE("key can be parsed", "[key]") {
     want_k.base = want;                                                        \
     want_k.len = strlen(want);                                                 \
     CHECK(hsfv_key_eq(&key, &want_k));                                         \
-    hsfv_iovec_const_free(&htsv_global_allocator, &key);                       \
+    hsfv_key_deinit(&key, &htsv_global_allocator);                             \
   }
 
   OK_HELPER("single character", "t", "t");
@@ -304,7 +304,7 @@ TEST_CASE("bare item can be parsed", "[bare_item]") {
                                &item, &rest);                                  \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_bare_item_eq(&item, &want));                                    \
-    hsfv_bare_item_deinit(&htsv_global_allocator, &item);                      \
+    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
   }
 
   OK_HELPER(

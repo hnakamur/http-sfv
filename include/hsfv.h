@@ -56,13 +56,13 @@ typedef struct st_hsfv_iovec_const_t {
   size_t len;
 } hsfv_iovec_const_t;
 
-static inline void hsfv_iovec_free(hsfv_allocator_t *allocator,
-                                   hsfv_iovec_t *v) {
+static inline void hsfv_iovec_deinit(hsfv_iovec_t *v,
+                                     hsfv_allocator_t *allocator) {
   allocator->free(allocator, (void *)v->base);
 }
 
-static inline void hsfv_iovec_const_free(hsfv_allocator_t *allocator,
-                                         hsfv_iovec_const_t *v) {
+static inline void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v,
+                                           hsfv_allocator_t *allocator) {
   allocator->free(allocator, (void *)v->base);
 }
 
@@ -81,10 +81,10 @@ static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self,
 #define hsfv_token_eq hsfv_iovec_const_eq
 #define hsfv_bytes_eq hsfv_iovec_const_eq
 
-#define hsfv_key_deinit hsfv_iovec_const_free
-#define hsfv_string_deinit hsfv_iovec_const_free
-#define hsfv_token_deinit hsfv_iovec_const_free
-#define hsfv_bytes_deinit hsfv_iovec_const_free
+#define hsfv_key_deinit hsfv_iovec_const_deinit
+#define hsfv_string_deinit hsfv_iovec_const_deinit
+#define hsfv_token_deinit hsfv_iovec_const_deinit
+#define hsfv_bytes_deinit hsfv_iovec_const_deinit
 
 typedef struct st_hsfv_buffer_t {
   hsfv_iovec_t bytes;
@@ -129,8 +129,6 @@ typedef struct st_hsfv_bare_item_t {
 
 bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
                        const hsfv_bare_item_t *other);
-void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
-                           hsfv_bare_item_t *bare_item);
 
 /* Parameters */
 
@@ -220,12 +218,12 @@ typedef struct st_hsfv_dict_t {
 bool hsfv_item_eq(const hsfv_item_t *self, const hsfv_item_t *other);
 
 void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator);
-void hsfv_parameters_deinit(hsfv_allocator_t *allocator,
-                            hsfv_parameters_t *parameters);
-void hsfv_parameter_deinit(hsfv_allocator_t *allocator,
-                           hsfv_parameter_t *parameter);
-void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
-                           hsfv_bare_item_t *bare_item);
+void hsfv_parameters_deinit(hsfv_parameters_t *parameters,
+                            hsfv_allocator_t *allocator);
+void hsfv_parameter_deinit(hsfv_parameter_t *parameter,
+                           hsfv_allocator_t *allocator);
+void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
+                           hsfv_allocator_t *allocator);
 
 hsfv_err_t hsfv_parse_item(hsfv_allocator_t *allocator, const char *input,
                            const char *input_end, hsfv_item_t *item,

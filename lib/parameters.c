@@ -21,16 +21,16 @@ bool hsfv_parameters_eq(const hsfv_parameters_t *self,
   return true;
 }
 
-void hsfv_parameter_deinit(hsfv_allocator_t *allocator,
-                           hsfv_parameter_t *parameter) {
-  hsfv_iovec_const_free(allocator, &parameter->key);
-  hsfv_bare_item_deinit(allocator, &parameter->value);
+void hsfv_parameter_deinit(hsfv_parameter_t *parameter,
+                           hsfv_allocator_t *allocator) {
+  hsfv_key_deinit(&parameter->key, allocator);
+  hsfv_bare_item_deinit(&parameter->value, allocator);
 }
 
-void hsfv_parameters_deinit(hsfv_allocator_t *allocator,
-                            hsfv_parameters_t *parameters) {
+void hsfv_parameters_deinit(hsfv_parameters_t *parameters,
+                            hsfv_allocator_t *allocator) {
   for (size_t i = 0; i < parameters->len; i++) {
-    hsfv_parameter_deinit(allocator, &parameters->params[i]);
+    hsfv_parameter_deinit(&parameters->params[i], allocator);
   }
   allocator->free(allocator, parameters->params);
 }
@@ -130,12 +130,12 @@ hsfv_err_t hsfv_parse_parameters(hsfv_allocator_t *allocator, const char *input,
   return HSFV_OK;
 
 error1:
-  hsfv_bare_item_deinit(allocator, &param.value);
+  hsfv_bare_item_deinit(&param.value, allocator);
 
 error2:
-  hsfv_key_deinit(allocator, &param.key);
+  hsfv_key_deinit(&param.key, allocator);
 
 error3:
-  hsfv_parameters_deinit(allocator, &temp);
+  hsfv_parameters_deinit(&temp, allocator);
   return err;
 }

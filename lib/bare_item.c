@@ -41,17 +41,17 @@ bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
   }
 }
 
-void hsfv_bare_item_deinit(hsfv_allocator_t *allocator,
-                           hsfv_bare_item_t *bare_item) {
+void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
+                           hsfv_allocator_t *allocator) {
   switch (bare_item->type) {
   case HSFV_BARE_ITEM_TYPE_STRING:
-    allocator->free(allocator, (void *)bare_item->string.base);
+    hsfv_string_deinit(&bare_item->string, allocator);
     break;
   case HSFV_BARE_ITEM_TYPE_TOKEN:
-    allocator->free(allocator, (void *)bare_item->token.base);
+    hsfv_token_deinit(&bare_item->token, allocator);
     break;
   case HSFV_BARE_ITEM_TYPE_BINARY:
-    allocator->free(allocator, (void *)bare_item->bytes.base);
+    hsfv_bytes_deinit(&bare_item->bytes, allocator);
     break;
   }
 }

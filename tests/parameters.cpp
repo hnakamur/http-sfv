@@ -13,7 +13,7 @@ TEST_CASE("parameters can be parsed", "[parameters]") {
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_parameters_eq(&params, want));                                  \
     CHECK(rest == input + want_len);                                           \
-    hsfv_parameters_deinit(&htsv_global_allocator, &params);                   \
+    hsfv_parameters_deinit(&params, &htsv_global_allocator);                   \
   }
 
   hsfv_parameter_t want_params[2];
