@@ -67,9 +67,7 @@ hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list,
   inner_list->parameters.capacity = 0;
 
   while (input < input_end) {
-    while (input < input_end && *input == ' ') {
-      ++input;
-    }
+    hsfv_skip_sp(input, input_end);
 
     if (input == input_end) {
       err = HSFV_ERR_EOF;

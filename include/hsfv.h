@@ -258,6 +258,16 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,
                           const char **out_rest);
 
+#define hsfv_skip_sp(input, input_end)                                         \
+  while ((input) < (input_end) && *(input) == ' ') {                           \
+    ++(input);                                                                 \
+  }
+
+#define hsfv_skip_ows(input, input_end)                                        \
+  while ((input) < (input_end) && (*(input) == ' ' || *(input) == '\t')) {     \
+    ++(input);                                                                 \
+  }
+
 #include "hsfv/base64.h"
 #include "hsfv/ctype.h"
 

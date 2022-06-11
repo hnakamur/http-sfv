@@ -91,9 +91,7 @@ hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters,
     }
     ++input;
 
-    while (input < input_end && *input == ' ') {
-      ++input;
-    }
+    hsfv_skip_sp(input, input_end);
 
     err = hsfv_parse_key(&param.key, allocator, input, input_end, &input);
     if (err) {
