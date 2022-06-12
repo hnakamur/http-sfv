@@ -39,10 +39,8 @@ hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value,
                                   const char **out_rest) {
   hsfv_err_t err;
 
-  for (const char *p = input; p < input_end; p++) {
-    if (!hsfv_is_ascii(*p)) {
-      return HSFV_ERR_INVALID;
-    }
+  if (!hsfv_is_ascii_string(input, input_end)) {
+    return HSFV_ERR_INVALID;
   }
 
   hsfv_skip_sp(input, input_end);

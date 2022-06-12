@@ -1,11 +1,12 @@
 #include "hsfv.h"
 
 /*
- * TCHAR is defined at https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
+ * extended_tchar = tchar / ":" / "/"
+ * tchar is defined at https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
  */
-const char *hsfv_token_char_map =
+const char *hsfv_extended_tchar_map =
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-    "\0\1\0\1\1\1\1\1\0\0\1\1\0\1\1\0\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0\0"
+    "\0\1\0\1\1\1\1\1\0\0\1\1\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0"
     "\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\1\1"
     "\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\1\0\1\0"
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -279,7 +280,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
 
   for (; input < input_end; ++input) {
     c = *input;
-    if (!hsfv_is_token_char(c)) {
+    if (!hsfv_is_extended_tchar(c)) {
       break;
     }
 

@@ -14,8 +14,18 @@ extern "C" {
    (c) == '.' || (c) == '*')
 #define hsfv_is_ascii(c) ((c) <= '\x7f')
 
-extern const char *hsfv_token_char_map;
-#define hsfv_is_token_char(c) hsfv_token_char_map[(unsigned char)(c)]
+static inline bool hsfv_is_ascii_string(const char *input,
+                                        const char *input_end) {
+  for (; input < input_end; ++input) {
+    if (!hsfv_is_ascii(*input)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+extern const char *hsfv_extended_tchar_map;
+#define hsfv_is_extended_tchar(c) hsfv_extended_tchar_map[(unsigned char)(c)]
 
 #ifdef __cplusplus
 }

@@ -179,6 +179,7 @@ TEST_CASE("parse token", "[parse][token]") {
   OK_HELPER("multipel characters", "tok", "tok");
   OK_HELPER("starts with asterisk", "*t!o&k", "*t!o&k");
   OK_HELPER("starts with alpha followed with equal sign", "t=", "t");
+  OK_HELPER("contains colon and slash", "a/b:c", "a/b:c");
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                        \
