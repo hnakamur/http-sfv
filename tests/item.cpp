@@ -9,6 +9,7 @@ TEST_CASE("serialize item", "[serialze][item]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_item(&item, &hsfv_global_allocator, &buf);            \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }

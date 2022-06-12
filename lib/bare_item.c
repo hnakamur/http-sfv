@@ -148,7 +148,7 @@ hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
     }
   }
 
-  size_t len = end - tmp;
+  size_t len = end + 1 - tmp;
   hsfv_err_t err = hsfv_buffer_ensure_unused_bytes(dest, allocator, len);
   if (err) {
     return err;

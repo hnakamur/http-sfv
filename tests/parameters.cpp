@@ -9,6 +9,7 @@ TEST_CASE("serialize parameters", "[serialze][parameters]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_parameters(&params, &hsfv_global_allocator, &buf);    \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }

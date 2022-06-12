@@ -48,6 +48,40 @@ void hsfv_list_deinit(hsfv_list_t *self, hsfv_allocator_t *allocator) {
   allocator->free(allocator, self->members);
 }
 
+hsfv_err_t hsfv_serialize_list(const hsfv_list_t *list,
+                               hsfv_allocator_t *allocator,
+                               hsfv_buffer_t *dest) {
+  hsfv_err_t err;
+  const hsfv_list_member_t *member;
+
+  for (size_t i = 0; i < list->len; ++i) {
+    if (i > 0) {
+      err = hsfv_buffer_append_bytes(dest, allocator, ", ", 2);
+      if (err) {
+        return err;
+      }
+    }
+
+    member = &list->members[i];
+    switch (member->type) {
+    case HSFV_LIST_MEMBER_TYPE_ITEM:
+      err = hsfv_serialize_item(&member->item, allocator, dest);
+      if (err) {
+        return err;
+      }
+      break;
+    case HSFV_LIST_MEMBER_TYPE_INNER_LIST:
+      err = hsfv_serialize_inner_list(&member->inner_list, allocator, dest);
+      if (err) {
+        return err;
+      }
+      break;
+    }
+  }
+
+  return HSFV_OK;
+}
+
 static hsfv_err_t hsfv_list_append(hsfv_list_t *self,
                                    hsfv_allocator_t *allocator,
                                    const hsfv_list_member_t *member) {

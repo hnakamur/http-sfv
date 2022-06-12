@@ -10,6 +10,7 @@ TEST_CASE("serialize boolean", "[serialize][boolean]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_boolean(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -61,6 +62,7 @@ TEST_CASE("serialize integer", "[serialize][integer]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -133,6 +135,7 @@ TEST_CASE("serialize decimal", "[serialize][decimal]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -142,6 +145,7 @@ TEST_CASE("serialize decimal", "[serialize][decimal]") {
   OK_HELPER("case 3", 12.0004, "12.0");
   OK_HELPER("case 4", 12.3456, "12.346");
   OK_HELPER("case 5", -12.3456, "-12.346");
+  OK_HELPER("case 6", 18.71, "18.71");
   OK_HELPER("min", -999999999999.999, "-999999999999.999");
   OK_HELPER("max", 999999999999.999, "999999999999.999");
 #undef OK_HELPER
@@ -211,6 +215,7 @@ TEST_CASE("serialize string", "[serialize][string]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);       \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -290,6 +295,7 @@ TEST_CASE("serialize token", "[serialize][token]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);        \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -365,6 +371,7 @@ TEST_CASE("serialize byte_seq", "[serialize][byte_seq]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_byte_seq(&input_b, &hsfv_global_allocator, &buf);     \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -429,6 +436,7 @@ TEST_CASE("serialize key", "[serialize][key]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);          \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
@@ -500,6 +508,7 @@ TEST_CASE("serialize bare_item", "[serialize][bare_item]") {
     hsfv_err_t err;                                                            \
     err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);       \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }

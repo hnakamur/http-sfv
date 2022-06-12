@@ -10,6 +10,7 @@ TEST_CASE("serialize inner_list", "[serialze][inner_list]") {
     err =                                                                      \
         hsfv_serialize_inner_list(&inner_list, &hsfv_global_allocator, &buf);  \
     CHECK(err == HSFV_OK);                                                     \
+    CHECK(buf.bytes.len == strlen(want));                                      \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }

@@ -66,7 +66,12 @@ hsfv_err_t hsfv_serialize_inner_list(const hsfv_inner_list_t *inner_list,
     }
   }
 
-  return hsfv_buffer_append_byte(dest, allocator, ')');
+  err = hsfv_buffer_append_byte(dest, allocator, ')');
+  if (err) {
+    return err;
+  }
+
+  return hsfv_serialize_parameters(&inner_list->parameters, allocator, dest);
 }
 
 hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list,
