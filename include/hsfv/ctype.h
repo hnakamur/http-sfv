@@ -9,9 +9,23 @@ extern "C" {
 #define hsfv_is_lcalpha(c) (('a' <= (c) && (c) <= 'z'))
 #define hsfv_is_alpha(c)                                                       \
   (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
-#define hsfv_is_key_char(c)                                                    \
+
+#define hsfv_is_key_leaading_char(c) (hsfv_is_lcalpha(c) || (c) == '*')
+#define hsfv_is_key_trailing_char(c)                                           \
   (hsfv_is_lcalpha(c) || hsfv_is_digit(c) || (c) == '_' || (c) == '-' ||       \
    (c) == '.' || (c) == '*')
+
+#define hsfv_is_token_leading_char(c) (hsfv_is_alpha(c) || (c) == '*')
+
+/*
+ * token_trailing_char = tchar / ":" / "/"
+ * tchar is defined at
+ * https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
+ */
+extern const char *hsfv_token_trailing_char_map;
+#define hsfv_is_trailing_token_char(c)                                         \
+  hsfv_token_trailing_char_map[(unsigned char)(c)]
+
 #define hsfv_is_ascii(c) ((c) <= '\x7f')
 
 static inline bool hsfv_is_ascii_string(const char *input,
@@ -23,11 +37,6 @@ static inline bool hsfv_is_ascii_string(const char *input,
   }
   return true;
 }
-
-#define hsfv_is_token_lead_char(c) (hsfv_is_alpha(c) || (c) == '*')
-
-extern const char *hsfv_extended_tchar_map;
-#define hsfv_is_extended_tchar(c) hsfv_extended_tchar_map[(unsigned char)(c)]
 
 #ifdef __cplusplus
 }

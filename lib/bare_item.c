@@ -1,10 +1,6 @@
 #include "hsfv.h"
 
-/*
- * extended_tchar = tchar / ":" / "/"
- * tchar is defined at https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
- */
-const char *hsfv_extended_tchar_map =
+const char *hsfv_token_trailing_char_map =
     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
     "\0\1\0\1\1\1\1\1\0\0\1\1\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0"
     "\0\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\1\1"
@@ -268,7 +264,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
   }
 
   c = *input;
-  if (!hsfv_is_token_lead_char(c)) {
+  if (!hsfv_is_token_leading_char(c)) {
     err = HSFV_ERR_INVALID;
     goto error;
   }
@@ -280,7 +276,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
 
   for (; input < input_end; ++input) {
     c = *input;
-    if (!hsfv_is_extended_tchar(c)) {
+    if (!hsfv_is_trailing_token_char(c)) {
       break;
     }
 
@@ -323,7 +319,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
   }
 
   c = *input;
-  if (!hsfv_is_lcalpha(c) && c != '*') {
+  if (!hsfv_is_key_leaading_char(c)) {
     err = HSFV_ERR_INVALID;
     goto error;
   }
@@ -335,7 +331,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
 
   for (; input < input_end; ++input) {
     c = *input;
-    if (!hsfv_is_key_char(c)) {
+    if (!hsfv_is_key_trailing_char(c)) {
       break;
     }
 
@@ -433,7 +429,7 @@ hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
     if (c == '-' || hsfv_is_digit(c)) {
       return hsfv_parse_number(item, input, input_end, out_rest);
     }
-    if (hsfv_is_alpha(c) || c == '*') {
+    if (hsfv_is_token_leading_char(c)) {
       return hsfv_parse_token(item, allocator, input, input_end, out_rest);
     }
     return HSFV_ERR_INVALID;
@@ -483,11 +479,11 @@ hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
   hsfv_err_t err;
 
   p = token->base;
-  if (!hsfv_is_token_lead_char(*p)) {
+  if (!hsfv_is_token_leading_char(*p)) {
     return HSFV_ERR_INVALID;
   }
   for (++p; p < token->base + token->len; ++p) {
-    if (!hsfv_is_extended_tchar(*p)) {
+    if (!hsfv_is_trailing_token_char(*p)) {
       return HSFV_ERR_INVALID;
     }
   }
