@@ -1,6 +1,89 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
+TEST_CASE("serialize inner_list", "[serialze][inner_list]") {
+#define OK_HELPER(section, input_literal, want)                                \
+  SECTION("section") {                                                         \
+    hsfv_inner_list_t inner_list = input_literal;                              \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err =                                                                      \
+        hsfv_serialize_inner_list(&inner_list, &hsfv_global_allocator, &buf);  \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
+  }
+
+  hsfv_item_t items[2];
+
+  hsfv_parameter_t params0params[2];
+  params0params[0] = hsfv_parameter_t{
+      .key = hsfv_key_t{.base = "a", .len = 1},
+      .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                .boolean = true},
+  };
+  params0params[1] = hsfv_parameter_t{
+      .key = hsfv_key_t{.base = "b", .len = 1},
+      .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER,
+                                .integer = 1936},
+  };
+  items[0] = hsfv_item_t{
+      .bare_item =
+          hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING,
+                           .string = hsfv_string_t{.base = "foo", .len = 3}},
+      .parameters = {.params = &params0params[0], .len = 2, .capacity = 2},
+  };
+
+  char bytes[4];
+  bytes[0] = '\1';
+  bytes[1] = '\3';
+  bytes[2] = '\1';
+  bytes[3] = '\2';
+  hsfv_parameter_t param1 = hsfv_parameter_t{
+      .key = hsfv_key_t{.base = "y", .len = 1},
+      .value =
+          hsfv_bare_item_t{
+              .type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
+              .byte_seq = hsfv_byte_seq_t{.base = &bytes[0], .len = 4},
+          },
+  };
+  items[1] = hsfv_item_t{
+      .bare_item =
+          hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN,
+                           .string = hsfv_token_t{.base = "bar", .len = 3}},
+      .parameters =
+          hsfv_parameters_t{.params = &param1, .len = 1, .capacity = 1},
+  };
+
+  hsfv_parameter_t param = hsfv_parameter_t{
+      .key = hsfv_key_t{.base = "d", .len = 1},
+      .value =
+          hsfv_bare_item_t{
+              .type = HSFV_BARE_ITEM_TYPE_DECIMAL,
+              .decimal = 18.71,
+          },
+  };
+  hsfv_inner_list_t want = hsfv_inner_list_t{
+      .items = &items[0],
+      .len = 2,
+      .capacity = 2,
+      .parameters =
+          hsfv_parameters_t{.params = &param, .len = 1, .capacity = 1},
+  };
+
+  OK_HELPER(
+      "case 1",
+      (hsfv_inner_list_t{
+          .items = &items[0],
+          .len = 2,
+          .capacity = 2,
+          .parameters =
+              hsfv_parameters_t{.params = &param, .len = 1, .capacity = 1},
+      }),
+      "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71");
+#undef OK_HELPER
+}
+
 TEST_CASE("parse inner_list", "[parse][inner_list]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \

@@ -42,6 +42,33 @@ static hsfv_err_t hsfv_inner_list_append(hsfv_inner_list_t *self,
   return HSFV_OK;
 }
 
+hsfv_err_t hsfv_serialize_inner_list(const hsfv_inner_list_t *inner_list,
+                                     hsfv_allocator_t *allocator,
+                                     hsfv_buffer_t *dest) {
+  hsfv_err_t err;
+
+  err = hsfv_buffer_append_byte(dest, allocator, '(');
+  if (err) {
+    return err;
+  }
+
+  for (size_t i = 0; i < inner_list->len; ++i) {
+    if (i > 0) {
+      err = hsfv_buffer_append_byte(dest, allocator, ' ');
+      if (err) {
+        return err;
+      }
+    }
+
+    err = hsfv_serialize_item(&inner_list->items[i], allocator, dest);
+    if (err) {
+      return err;
+    }
+  }
+
+  return hsfv_buffer_append_byte(dest, allocator, ')');
+}
+
 hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list,
                                  hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest) {
