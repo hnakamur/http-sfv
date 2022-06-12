@@ -10,6 +10,24 @@ void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator) {
   hsfv_parameters_deinit(&item->parameters, allocator);
 }
 
+hsfv_err_t hsfv_serialize_item(const hsfv_item_t *item,
+                               hsfv_allocator_t *allocator,
+                               hsfv_buffer_t *dest) {
+  hsfv_err_t err;
+
+  err = hsfv_serialize_bare_item(&item->bare_item, allocator, dest);
+  if (err) {
+    return err;
+  }
+
+  err = hsfv_serialize_parameters(&item->parameters, allocator, dest);
+  if (err) {
+    return err;
+  }
+
+  return HSFV_OK;
+}
+
 hsfv_err_t hsfv_parse_item(hsfv_item_t *item, hsfv_allocator_t *allocator,
                            const char *input, const char *input_end,
                            const char **out_rest) {
