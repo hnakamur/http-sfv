@@ -301,11 +301,13 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
 hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
                                hsfv_allocator_t *allocator, const char *input,
                                const char *input_end, const char **out_rest);
-
 hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,
                           const char **out_rest);
 
+hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary,
+                                     hsfv_allocator_t *allocator,
+                                     hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_list(const hsfv_list_t *list,
                                hsfv_allocator_t *allocator,
                                hsfv_buffer_t *dest);

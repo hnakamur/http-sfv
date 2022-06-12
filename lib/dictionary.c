@@ -93,6 +93,59 @@ size_t hsfv_dictionary_index_of(const hsfv_dictionary_t *dictionary,
   return -1;
 }
 
+hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary,
+                                     hsfv_allocator_t *allocator,
+                                     hsfv_buffer_t *dest) {
+  hsfv_err_t err;
+  const hsfv_dict_member_t *member;
+
+  for (size_t i = 0; i < dictionary->len; ++i) {
+    if (i > 0) {
+      err = hsfv_buffer_append_bytes(dest, allocator, ", ", 2);
+      if (err) {
+        return err;
+      }
+    }
+
+    member = &dictionary->members[i];
+    err = hsfv_serialize_key(&member->key, allocator, dest);
+    if (err) {
+      return err;
+    }
+    if (member->value.type == HSFV_DICT_MEMBER_TYPE_ITEM &&
+        member->value.item.bare_item.type == HSFV_BARE_ITEM_TYPE_BOOLEAN &&
+        member->value.item.bare_item.boolean) {
+      err = hsfv_serialize_parameters(&member->parameters, allocator, dest);
+      if (err) {
+        return err;
+      }
+    } else {
+      err = hsfv_buffer_append_byte(dest, allocator, '=');
+      if (err) {
+        return err;
+      }
+
+      switch (member->value.type) {
+      case HSFV_DICT_MEMBER_TYPE_ITEM:
+        err = hsfv_serialize_item(&member->value.item, allocator, dest);
+        if (err) {
+          return err;
+        }
+        break;
+      case HSFV_DICT_MEMBER_TYPE_INNER_LIST:
+        err = hsfv_serialize_inner_list(&member->value.inner_list, allocator,
+                                        dest);
+        if (err) {
+          return err;
+        }
+        break;
+      }
+    }
+  }
+
+  return HSFV_OK;
+}
+
 hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary,
                                  hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest) {
