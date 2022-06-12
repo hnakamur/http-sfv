@@ -376,3 +376,35 @@ TEST_CASE("serialize byte_seq", "[serialize][byte_seq]") {
   OK_HELPER("case 3", "any carnal pleasur", ":YW55IGNhcm5hbCBwbGVhc3Vy:");
 #undef OK_HELPER
 }
+
+TEST_CASE("serialize token", "[serialize][token]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_token_t input_t =                                                     \
+        (hsfv_token_t){.base = input, .len = strlen(input)};                   \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_token(&buf, &htsv_global_allocator, &input_t);        \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
+    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+  }
+
+  OK_HELPER("case 1", "*t!o&k", "*t!o&k");
+  OK_HELPER("case 2", "a/b:c", "a/b:c");
+#undef OK_HELPER
+
+#define NG_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_token_t input_t =                                                     \
+        (hsfv_token_t){.base = input, .len = strlen(input)};                   \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_token(&buf, &htsv_global_allocator, &input_t);        \
+    CHECK(err == want);                                                        \
+  }
+
+  NG_HELPER("case 1", "/", HSFV_ERR_INVALID);
+  NG_HELPER("case 2", "a?", HSFV_ERR_INVALID);
+#undef NG_HELPER
+}

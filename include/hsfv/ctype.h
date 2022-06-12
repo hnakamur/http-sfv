@@ -24,6 +24,8 @@ static inline bool hsfv_is_ascii_string(const char *input,
   return true;
 }
 
+#define hsfv_is_token_lead_char(c) (hsfv_is_alpha(c) || (c) == '*')
+
 extern const char *hsfv_extended_tchar_map;
 #define hsfv_is_extended_tchar(c) hsfv_extended_tchar_map[(unsigned char)(c)]
 

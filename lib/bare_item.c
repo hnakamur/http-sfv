@@ -268,7 +268,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
   }
 
   c = *input;
-  if (!hsfv_is_alpha(c) && c != '*') {
+  if (!hsfv_is_token_lead_char(c)) {
     err = HSFV_ERR_INVALID;
     goto error;
   }
@@ -473,5 +473,31 @@ hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
   dest->bytes.len += encoded_len;
 
   htsv_buffer_append_byte_unsafe(dest, ':');
+  return HSFV_OK;
+}
+
+hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
+                                hsfv_allocator_t *allocator,
+                                const hsfv_token_t *token) {
+  const char *p;
+  hsfv_err_t err;
+
+  p = token->base;
+  if (!hsfv_is_token_lead_char(*p)) {
+    return HSFV_ERR_INVALID;
+  }
+  for (++p; p < token->base + token->len; ++p) {
+    if (!hsfv_is_extended_tchar(*p)) {
+      return HSFV_ERR_INVALID;
+    }
+  }
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator, token->len);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_bytes_unsafe(dest, token->base, token->len);
+
   return HSFV_OK;
 }
