@@ -35,6 +35,41 @@ void hsfv_parameters_deinit(hsfv_parameters_t *parameters,
   allocator->free(allocator, parameters->params);
 }
 
+hsfv_err_t htsv_serialize_parameters(const hsfv_parameters_t *parameters,
+                                     hsfv_allocator_t *allocator,
+                                     hsfv_buffer_t *dest) {
+  hsfv_err_t err;
+  const hsfv_parameter_t *param;
+  for (size_t i = 0; i < parameters->len; ++i) {
+    err = htsv_buffer_append_byte(dest, allocator, ';');
+    if (err) {
+      return err;
+    }
+
+    param = &parameters->params[i];
+    err = htsv_serialize_key(&param->key, allocator, dest);
+    if (err) {
+      return err;
+    }
+
+    if (param->value.type == HSFV_BARE_ITEM_TYPE_BOOLEAN &&
+        param->value.boolean) {
+      continue;
+    }
+
+    err = htsv_buffer_append_byte(dest, allocator, '=');
+    if (err) {
+      return err;
+    }
+
+    err = htsv_serialize_bare_item(&param->value, allocator, dest);
+    if (err) {
+      return err;
+    }
+  }
+  return HSFV_OK;
+}
+
 static hsfv_err_t hsfv_parameters_append(hsfv_allocator_t *allocator,
                                          hsfv_parameters_t *parameters,
                                          hsfv_parameter_t *param) {

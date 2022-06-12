@@ -306,6 +306,9 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,
                           const char **out_rest);
 
+hsfv_err_t htsv_serialize_parameters(const hsfv_parameters_t *parameters,
+                                     hsfv_allocator_t *allocator,
+                                     hsfv_buffer_t *dest);
 hsfv_err_t htsv_serialize_key(const hsfv_key_t *key,
                               hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t htsv_serialize_bare_item(const hsfv_bare_item_t *item,
