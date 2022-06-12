@@ -37,7 +37,7 @@ struct st_hsfv_allocator_t {
   void (*free)(hsfv_allocator_t *self, void *ptr);
 };
 
-extern hsfv_allocator_t htsv_global_allocator;
+extern hsfv_allocator_t hsfv_global_allocator;
 
 #define hsfv_align(d, a) (((d) + (a - 1)) & ~(a - 1))
 #define hsfv_roundup(d, a) (((d) + (a - 1)) / (a) * (a))
@@ -92,25 +92,25 @@ typedef struct st_hsfv_buffer_t {
   size_t capacity;
 } hsfv_buffer_t;
 
-hsfv_err_t htsv_buffer_alloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_buffer_alloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
                              size_t capacity);
-hsfv_err_t htsv_buffer_realloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_buffer_realloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
                                size_t capacity);
-void htsv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator);
-hsfv_err_t htsv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf,
+void hsfv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator);
+hsfv_err_t hsfv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf,
                                            hsfv_allocator_t *allocator,
                                            size_t len);
-hsfv_err_t htsv_buffer_append_byte(hsfv_buffer_t *buf,
+hsfv_err_t hsfv_buffer_append_byte(hsfv_buffer_t *buf,
                                    hsfv_allocator_t *allocator, const char src);
-hsfv_err_t htsv_buffer_append_bytes(hsfv_buffer_t *buf,
+hsfv_err_t hsfv_buffer_append_bytes(hsfv_buffer_t *buf,
                                     hsfv_allocator_t *allocator,
                                     const char *src, size_t len);
-static inline void htsv_buffer_append_byte_unsafe(hsfv_buffer_t *buf,
+static inline void hsfv_buffer_append_byte_unsafe(hsfv_buffer_t *buf,
                                                   const char src) {
   buf->bytes.base[buf->bytes.len] = src;
   buf->bytes.len++;
 }
-static inline void htsv_buffer_append_bytes_unsafe(hsfv_buffer_t *buf,
+static inline void hsfv_buffer_append_bytes_unsafe(hsfv_buffer_t *buf,
                                                    const char *src,
                                                    size_t len) {
   memcpy(buf->bytes.base + buf->bytes.len, src, len);
@@ -306,28 +306,28 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,
                           const char **out_rest);
 
-hsfv_err_t htsv_serialize_parameters(const hsfv_parameters_t *parameters,
+hsfv_err_t hsfv_serialize_parameters(const hsfv_parameters_t *parameters,
                                      hsfv_allocator_t *allocator,
                                      hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_key(const hsfv_key_t *key,
+hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key,
                               hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_bare_item(const hsfv_bare_item_t *item,
+hsfv_err_t hsfv_serialize_bare_item(const hsfv_bare_item_t *item,
                                     hsfv_allocator_t *allocator,
                                     hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
                                   hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
+hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
                                    hsfv_allocator_t *allocator,
                                    hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_token(const hsfv_token_t *token,
+hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token,
                                 hsfv_allocator_t *allocator,
                                 hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_string(const hsfv_string_t *string,
+hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string,
                                  hsfv_allocator_t *allocator,
                                  hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
                                   hsfv_buffer_t *dest);
-hsfv_err_t htsv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
                                   hsfv_buffer_t *dest);
 
 #define hsfv_skip_sp(input, input_end)                                         \

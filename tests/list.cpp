@@ -8,12 +8,12 @@ TEST_CASE("parse list", "[parse][list]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_list(&list, &htsv_global_allocator, input, input_end,     \
+    err = hsfv_parse_list(&list, &hsfv_global_allocator, input, input_end,     \
                           &rest);                                              \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_list_eq(&list, want));                                          \
     CHECK(rest == input_end);                                                  \
-    hsfv_list_deinit(&list, &htsv_global_allocator);                           \
+    hsfv_list_deinit(&list, &hsfv_global_allocator);                           \
   }
 
   hsfv_item_t items[2];
@@ -126,7 +126,7 @@ TEST_CASE("parse list", "[parse][list]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_list(&innser_list, &htsv_global_allocator, input,         \
+    err = hsfv_parse_list(&innser_list, &hsfv_global_allocator, input,         \
                           input_end, &rest);                                   \
     CHECK(err == want);                                                        \
   }

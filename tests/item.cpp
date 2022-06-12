@@ -8,12 +8,12 @@ TEST_CASE("parse item", "[parse][item]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_item(&item, &htsv_global_allocator, input, input_end,     \
+    err = hsfv_parse_item(&item, &hsfv_global_allocator, input, input_end,     \
                           &rest);                                              \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_item_eq(&item, want));                                          \
     CHECK(rest == input + want_len);                                           \
-    hsfv_item_deinit(&item, &htsv_global_allocator);                           \
+    hsfv_item_deinit(&item, &hsfv_global_allocator);                           \
   }
 
   hsfv_parameter_t want_params[2];
@@ -51,7 +51,7 @@ TEST_CASE("parse item", "[parse][item]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_item(&item, &htsv_global_allocator, input, input_end,     \
+    err = hsfv_parse_item(&item, &hsfv_global_allocator, input, input_end,     \
                           &rest);                                              \
     CHECK(err == want);                                                        \
   }

@@ -13,7 +13,7 @@ static void global_allocator_free(hsfv_allocator_t *_self, void *ptr) {
   free(ptr);
 }
 
-hsfv_allocator_t htsv_global_allocator = {
+hsfv_allocator_t hsfv_global_allocator = {
     .alloc = global_allocator_alloc,
     .realloc = global_allocator_realloc,
     .free = global_allocator_free,

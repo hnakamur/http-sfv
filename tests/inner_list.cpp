@@ -8,12 +8,12 @@ TEST_CASE("parse inner_list", "[parse][inner_list]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_inner_list(&inner_list, &htsv_global_allocator, input,    \
+    err = hsfv_parse_inner_list(&inner_list, &hsfv_global_allocator, input,    \
                                 input_end, &rest);                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_inner_list_eq(&inner_list, want));                              \
     CHECK(rest == input_end);                                                  \
-    hsfv_inner_list_deinit(&inner_list, &htsv_global_allocator);               \
+    hsfv_inner_list_deinit(&inner_list, &hsfv_global_allocator);               \
   }
 
   hsfv_item_t items[2];
@@ -82,7 +82,7 @@ TEST_CASE("parse inner_list", "[parse][inner_list]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_inner_list(&innser_list, &htsv_global_allocator, input,   \
+    err = hsfv_parse_inner_list(&innser_list, &hsfv_global_allocator, input,   \
                                 input_end, &rest);                             \
     CHECK(err == want);                                                        \
   }

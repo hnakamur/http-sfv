@@ -8,10 +8,10 @@ TEST_CASE("serialize boolean", "[serialize][boolean]") {
   SECTION(section) {                                                           \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_boolean(input, &htsv_global_allocator, &buf);         \
+    err = hsfv_serialize_boolean(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("false", false, "?0");
@@ -59,10 +59,10 @@ TEST_CASE("serialize integer", "[serialize][integer]") {
   SECTION(section) {                                                           \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_integer(input, &htsv_global_allocator, &buf);         \
+    err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("case 1", 12, "12");
@@ -75,7 +75,7 @@ TEST_CASE("serialize integer", "[serialize][integer]") {
   SECTION(section) {                                                           \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_integer(input, &htsv_global_allocator, &buf);         \
+    err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == want);                                                        \
   }
 
@@ -131,10 +131,10 @@ TEST_CASE("serialize decimal", "[serialize][decimal]") {
   SECTION(section) {                                                           \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_decimal(input, &htsv_global_allocator, &buf);         \
+    err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("case 1", 12, "12.0");
@@ -150,7 +150,7 @@ TEST_CASE("serialize decimal", "[serialize][decimal]") {
   SECTION(section) {                                                           \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_decimal(input, &htsv_global_allocator, &buf);         \
+    err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);         \
     CHECK(err == want);                                                        \
   }
 
@@ -209,10 +209,10 @@ TEST_CASE("serialize string", "[serialize][string]") {
         (hsfv_string_t){.base = input, .len = strlen(input)};                  \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_string(&input_s, &htsv_global_allocator, &buf);       \
+    err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);       \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("empty", "", "\"\"");
@@ -226,7 +226,7 @@ TEST_CASE("serialize string", "[serialize][string]") {
         (hsfv_string_t){.base = input, .len = strlen(input)};                  \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_string(&input_s, &htsv_global_allocator, &buf);       \
+    err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);       \
     CHECK(err == want);                                                        \
   }
 
@@ -243,14 +243,14 @@ TEST_CASE("parse string", "[parse][string]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     hsfv_string_t want_s;                                                      \
-    err = hsfv_parse_string(&item, &htsv_global_allocator, input, input_end,   \
+    err = hsfv_parse_string(&item, &hsfv_global_allocator, input, input_end,   \
                             &rest);                                            \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                            \
     want_s.base = want;                                                        \
     want_s.len = strlen(want);                                                 \
     CHECK(hsfv_string_eq(&item.string, &want_s));                              \
-    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
+    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
   }
 
   OK_HELPER("no escape", "\"foo\"", "foo");
@@ -264,7 +264,7 @@ TEST_CASE("parse string", "[parse][string]") {
     const char *rest;                                                          \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
-    err = hsfv_parse_string(&item, &htsv_global_allocator, input, input_end,   \
+    err = hsfv_parse_string(&item, &hsfv_global_allocator, input, input_end,   \
                             &rest);                                            \
     CHECK(err == want);                                                        \
   }
@@ -288,10 +288,10 @@ TEST_CASE("serialize token", "[serialize][token]") {
         (hsfv_token_t){.base = input, .len = strlen(input)};                   \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_token(&input_t, &htsv_global_allocator, &buf);        \
+    err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);        \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("case 1", "*t!o&k", "*t!o&k");
@@ -304,7 +304,7 @@ TEST_CASE("serialize token", "[serialize][token]") {
         (hsfv_token_t){.base = input, .len = strlen(input)};                   \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_token(&input_t, &htsv_global_allocator, &buf);        \
+    err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);        \
     CHECK(err == want);                                                        \
   }
 
@@ -321,14 +321,14 @@ TEST_CASE("parse token", "[parse][token]") {
     hsfv_token_t want_t;                                                       \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
-    err = hsfv_parse_token(&item, &htsv_global_allocator, input, input_end,    \
+    err = hsfv_parse_token(&item, &hsfv_global_allocator, input, input_end,    \
                            &rest);                                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_TOKEN);                             \
     want_t.base = want;                                                        \
     want_t.len = strlen(want);                                                 \
     CHECK(hsfv_token_eq(&item.token, &want_t));                                \
-    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
+    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
   }
 
   OK_HELPER("single character", "t", "t");
@@ -344,7 +344,7 @@ TEST_CASE("parse token", "[parse][token]") {
     const char *rest;                                                          \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
-    err = hsfv_parse_token(&item, &htsv_global_allocator, input, input_end,    \
+    err = hsfv_parse_token(&item, &hsfv_global_allocator, input, input_end,    \
                            &rest);                                             \
     CHECK(err == want);                                                        \
   }
@@ -363,10 +363,10 @@ TEST_CASE("serialize byte_seq", "[serialize][byte_seq]") {
         (hsfv_byte_seq_t){.base = input, .len = strlen(input)};                \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_byte_seq(&input_b, &htsv_global_allocator, &buf);     \
+    err = hsfv_serialize_byte_seq(&input_b, &hsfv_global_allocator, &buf);     \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("case 1", "abc", ":YWJj:");
@@ -383,14 +383,14 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]") {
     hsfv_byte_seq_t want_b;                                                    \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
-    err = hsfv_parse_byte_seq(&item, &htsv_global_allocator, input, input_end, \
+    err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, \
                               &rest);                                          \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(item.type == HSFV_BARE_ITEM_TYPE_BYTE_SEQ);                          \
     want_b.base = want;                                                        \
     want_b.len = strlen(want);                                                 \
     CHECK(hsfv_byte_seq_eq(&item.byte_seq, &want_b));                          \
-    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
+    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
   }
 
   OK_HELPER("case 1", ":YWJj:", "abc");
@@ -404,7 +404,7 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]") {
     const char *rest;                                                          \
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
-    err = hsfv_parse_byte_seq(&item, &htsv_global_allocator, input, input_end, \
+    err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, \
                               &rest);                                          \
     CHECK(err == want);                                                        \
   }
@@ -427,10 +427,10 @@ TEST_CASE("serialize key", "[serialize][key]") {
     hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};    \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_key(&input_k, &htsv_global_allocator, &buf);          \
+    err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);          \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER("case 1", "foo", "foo");
@@ -442,7 +442,7 @@ TEST_CASE("serialize key", "[serialize][key]") {
     hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};    \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_key(&input_k, &htsv_global_allocator, &buf);          \
+    err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);          \
     CHECK(err == want);                                                        \
   }
 
@@ -460,12 +460,12 @@ TEST_CASE("parse key", "[parse][key]") {
     hsfv_key_t key;                                                            \
     hsfv_err_t err;                                                            \
     err =                                                                      \
-        hsfv_parse_key(&key, &htsv_global_allocator, input, input_end, &rest); \
+        hsfv_parse_key(&key, &hsfv_global_allocator, input, input_end, &rest); \
     CHECK(err == HSFV_OK);                                                     \
     want_k.base = want;                                                        \
     want_k.len = strlen(want);                                                 \
     CHECK(hsfv_key_eq(&key, &want_k));                                         \
-    hsfv_key_deinit(&key, &htsv_global_allocator);                             \
+    hsfv_key_deinit(&key, &hsfv_global_allocator);                             \
   }
 
   OK_HELPER("single character", "t", "t");
@@ -481,7 +481,7 @@ TEST_CASE("parse key", "[parse][key]") {
     hsfv_key_t key;                                                            \
     hsfv_err_t err;                                                            \
     err =                                                                      \
-        hsfv_parse_key(&key, &htsv_global_allocator, input, input_end, &rest); \
+        hsfv_parse_key(&key, &hsfv_global_allocator, input, input_end, &rest); \
     CHECK(err == want);                                                        \
   }
 
@@ -498,10 +498,10 @@ TEST_CASE("serialize bare_item", "[serialize][bare_item]") {
     hsfv_bare_item_t item = input_literal;                                     \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_bare_item(&item, &htsv_global_allocator, &buf);       \
+    err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);       \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   OK_HELPER(
@@ -537,7 +537,7 @@ TEST_CASE("serialize bare_item", "[serialize][bare_item]") {
     hsfv_bare_item_t item = input_literal;                                     \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_bare_item(&item, &htsv_global_allocator, &buf);       \
+    err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);       \
     CHECK(err == want);                                                        \
   }
 
@@ -555,11 +555,11 @@ TEST_CASE("parse bare_item", "[parse][bare_item]") {
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
-    err = hsfv_parse_bare_item(&item, &htsv_global_allocator, input,           \
+    err = hsfv_parse_bare_item(&item, &hsfv_global_allocator, input,           \
                                input_end, &rest);                              \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_bare_item_eq(&item, &want));                                    \
-    hsfv_bare_item_deinit(&item, &htsv_global_allocator);                      \
+    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
   }
 
   OK_HELPER(
@@ -598,7 +598,7 @@ TEST_CASE("parse bare_item", "[parse][bare_item]") {
     hsfv_bare_item_t item;                                                     \
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
-    err = hsfv_parse_bare_item(&item, &htsv_global_allocator, input,           \
+    err = hsfv_parse_bare_item(&item, &hsfv_global_allocator, input,           \
                                input_end, &rest);                              \
     CHECK(err == want);                                                        \
   }

@@ -7,10 +7,10 @@ TEST_CASE("serialize parameters", "[serialze][parameters]") {
     hsfv_parameters_t params = input_literal;                                  \
     hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
     hsfv_err_t err;                                                            \
-    err = htsv_serialize_parameters(&params, &htsv_global_allocator, &buf);    \
+    err = hsfv_serialize_parameters(&params, &hsfv_global_allocator, &buf);    \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
   }
 
   hsfv_parameter_t want_params[3];
@@ -48,12 +48,12 @@ TEST_CASE("parse parameters", "[parse][parameters]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_parameters(&params, &htsv_global_allocator, input,        \
+    err = hsfv_parse_parameters(&params, &hsfv_global_allocator, input,        \
                                 input_end, &rest);                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_parameters_eq(&params, want));                                  \
     CHECK(rest == input + want_len);                                           \
-    hsfv_parameters_deinit(&params, &htsv_global_allocator);                   \
+    hsfv_parameters_deinit(&params, &hsfv_global_allocator);                   \
   }
 
   hsfv_parameter_t want_params[2];
@@ -89,7 +89,7 @@ TEST_CASE("parse parameters", "[parse][parameters]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_parameters(&params, &htsv_global_allocator, input,        \
+    err = hsfv_parse_parameters(&params, &hsfv_global_allocator, input,        \
                                 input_end, &rest);                             \
     CHECK(err == want);                                                        \
   }

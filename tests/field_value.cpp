@@ -9,12 +9,12 @@ TEST_CASE("parse field_value", "[parse][field_value]") {
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
     err = hsfv_parse_field_value(&field_value, field_type,                     \
-                                 &htsv_global_allocator, input, input_end,     \
+                                 &hsfv_global_allocator, input, input_end,     \
                                  &rest);                                       \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_field_value_eq(&field_value, want));                            \
     CHECK(rest == input_end);                                                  \
-    hsfv_field_value_deinit(&field_value, &htsv_global_allocator);             \
+    hsfv_field_value_deinit(&field_value, &hsfv_global_allocator);             \
   }
 
   hsfv_item_t items[2];
@@ -237,7 +237,7 @@ TEST_CASE("parse field_value", "[parse][field_value]") {
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
     err = hsfv_parse_field_value(&field_value, field_type,                     \
-                                 &htsv_global_allocator, input, input_end,     \
+                                 &hsfv_global_allocator, input, input_end,     \
                                  &rest);                                       \
     CHECK(err == want);                                                        \
   }

@@ -8,12 +8,12 @@ TEST_CASE("parse dictionary", "[parse][dictionary]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_dictionary(&dictionary, &htsv_global_allocator, input,    \
+    err = hsfv_parse_dictionary(&dictionary, &hsfv_global_allocator, input,    \
                                 input_end, &rest);                             \
     CHECK(err == HSFV_OK);                                                     \
     CHECK(hsfv_dictionary_eq(&dictionary, want));                              \
     CHECK(rest == input_end);                                                  \
-    hsfv_dictionary_deinit(&dictionary, &htsv_global_allocator);               \
+    hsfv_dictionary_deinit(&dictionary, &hsfv_global_allocator);               \
   }
 
   hsfv_dict_member_t members[3];
@@ -91,7 +91,7 @@ TEST_CASE("parse dictionary", "[parse][dictionary]") {
     hsfv_err_t err;                                                            \
     const char *rest;                                                          \
     const char *input_end = input + strlen(input);                             \
-    err = hsfv_parse_dictionary(&dictionary, &htsv_global_allocator, input,    \
+    err = hsfv_parse_dictionary(&dictionary, &hsfv_global_allocator, input,    \
                                 input_end, &rest);                             \
     CHECK(err == want);                                                        \
   }

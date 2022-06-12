@@ -55,17 +55,17 @@ void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
 
 /* Boolean */
 
-hsfv_err_t htsv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
                                   hsfv_buffer_t *dest) {
   hsfv_err_t err;
 
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator, 2);
+  err = hsfv_buffer_ensure_unused_bytes(dest, allocator, 2);
   if (err) {
     return err;
   }
 
-  htsv_buffer_append_byte_unsafe(dest, '?');
-  htsv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
+  hsfv_buffer_append_byte_unsafe(dest, '?');
+  hsfv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
   return HSFV_OK;
 }
 
@@ -103,7 +103,7 @@ hsfv_err_t hsfv_parse_boolean(hsfv_bare_item_t *item, const char *input,
 
 /* Number */
 
-hsfv_err_t htsv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
                                   hsfv_buffer_t *dest) {
   if (integer < HSFV_MIN_INT || HSFV_MAX_INT < integer) {
     return HSFV_ERR_INVALID;
@@ -116,16 +116,16 @@ hsfv_err_t htsv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
     return HSFV_ERR_INVALID;
   }
 
-  hsfv_err_t err = htsv_buffer_ensure_unused_bytes(dest, allocator, n);
+  hsfv_err_t err = hsfv_buffer_ensure_unused_bytes(dest, allocator, n);
   if (err) {
     return err;
   }
 
-  htsv_buffer_append_bytes_unsafe(dest, tmp, n);
+  hsfv_buffer_append_bytes_unsafe(dest, tmp, n);
   return HSFV_OK;
 }
 
-hsfv_err_t htsv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
+hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
                                   hsfv_buffer_t *dest) {
   const size_t tmp_bufsize = 18;
   char tmp[tmp_bufsize];
@@ -149,12 +149,12 @@ hsfv_err_t htsv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
   }
 
   size_t len = end - tmp;
-  hsfv_err_t err = htsv_buffer_ensure_unused_bytes(dest, allocator, len);
+  hsfv_err_t err = hsfv_buffer_ensure_unused_bytes(dest, allocator, len);
   if (err) {
     return err;
   }
 
-  htsv_buffer_append_bytes_unsafe(dest, tmp, len);
+  hsfv_buffer_append_bytes_unsafe(dest, tmp, len);
   return HSFV_OK;
 }
 
@@ -256,7 +256,7 @@ static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input,
 
 /* String */
 
-hsfv_err_t htsv_serialize_string(const hsfv_string_t *string,
+hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string,
                                  hsfv_allocator_t *allocator,
                                  hsfv_buffer_t *dest) {
   const char *p;
@@ -272,20 +272,20 @@ hsfv_err_t htsv_serialize_string(const hsfv_string_t *string,
     }
   }
 
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator,
+  err = hsfv_buffer_ensure_unused_bytes(dest, allocator,
                                         string->len + escape_count + 2);
   if (err) {
     return err;
   }
 
-  htsv_buffer_append_byte_unsafe(dest, '"');
+  hsfv_buffer_append_byte_unsafe(dest, '"');
   for (const char *p = string->base; p < string->base + string->len; ++p) {
     if (*p == '\\' || *p == '"') {
-      htsv_buffer_append_byte_unsafe(dest, '\\');
+      hsfv_buffer_append_byte_unsafe(dest, '\\');
     }
-    htsv_buffer_append_byte_unsafe(dest, *p);
+    hsfv_buffer_append_byte_unsafe(dest, *p);
   }
-  htsv_buffer_append_byte_unsafe(dest, '"');
+  hsfv_buffer_append_byte_unsafe(dest, '"');
 
   return HSFV_OK;
 }
@@ -299,7 +299,7 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
   hsfv_buffer_t buf;
   char c;
 
-  err = htsv_buffer_alloc(&buf, allocator, STRING_INITIAL_CAPACITY);
+  err = hsfv_buffer_alloc(&buf, allocator, STRING_INITIAL_CAPACITY);
   if (err) {
     return err;
   }
@@ -323,7 +323,7 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
         err = HSFV_ERR_INVALID;
         goto error;
       }
-      err = htsv_buffer_append_byte(&buf, allocator, c);
+      err = hsfv_buffer_append_byte(&buf, allocator, c);
       if (err) {
         goto error;
       }
@@ -339,7 +339,7 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
       err = HSFV_ERR_INVALID;
       goto error;
     } else {
-      err = htsv_buffer_append_byte(&buf, allocator, c);
+      err = hsfv_buffer_append_byte(&buf, allocator, c);
       if (err) {
         goto error;
       }
@@ -349,13 +349,13 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
   err = HSFV_ERR_EOF;
 
 error:
-  htsv_buffer_deinit(&buf, allocator);
+  hsfv_buffer_deinit(&buf, allocator);
   return err;
 }
 
 /* Token */
 
-hsfv_err_t htsv_serialize_token(const hsfv_token_t *token,
+hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token,
                                 hsfv_allocator_t *allocator,
                                 hsfv_buffer_t *dest) {
   const char *p;
@@ -371,12 +371,12 @@ hsfv_err_t htsv_serialize_token(const hsfv_token_t *token,
     }
   }
 
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator, token->len);
+  err = hsfv_buffer_ensure_unused_bytes(dest, allocator, token->len);
   if (err) {
     return err;
   }
 
-  htsv_buffer_append_bytes_unsafe(dest, token->base, token->len);
+  hsfv_buffer_append_bytes_unsafe(dest, token->base, token->len);
 
   return HSFV_OK;
 }
@@ -390,7 +390,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
   hsfv_buffer_t buf;
   char c;
 
-  err = htsv_buffer_alloc(&buf, allocator, TOKEN_INITIAL_CAPACITY);
+  err = hsfv_buffer_alloc(&buf, allocator, TOKEN_INITIAL_CAPACITY);
   if (err) {
     return err;
   }
@@ -405,7 +405,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
     err = HSFV_ERR_INVALID;
     goto error;
   }
-  err = htsv_buffer_append_byte(&buf, allocator, c);
+  err = hsfv_buffer_append_byte(&buf, allocator, c);
   if (err) {
     goto error;
   }
@@ -417,7 +417,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
       break;
     }
 
-    err = htsv_buffer_append_byte(&buf, allocator, c);
+    err = hsfv_buffer_append_byte(&buf, allocator, c);
     if (err) {
       goto error;
     }
@@ -432,13 +432,13 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
   return HSFV_OK;
 
 error:
-  htsv_buffer_deinit(&buf, allocator);
+  hsfv_buffer_deinit(&buf, allocator);
   return err;
 }
 
 /* Key */
 
-hsfv_err_t htsv_serialize_key(const hsfv_key_t *key,
+hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key,
                               hsfv_allocator_t *allocator,
                               hsfv_buffer_t *dest) {
   hsfv_err_t err;
@@ -452,7 +452,7 @@ hsfv_err_t htsv_serialize_key(const hsfv_key_t *key,
     }
   }
 
-  return htsv_buffer_append_bytes(dest, allocator, key->base, key->len);
+  return hsfv_buffer_append_bytes(dest, allocator, key->base, key->len);
 }
 
 #define KEY_INITIAL_CAPACITY 8
@@ -464,7 +464,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
   hsfv_buffer_t buf;
   char c;
 
-  err = htsv_buffer_alloc(&buf, allocator, KEY_INITIAL_CAPACITY);
+  err = hsfv_buffer_alloc(&buf, allocator, KEY_INITIAL_CAPACITY);
   if (err) {
     return err;
   }
@@ -479,7 +479,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
     err = HSFV_ERR_INVALID;
     goto error;
   }
-  err = htsv_buffer_append_byte(&buf, allocator, c);
+  err = hsfv_buffer_append_byte(&buf, allocator, c);
   if (err) {
     goto error;
   }
@@ -491,7 +491,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
       break;
     }
 
-    err = htsv_buffer_append_byte(&buf, allocator, c);
+    err = hsfv_buffer_append_byte(&buf, allocator, c);
     if (err) {
       goto error;
     }
@@ -505,31 +505,31 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
   return HSFV_OK;
 
 error:
-  htsv_buffer_deinit(&buf, allocator);
+  hsfv_buffer_deinit(&buf, allocator);
   return err;
 }
 
 /* Byte sequence */
 
-hsfv_err_t htsv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
+hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
                                    hsfv_allocator_t *allocator,
                                    hsfv_buffer_t *dest) {
   size_t encoded_len = hfsv_base64_encoded_length(byte_seq->len);
   hsfv_err_t err;
 
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator, encoded_len + 2);
+  err = hsfv_buffer_ensure_unused_bytes(dest, allocator, encoded_len + 2);
   if (err) {
     return err;
   }
 
-  htsv_buffer_append_byte_unsafe(dest, ':');
+  hsfv_buffer_append_byte_unsafe(dest, ':');
 
   hsfv_iovec_t dest_vec = (hsfv_iovec_t){
       .base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
   hsfv_encode_base64(&dest_vec, byte_seq);
   dest->bytes.len += encoded_len;
 
-  htsv_buffer_append_byte_unsafe(dest, ':');
+  hsfv_buffer_append_byte_unsafe(dest, ':');
   return HSFV_OK;
 }
 
@@ -591,22 +591,22 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
 
 /* Bare item */
 
-hsfv_err_t htsv_serialize_bare_item(const hsfv_bare_item_t *item,
+hsfv_err_t hsfv_serialize_bare_item(const hsfv_bare_item_t *item,
                                     hsfv_allocator_t *allocator,
                                     hsfv_buffer_t *dest) {
   switch (item->type) {
   case HSFV_BARE_ITEM_TYPE_INTEGER:
-    return htsv_serialize_integer(item->integer, allocator, dest);
+    return hsfv_serialize_integer(item->integer, allocator, dest);
   case HSFV_BARE_ITEM_TYPE_DECIMAL:
-    return htsv_serialize_decimal(item->decimal, allocator, dest);
+    return hsfv_serialize_decimal(item->decimal, allocator, dest);
   case HSFV_BARE_ITEM_TYPE_STRING:
-    return htsv_serialize_string(&item->string, allocator, dest);
+    return hsfv_serialize_string(&item->string, allocator, dest);
   case HSFV_BARE_ITEM_TYPE_TOKEN:
-    return htsv_serialize_token(&item->token, allocator, dest);
+    return hsfv_serialize_token(&item->token, allocator, dest);
   case HSFV_BARE_ITEM_TYPE_BYTE_SEQ:
-    return htsv_serialize_byte_seq(&item->byte_seq, allocator, dest);
+    return hsfv_serialize_byte_seq(&item->byte_seq, allocator, dest);
   case HSFV_BARE_ITEM_TYPE_BOOLEAN:
-    return htsv_serialize_boolean(item->boolean, allocator, dest);
+    return hsfv_serialize_boolean(item->boolean, allocator, dest);
   default:
     return HSFV_ERR_INVALID;
   }
