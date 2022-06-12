@@ -421,6 +421,36 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]") {
 
 /* Key */
 
+TEST_CASE("serialize key", "[serialize][key]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};    \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_key(&input_k, &htsv_global_allocator, &buf);          \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
+    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+  }
+
+  OK_HELPER("case 1", "foo", "foo");
+  OK_HELPER("case 2", "*a_-.*", "*a_-.*");
+#undef OK_HELPER
+
+#define NG_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};    \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_key(&input_k, &htsv_global_allocator, &buf);          \
+    CHECK(err == want);                                                        \
+  }
+
+  NG_HELPER("case 1", "A", HSFV_ERR_INVALID);
+  NG_HELPER("case 2", "a?", HSFV_ERR_INVALID);
+#undef NG_HELPER
+}
+
 TEST_CASE("parse key", "[parse][key]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \

@@ -436,6 +436,25 @@ error:
   return err;
 }
 
+/* Key */
+
+hsfv_err_t htsv_serialize_key(const hsfv_key_t *key,
+                              hsfv_allocator_t *allocator,
+                              hsfv_buffer_t *dest) {
+  hsfv_err_t err;
+  const char *p = key->base;
+  if (!p || key->len == 0 || !hsfv_is_key_leaading_char(*p)) {
+    return HSFV_ERR_INVALID;
+  }
+  for (++p; p < key->base + key->len; ++p) {
+    if (!hsfv_is_key_trailing_char(*p)) {
+      return HSFV_ERR_INVALID;
+    }
+  }
+
+  return htsv_buffer_append_bytes(dest, allocator, key->base, key->len);
+}
+
 #define KEY_INITIAL_CAPACITY 8
 
 hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
