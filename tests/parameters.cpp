@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("parameters can be parsed", "[parameters]") {
+TEST_CASE("parse parameters", "[parse][parameters]") {
 #define OK_HELPER(section, input, want_len, want)                              \
   SECTION(section) {                                                           \
     hsfv_parameters_t params;                                                  \

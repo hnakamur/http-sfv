@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("field value can be parsed", "[field_value]") {
+TEST_CASE("parse field_value", "[parse][field_value]") {
 #define OK_HELPER(section, input, field_type, want)                            \
   SECTION(section) {                                                           \
     hsfv_field_value_t field_value;                                            \

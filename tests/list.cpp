@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("list can be parsed", "[list]") {
+TEST_CASE("parse list", "[parse][list]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     hsfv_list_t list;                                                          \

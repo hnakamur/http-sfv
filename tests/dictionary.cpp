@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("dictionary can be parsed", "[dictionary]") {
+TEST_CASE("parse dictionary", "[parse][dictionary]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     hsfv_dictionary_t dictionary;                                              \

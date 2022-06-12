@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("items can be parsed", "[item]") {
+TEST_CASE("parse item", "[parse][item]") {
 #define OK_HELPER(section, input, want_len, want)                              \
   SECTION(section) {                                                           \
     hsfv_item_t item;                                                          \

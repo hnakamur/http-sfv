@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
+TEST_CASE("parse boolean", "[parse][boolean]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -34,7 +34,7 @@ TEST_CASE("booleans can be parsed", "[bare_item][boolean]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("integer can be parsed", "[bare_item][integer]") {
+TEST_CASE("parse integer", "[parse][integer]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -74,7 +74,7 @@ TEST_CASE("integer can be parsed", "[bare_item][integer]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
+TEST_CASE("parse decimal", "[parse][decimal]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -113,7 +113,7 @@ TEST_CASE("decimal can be parsed", "[bare_item][decimal]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("string can be parsed", "[bare_item][string]") {
+TEST_CASE("parse string", "[parse][string]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -157,7 +157,7 @@ TEST_CASE("string can be parsed", "[bare_item][string]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("token can be parsed", "[bare_item][token]") {
+TEST_CASE("parse token", "[parse][token]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -197,7 +197,7 @@ TEST_CASE("token can be parsed", "[bare_item][token]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("byte_seq can be parsed", "[bare_item][byte_seq]") {
+TEST_CASE("parse byte_seq", "[parse][byte_seq]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -241,7 +241,7 @@ TEST_CASE("byte_seq can be parsed", "[bare_item][byte_seq]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("key can be parsed", "[key]") {
+TEST_CASE("parse key", "[parse][key]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \
@@ -280,7 +280,7 @@ TEST_CASE("key can be parsed", "[key]") {
 #undef NG_HELPER
 }
 
-TEST_CASE("bare item can be parsed", "[bare_item]") {
+TEST_CASE("parse bare_item", "[parse][bare_item]") {
 #define OK_HELPER(section, input, want_literal)                                \
   SECTION(section) {                                                           \
     const char *input_end = input + strlen(input);                             \

@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("inner list can be parsed", "[inner_list]") {
+TEST_CASE("parse inner_list", "[parse][inner_list]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \
     hsfv_inner_list_t inner_list;                                              \
