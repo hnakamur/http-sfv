@@ -356,3 +356,22 @@ TEST_CASE("serialize boolean", "[serialize][boolean]") {
   OK_HELPER("true", true, "?1");
 #undef OK_HELPER
 }
+
+TEST_CASE("serialize byte_seq", "[serialize][byte_seq]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_byte_seq_t input_b =                                                  \
+        (hsfv_byte_seq_t){.base = input, .len = strlen(input)};                \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_byte_seq(&buf, &htsv_global_allocator, &input_b);     \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
+    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+  }
+
+  OK_HELPER("case 1", "abc", ":YWJj:");
+  OK_HELPER("case 2", "any carnal pleasure", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:");
+  OK_HELPER("case 3", "any carnal pleasur", ":YW55IGNhcm5hbCBwbGVhc3Vy:");
+#undef OK_HELPER
+}

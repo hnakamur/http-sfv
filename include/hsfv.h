@@ -307,6 +307,9 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
 
 hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
                                   hsfv_allocator_t *allocator, bool boolean);
+hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
+                                   hsfv_allocator_t *allocator,
+                                   const hsfv_byte_seq_t *byte_seq);
 
 #define hsfv_skip_sp(input, input_end)                                         \
   while ((input) < (input_end) && *(input) == ' ') {                           \

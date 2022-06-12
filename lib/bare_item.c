@@ -452,3 +452,25 @@ hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
   htsv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
   return HSFV_OK;
 }
+
+hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
+                                   hsfv_allocator_t *allocator,
+                                   const hsfv_byte_seq_t *byte_seq) {
+  size_t encoded_len = hfsv_base64_encoded_length(byte_seq->len);
+  hsfv_err_t err;
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator, encoded_len + 2);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_byte_unsafe(dest, ':');
+
+  hsfv_iovec_t dest_vec = (hsfv_iovec_t){
+      .base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
+  hsfv_encode_base64(&dest_vec, byte_seq);
+  dest->bytes.len += encoded_len;
+
+  htsv_buffer_append_byte_unsafe(dest, ':');
+  return HSFV_OK;
+}

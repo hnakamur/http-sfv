@@ -1,13 +1,13 @@
 #include "hsfv.h"
 
 static void hsfv_encode_base64_internal(hsfv_iovec_t *dst,
-                                        hsfv_iovec_const_t *src,
+                                        const hsfv_iovec_const_t *src,
                                         const uint8_t *basis, uint64_t padding);
 static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst,
-                                              hsfv_iovec_const_t *src,
+                                              const hsfv_iovec_const_t *src,
                                               const uint8_t *basis);
 
-void hsfv_encode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
+void hsfv_encode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src) {
   static uint8_t basis64[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -15,7 +15,7 @@ void hsfv_encode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
 }
 
 static void hsfv_encode_base64_internal(hsfv_iovec_t *dst,
-                                        hsfv_iovec_const_t *src,
+                                        const hsfv_iovec_const_t *src,
                                         const uint8_t *basis,
                                         uint64_t padding) {
   const char *s;
@@ -58,7 +58,8 @@ static void hsfv_encode_base64_internal(hsfv_iovec_t *dst,
   dst->len = d - dst->base;
 }
 
-hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
+hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst,
+                              const hsfv_iovec_const_t *src) {
   static uint8_t basis64[] = {
       77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
       77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
@@ -82,7 +83,7 @@ hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, hsfv_iovec_const_t *src) {
 }
 
 static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst,
-                                              hsfv_iovec_const_t *src,
+                                              const hsfv_iovec_const_t *src,
                                               const uint8_t *basis) {
   size_t len;
   const char *s;
