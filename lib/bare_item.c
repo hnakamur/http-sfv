@@ -55,8 +55,8 @@ void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
 
 /* Boolean */
 
-hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator, bool boolean) {
+hsfv_err_t htsv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
+                                  hsfv_buffer_t *dest) {
   hsfv_err_t err;
 
   err = htsv_buffer_ensure_unused_bytes(dest, allocator, 2);
@@ -103,9 +103,8 @@ hsfv_err_t hsfv_parse_boolean(hsfv_bare_item_t *item, const char *input,
 
 /* Number */
 
-hsfv_err_t htsv_serialize_integer(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator,
-                                  int64_t integer) {
+hsfv_err_t htsv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
+                                  hsfv_buffer_t *dest) {
   if (integer < HSFV_MIN_INT || HSFV_MAX_INT < integer) {
     return HSFV_ERR_INVALID;
   }
@@ -126,8 +125,8 @@ hsfv_err_t htsv_serialize_integer(hsfv_buffer_t *dest,
   return HSFV_OK;
 }
 
-hsfv_err_t htsv_serialize_decimal(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator, double decimal) {
+hsfv_err_t htsv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
+                                  hsfv_buffer_t *dest) {
   const size_t tmp_bufsize = 18;
   char tmp[tmp_bufsize];
   int n = snprintf(tmp, tmp_bufsize, "%.3f", decimal);
@@ -257,9 +256,9 @@ static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input,
 
 /* String */
 
-hsfv_err_t htsv_serialize_string(hsfv_buffer_t *dest,
+hsfv_err_t htsv_serialize_string(const hsfv_string_t *string,
                                  hsfv_allocator_t *allocator,
-                                 const hsfv_string_t *string) {
+                                 hsfv_buffer_t *dest) {
   const char *p;
   hsfv_err_t err;
   size_t escape_count = 0;
@@ -356,9 +355,9 @@ error:
 
 /* Token */
 
-hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
+hsfv_err_t htsv_serialize_token(const hsfv_token_t *token,
                                 hsfv_allocator_t *allocator,
-                                const hsfv_token_t *token) {
+                                hsfv_buffer_t *dest) {
   const char *p;
   hsfv_err_t err;
 
@@ -493,9 +492,9 @@ error:
 
 /* Byte sequence */
 
-hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
+hsfv_err_t htsv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
                                    hsfv_allocator_t *allocator,
-                                   const hsfv_byte_seq_t *byte_seq) {
+                                   hsfv_buffer_t *dest) {
   size_t encoded_len = hfsv_base64_encoded_length(byte_seq->len);
   hsfv_err_t err;
 
@@ -572,6 +571,27 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
 }
 
 /* Bare item */
+
+hsfv_err_t htsv_serialize_bare_item(const hsfv_bare_item_t *item,
+                                    hsfv_allocator_t *allocator,
+                                    hsfv_buffer_t *dest) {
+  switch (item->type) {
+  case HSFV_BARE_ITEM_TYPE_INTEGER:
+    return htsv_serialize_integer(item->integer, allocator, dest);
+  case HSFV_BARE_ITEM_TYPE_DECIMAL:
+    return htsv_serialize_decimal(item->decimal, allocator, dest);
+  case HSFV_BARE_ITEM_TYPE_STRING:
+    return htsv_serialize_string(&item->string, allocator, dest);
+  case HSFV_BARE_ITEM_TYPE_TOKEN:
+    return htsv_serialize_token(&item->token, allocator, dest);
+  case HSFV_BARE_ITEM_TYPE_BYTE_SEQ:
+    return htsv_serialize_byte_seq(&item->byte_seq, allocator, dest);
+  case HSFV_BARE_ITEM_TYPE_BOOLEAN:
+    return htsv_serialize_boolean(item->boolean, allocator, dest);
+  default:
+    return HSFV_ERR_INVALID;
+  }
+}
 
 hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
                                 hsfv_allocator_t *allocator, const char *input,

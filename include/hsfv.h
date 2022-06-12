@@ -306,21 +306,24 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,
                           const char **out_rest);
 
-hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator, bool boolean);
-hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
+hsfv_err_t htsv_serialize_bare_item(const hsfv_bare_item_t *item,
+                                    hsfv_allocator_t *allocator,
+                                    hsfv_buffer_t *dest);
+hsfv_err_t htsv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
+                                  hsfv_buffer_t *dest);
+hsfv_err_t htsv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
                                    hsfv_allocator_t *allocator,
-                                   const hsfv_byte_seq_t *byte_seq);
-hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
+                                   hsfv_buffer_t *dest);
+hsfv_err_t htsv_serialize_token(const hsfv_token_t *token,
                                 hsfv_allocator_t *allocator,
-                                const hsfv_token_t *token);
-hsfv_err_t htsv_serialize_string(hsfv_buffer_t *dest,
+                                hsfv_buffer_t *dest);
+hsfv_err_t htsv_serialize_string(const hsfv_string_t *string,
                                  hsfv_allocator_t *allocator,
-                                 const hsfv_string_t *string);
-hsfv_err_t htsv_serialize_decimal(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator, double decimal);
-hsfv_err_t htsv_serialize_integer(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator, int64_t integer);
+                                 hsfv_buffer_t *dest);
+hsfv_err_t htsv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
+                                  hsfv_buffer_t *dest);
+hsfv_err_t htsv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
+                                  hsfv_buffer_t *dest);
 
 #define hsfv_skip_sp(input, input_end)                                         \
   while ((input) < (input_end) && *(input) == ' ') {                           \
