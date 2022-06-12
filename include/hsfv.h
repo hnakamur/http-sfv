@@ -237,6 +237,8 @@ typedef struct st_hsfv_field_value_t {
   };
 } hsfv_field_value_t;
 
+bool hsfv_field_value_is_empty(const hsfv_field_value_t *self);
+
 bool hsfv_field_value_eq(const hsfv_field_value_t *self,
                          const hsfv_field_value_t *other);
 bool hsfv_dictionary_eq(const hsfv_dictionary_t *self,
@@ -305,6 +307,9 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
                           const char *input, const char *input_end,
                           const char **out_rest);
 
+hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value,
+                                      hsfv_allocator_t *allocator,
+                                      hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary,
                                      hsfv_allocator_t *allocator,
                                      hsfv_buffer_t *dest);

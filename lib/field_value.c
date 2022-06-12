@@ -32,6 +32,36 @@ void hsfv_field_value_deinit(hsfv_field_value_t *self,
   }
 }
 
+bool hsfv_field_value_is_empty(const hsfv_field_value_t *self) {
+  switch (self->type) {
+  case HSFV_FIELD_VALUE_TYPE_LIST:
+    return self->list.len == 0;
+  case HSFV_FIELD_VALUE_TYPE_DICTIONARY:
+    return self->dictionary.len == 0;
+  default:
+    return false;
+  }
+}
+
+hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value,
+                                      hsfv_allocator_t *allocator,
+                                      hsfv_buffer_t *dest) {
+  if (hsfv_field_value_is_empty(field_value)) {
+    return HSFV_ERR_INVALID;
+  }
+
+  switch (field_value->type) {
+  case HSFV_FIELD_VALUE_TYPE_LIST:
+    return hsfv_serialize_list(&field_value->list, allocator, dest);
+  case HSFV_FIELD_VALUE_TYPE_DICTIONARY:
+    return hsfv_serialize_dictionary(&field_value->dictionary, allocator, dest);
+  case HSFV_FIELD_VALUE_TYPE_ITEM:
+    return hsfv_serialize_item(&field_value->item, allocator, dest);
+  default:
+    return HSFV_ERR_INVALID;
+  }
+}
+
 hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value,
                                   hsfv_field_value_type_t field_type,
                                   hsfv_allocator_t *allocator,
