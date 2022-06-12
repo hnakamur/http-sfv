@@ -53,6 +53,22 @@ void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
   }
 }
 
+/* Boolean */
+
+hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
+                                  hsfv_allocator_t *allocator, bool boolean) {
+  hsfv_err_t err;
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator, 2);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_byte_unsafe(dest, '?');
+  htsv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
+  return HSFV_OK;
+}
+
 hsfv_err_t hsfv_parse_boolean(hsfv_bare_item_t *item, const char *input,
                               const char *input_end, const char **out_rest) {
   if (input == input_end) {
@@ -181,6 +197,42 @@ static hsfv_err_t parse_decimal(const char *input, const char *input_end,
   return HSFV_OK;
 }
 
+/* String */
+
+hsfv_err_t htsv_serialize_string(hsfv_buffer_t *dest,
+                                 hsfv_allocator_t *allocator,
+                                 const hsfv_string_t *string) {
+  const char *p;
+  hsfv_err_t err;
+  size_t escape_count = 0;
+
+  for (const char *p = string->base; p < string->base + string->len; ++p) {
+    if (*p <= '\x1f' || '\x7f' <= *p) {
+      return HSFV_ERR_INVALID;
+    }
+    if (*p == '\\' || *p == '"') {
+      escape_count++;
+    }
+  }
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator,
+                                        string->len + escape_count + 2);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_byte_unsafe(dest, '"');
+  for (const char *p = string->base; p < string->base + string->len; ++p) {
+    if (*p == '\\' || *p == '"') {
+      htsv_buffer_append_byte_unsafe(dest, '\\');
+    }
+    htsv_buffer_append_byte_unsafe(dest, *p);
+  }
+  htsv_buffer_append_byte_unsafe(dest, '"');
+
+  return HSFV_OK;
+}
+
 #define STRING_INITIAL_CAPACITY 8
 
 hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
@@ -242,6 +294,34 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
 error:
   htsv_buffer_deinit(&buf, allocator);
   return err;
+}
+
+/* Token */
+
+hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
+                                hsfv_allocator_t *allocator,
+                                const hsfv_token_t *token) {
+  const char *p;
+  hsfv_err_t err;
+
+  p = token->base;
+  if (!hsfv_is_token_leading_char(*p)) {
+    return HSFV_ERR_INVALID;
+  }
+  for (++p; p < token->base + token->len; ++p) {
+    if (!hsfv_is_trailing_token_char(*p)) {
+      return HSFV_ERR_INVALID;
+    }
+  }
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator, token->len);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_bytes_unsafe(dest, token->base, token->len);
+
+  return HSFV_OK;
 }
 
 #define TOKEN_INITIAL_CAPACITY 8
@@ -353,6 +433,30 @@ error:
   return err;
 }
 
+/* Byte sequence */
+
+hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
+                                   hsfv_allocator_t *allocator,
+                                   const hsfv_byte_seq_t *byte_seq) {
+  size_t encoded_len = hfsv_base64_encoded_length(byte_seq->len);
+  hsfv_err_t err;
+
+  err = htsv_buffer_ensure_unused_bytes(dest, allocator, encoded_len + 2);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_byte_unsafe(dest, ':');
+
+  hsfv_iovec_t dest_vec = (hsfv_iovec_t){
+      .base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
+  hsfv_encode_base64(&dest_vec, byte_seq);
+  dest->bytes.len += encoded_len;
+
+  htsv_buffer_append_byte_unsafe(dest, ':');
+  return HSFV_OK;
+}
+
 #define BINARY_INITIAL_CAPACITY 8
 
 hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
@@ -409,6 +513,8 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
   return HSFV_ERR_EOF;
 }
 
+/* Bare item */
+
 hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
                                 hsfv_allocator_t *allocator, const char *input,
                                 const char *input_end, const char **out_rest) {
@@ -434,66 +540,4 @@ hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
     }
     return HSFV_ERR_INVALID;
   }
-}
-
-hsfv_err_t htsv_serialize_boolean(hsfv_buffer_t *dest,
-                                  hsfv_allocator_t *allocator, bool boolean) {
-  hsfv_err_t err;
-
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator, 2);
-  if (err) {
-    return err;
-  }
-
-  htsv_buffer_append_byte_unsafe(dest, '?');
-  htsv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
-  return HSFV_OK;
-}
-
-hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
-                                   hsfv_allocator_t *allocator,
-                                   const hsfv_byte_seq_t *byte_seq) {
-  size_t encoded_len = hfsv_base64_encoded_length(byte_seq->len);
-  hsfv_err_t err;
-
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator, encoded_len + 2);
-  if (err) {
-    return err;
-  }
-
-  htsv_buffer_append_byte_unsafe(dest, ':');
-
-  hsfv_iovec_t dest_vec = (hsfv_iovec_t){
-      .base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
-  hsfv_encode_base64(&dest_vec, byte_seq);
-  dest->bytes.len += encoded_len;
-
-  htsv_buffer_append_byte_unsafe(dest, ':');
-  return HSFV_OK;
-}
-
-hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
-                                hsfv_allocator_t *allocator,
-                                const hsfv_token_t *token) {
-  const char *p;
-  hsfv_err_t err;
-
-  p = token->base;
-  if (!hsfv_is_token_leading_char(*p)) {
-    return HSFV_ERR_INVALID;
-  }
-  for (++p; p < token->base + token->len; ++p) {
-    if (!hsfv_is_trailing_token_char(*p)) {
-      return HSFV_ERR_INVALID;
-    }
-  }
-
-  err = htsv_buffer_ensure_unused_bytes(dest, allocator, token->len);
-  if (err) {
-    return err;
-  }
-
-  htsv_buffer_append_bytes_unsafe(dest, token->base, token->len);
-
-  return HSFV_OK;
 }

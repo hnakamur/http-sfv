@@ -313,6 +313,9 @@ hsfv_err_t htsv_serialize_byte_seq(hsfv_buffer_t *dest,
 hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
                                 hsfv_allocator_t *allocator,
                                 const hsfv_token_t *token);
+hsfv_err_t htsv_serialize_string(hsfv_buffer_t *dest,
+                                 hsfv_allocator_t *allocator,
+                                 const hsfv_string_t *string);
 
 #define hsfv_skip_sp(input, input_end)                                         \
   while ((input) < (input_end) && *(input) == ' ') {                           \
