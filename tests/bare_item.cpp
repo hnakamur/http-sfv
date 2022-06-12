@@ -90,6 +90,41 @@ TEST_CASE("parse integer", "[parse][integer]") {
 #undef NG_HELPER
 }
 
+TEST_CASE("serialize decimal", "[serialize][decimal]") {
+#define OK_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_decimal(&buf, &htsv_global_allocator, input);         \
+    CHECK(err == HSFV_OK);                                                     \
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
+    htsv_buffer_deinit(&buf, &htsv_global_allocator);                          \
+  }
+
+  OK_HELPER("case 1", 12, "12.0");
+  OK_HELPER("case 2", 12.000, "12.0");
+  OK_HELPER("case 3", 12.0004, "12.0");
+  OK_HELPER("case 4", 12.3456, "12.346");
+  OK_HELPER("case 5", -12.3456, "-12.346");
+  OK_HELPER("min", -999999999999.999, "-999999999999.999");
+  OK_HELPER("max", 999999999999.999, "999999999999.999");
+#undef OK_HELPER
+
+#define NG_HELPER(section, input, want)                                        \
+  SECTION(section) {                                                           \
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
+    hsfv_err_t err;                                                            \
+    err = htsv_serialize_decimal(&buf, &htsv_global_allocator, input);         \
+    CHECK(err == want);                                                        \
+  }
+
+  NG_HELPER("case 1", 1000000000000, HSFV_ERR_INVALID);
+  NG_HELPER("case 2", -1000000000000, HSFV_ERR_INVALID);
+  NG_HELPER("case 3", 100000000000000.999, HSFV_ERR_INVALID);
+  NG_HELPER("case 4", -10000000000000.999, HSFV_ERR_INVALID);
+#undef NG_HELPER
+}
+
 TEST_CASE("parse decimal", "[parse][decimal]") {
 #define OK_HELPER(section, input, want)                                        \
   SECTION(section) {                                                           \

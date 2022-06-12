@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -316,6 +317,8 @@ hsfv_err_t htsv_serialize_token(hsfv_buffer_t *dest,
 hsfv_err_t htsv_serialize_string(hsfv_buffer_t *dest,
                                  hsfv_allocator_t *allocator,
                                  const hsfv_string_t *string);
+hsfv_err_t htsv_serialize_decimal(hsfv_buffer_t *dest,
+                                  hsfv_allocator_t *allocator, double decimal);
 
 #define hsfv_skip_sp(input, input_end)                                         \
   while ((input) < (input_end) && *(input) == ' ') {                           \
