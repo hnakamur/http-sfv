@@ -319,6 +319,8 @@ hsfv_err_t htsv_serialize_string(hsfv_buffer_t *dest,
                                  const hsfv_string_t *string);
 hsfv_err_t htsv_serialize_decimal(hsfv_buffer_t *dest,
                                   hsfv_allocator_t *allocator, double decimal);
+hsfv_err_t htsv_serialize_integer(hsfv_buffer_t *dest,
+                                  hsfv_allocator_t *allocator, int64_t integer);
 
 #define hsfv_skip_sp(input, input_end)                                         \
   while ((input) < (input_end) && *(input) == ' ') {                           \

@@ -103,6 +103,29 @@ hsfv_err_t hsfv_parse_boolean(hsfv_bare_item_t *item, const char *input,
 
 /* Number */
 
+hsfv_err_t htsv_serialize_integer(hsfv_buffer_t *dest,
+                                  hsfv_allocator_t *allocator,
+                                  int64_t integer) {
+  if (integer < HSFV_MIN_INT || HSFV_MAX_INT < integer) {
+    return HSFV_ERR_INVALID;
+  }
+
+  const size_t tmp_bufsize = 17;
+  char tmp[tmp_bufsize];
+  int n = snprintf(tmp, tmp_bufsize, "%ld", integer);
+  if (n > tmp_bufsize) {
+    return HSFV_ERR_INVALID;
+  }
+
+  hsfv_err_t err = htsv_buffer_ensure_unused_bytes(dest, allocator, n);
+  if (err) {
+    return err;
+  }
+
+  htsv_buffer_append_bytes_unsafe(dest, tmp, n);
+  return HSFV_OK;
+}
+
 hsfv_err_t htsv_serialize_decimal(hsfv_buffer_t *dest,
                                   hsfv_allocator_t *allocator, double decimal) {
   const size_t tmp_bufsize = 18;
