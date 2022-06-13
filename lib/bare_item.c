@@ -1,6 +1,39 @@
 #include "hsfv.h"
 
 // clang-format off
+
+const char hsfv_key_leading_char_map[256] = {
+    ['*'] = '\1',
+    ['a'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', // to 'z'
+};
+
+const char hsfv_key_trailing_char_map[256] = {
+    ['*'] = '\1',
+    ['-'] = '\1', ['.'] = '\1',
+    ['0'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', // to '9'
+    ['_'] = '\1',
+    ['a'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', // to 'z'
+};
+
+const char hsfv_token_leading_char_map[256] = {
+    ['*'] = '\1',
+    ['A'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', // to 'Z'
+    ['a'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', // to 'z'
+};
+
+/*
+ * token_trailing_char = tchar / ":" / "/"
+ * tchar is defined at
+ * https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
+ */
 const char hsfv_token_trailing_char_map[256] = {
     ['!'] = '\1',
     ['#'] = '\1', ['$'] = '\1', ['%'] = '\1', ['&'] = '\1', ['\''] = '\1',
@@ -17,6 +50,20 @@ const char hsfv_token_trailing_char_map[256] = {
             '\1', '\1', '\1', '\1', '\1', '\1', // to 'z'
     ['|'] = '\1', ['~'] = '\1',
 };
+
+const char hsfv_base64_char_map[256] = {
+    ['+'] = '\1',
+    ['/'] = '\1',
+    ['0'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', // to '9'
+    ['='] = '\1',
+    ['A'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', // to 'Z'
+    ['a'] = '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1', '\1',
+            '\1', '\1', '\1', '\1', '\1', '\1', // to 'z'
+};
+
 // clang-format on
 
 static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const char *input_end, bool neg, const char **out_rest);
@@ -460,7 +507,7 @@ hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key, hsfv_allocator_t *allocator
 {
     hsfv_err_t err;
     const char *p = key->base;
-    if (!p || key->len == 0 || !HSFV_IS_KEY_LEAADING_CHAR(*p)) {
+    if (!p || key->len == 0 || !HSFV_IS_KEY_LEADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
     }
     for (++p; p < key->base + key->len; ++p) {
@@ -482,7 +529,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
     if (p == input_end) {
         return HSFV_ERR_EOF;
     }
-    if (!HSFV_IS_KEY_LEAADING_CHAR(*p)) {
+    if (!HSFV_IS_KEY_LEADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
     }
 
@@ -574,7 +621,7 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
             return HSFV_OK;
         }
 
-        if (!HSFV_IS_ALPHA(c) && !HSFV_IS_DIGIT(c) && c != '+' && c != '/' && c != '=') {
+        if (!HSFV_IS_BASE64_CHAR(c)) {
             return HSFV_ERR_INVALID;
         }
     }

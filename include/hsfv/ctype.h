@@ -6,22 +6,22 @@ extern "C" {
 #endif
 
 #define HSFV_IS_DIGIT(c) ('0' <= (c) && (c) <= '9')
-#define HSFV_IS_LCALPHA(c) (('a' <= (c) && (c) <= 'z'))
-#define HSFV_IS_ALPHA(c) (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
 
-#define HSFV_IS_KEY_LEAADING_CHAR(c) (HSFV_IS_LCALPHA(c) || (c) == '*')
-#define HSFV_IS_KEY_TRAILING_CHAR(c)                                                                                               \
-    (HSFV_IS_LCALPHA(c) || HSFV_IS_DIGIT(c) || (c) == '_' || (c) == '-' || (c) == '.' || (c) == '*')
+extern const char hsfv_key_leading_char_map[256];
+extern const char hsfv_key_trailing_char_map[256];
 
-#define HSFV_IS_TOKEN_LEADING_CHAR(c) (HSFV_IS_ALPHA(c) || (c) == '*')
+#define HSFV_IS_KEY_LEADING_CHAR(c) hsfv_key_leading_char_map[(unsigned char)(c)]
+#define HSFV_IS_KEY_TRAILING_CHAR(c) hsfv_key_trailing_char_map[(unsigned char)(c)]
 
-/*
- * token_trailing_char = tchar / ":" / "/"
- * tchar is defined at
- * https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
- */
+extern const char hsfv_token_leading_char_map[256];
 extern const char hsfv_token_trailing_char_map[256];
+
+#define HSFV_IS_TOKEN_LEADING_CHAR(c) hsfv_token_leading_char_map[(unsigned char)(c)]
 #define HSFV_IS_TOKEN_TRAILING_CHAR(c) hsfv_token_trailing_char_map[(unsigned char)(c)]
+
+extern const char hsfv_base64_char_map[256];
+
+#define HSFV_IS_BASE64_CHAR(c) hsfv_base64_char_map[(unsigned char)(c)]
 
 #define HSFV_IS_ASCII(c) ((c) <= '\x7f')
 

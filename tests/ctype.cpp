@@ -1,7 +1,7 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-static int is_tchar_ref_impl(char c)
+static bool is_token_trailing_char_ref_impl(char c)
 {
     switch (c) {
     case '!':
@@ -21,18 +21,18 @@ static int is_tchar_ref_impl(char c)
     case '~':
     case ':':
     case '/':
-        return 1;
+        return true;
     default:
-        return HSFV_IS_DIGIT(c) || HSFV_IS_ALPHA(c);
+        return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z');
     }
 }
 
-TEST_CASE("is_token_char", "[ctype]")
+TEST_CASE("is_token_trailing_char", "[ctype]")
 {
     SECTION("result is equal to reference implementation")
     {
         for (int c = '\x00'; c <= u'\xff'; ++c) {
-            CHECK(HSFV_IS_TOKEN_TRAILING_CHAR(c) == is_tchar_ref_impl(c));
+            CHECK(HSFV_IS_TOKEN_TRAILING_CHAR(c) == is_token_trailing_char_ref_impl(c));
         }
     }
 }
