@@ -538,12 +538,9 @@ TEST_CASE("serialize bare_item", "[serialize][bare_item]")
     OK_HELPER("boolean", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true}), "?1");
     OK_HELPER("integer", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 123}), "123");
     OK_HELPER("decimal", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = 123.456}), "123.456");
-    OK_HELPER("string", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_string_t{.base = "foo", .len = 3}}),
-              "\"foo\"");
-    OK_HELPER("token", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = hsfv_token_t{.base = "foo", .len = 3}}),
-              "foo");
-    OK_HELPER("byte_seq",
-              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = hsfv_byte_seq_t{.base = "abc", .len = 3}}),
+    OK_HELPER("string", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "foo", .len = 3}}), "\"foo\"");
+    OK_HELPER("token", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "foo", .len = 3}}), "foo");
+    OK_HELPER("byte_seq", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = "abc", .len = 3}}),
               ":YWJj:");
 #undef OK_HELPER
 
@@ -557,7 +554,7 @@ TEST_CASE("serialize bare_item", "[serialize][bare_item]")
         CHECK(err == want);                                                                                                        \
     }
 
-    NG_HELPER("invalid type", (hsfv_bare_item_t{.type = (hsfv_bare_item_type_t)-1}), HSFV_ERR_INVALID);
+    NG_HELPER("invalid type", (hsfv_bare_item_t{.type = (hsfv_bare_item_type_t)(-1)}), HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
@@ -582,14 +579,13 @@ TEST_CASE("parse bare_item", "[parse][bare_item]")
     OK_HELPER("integer", "22", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 22}));
     OK_HELPER("decimal", "-2.2", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = -2.2}));
     OK_HELPER("string", "\"foo\"",
-              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_string_t{.base = "foo", .len = strlen("foo")}}));
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "foo", .len = strlen("foo")}}));
     OK_HELPER("token case 1", "abc",
-              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = hsfv_token_t{.base = "abc", .len = strlen("abc")}}));
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "abc", .len = strlen("abc")}}));
     OK_HELPER("token case 2", "*abc",
-              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = hsfv_token_t{.base = "*abc", .len = strlen("*abc")}}));
-    OK_HELPER(
-        "byte_seq", ":YWJj:",
-        (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = hsfv_byte_seq_t{.base = "abc", .len = strlen("abc")}}));
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "*abc", .len = strlen("*abc")}}));
+    OK_HELPER("byte_seq", ":YWJj:",
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = "abc", .len = strlen("abc")}}));
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                                                                            \
