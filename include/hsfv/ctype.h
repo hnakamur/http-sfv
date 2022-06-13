@@ -20,7 +20,7 @@ extern "C" {
  * tchar is defined at
  * https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
  */
-extern const char *hsfv_token_trailing_char_map;
+extern const char hsfv_token_trailing_char_map[256];
 #define hsfv_is_trailing_token_char(c) hsfv_token_trailing_char_map[(unsigned char)(c)]
 
 #define hsfv_is_ascii(c) ((c) <= '\x7f')

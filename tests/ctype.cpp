@@ -31,13 +31,8 @@ TEST_CASE("is_token_char", "[ctype]")
 {
     SECTION("result is equal to reference implementation")
     {
-        unsigned char c;
-
-        for (c = '\x00';; ++c) {
+        for (int c = '\x00'; c <= u'\xff'; ++c) {
             CHECK(hsfv_is_trailing_token_char(c) == is_tchar_ref_impl(c));
-            if (c == u'\xff') {
-                break;
-            }
         }
     }
 }
