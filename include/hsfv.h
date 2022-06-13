@@ -39,6 +39,8 @@ struct st_hsfv_allocator_t {
 
 extern hsfv_allocator_t hsfv_global_allocator;
 
+char *hsfv_strndup(hsfv_allocator_t *allocator, const char *src, size_t len);
+
 #define hsfv_align(d, a) (((d) + (a - 1)) & ~(a - 1))
 #define hsfv_roundup(d, a) (((d) + (a - 1)) / (a) * (a))
 #define hsfv_max(val1, val2) ((val1 < val2) ? (val2) : (val1))

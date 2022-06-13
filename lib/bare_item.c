@@ -387,18 +387,13 @@ hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token, hsfv_allocator_t *all
 hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                             const char **out_rest)
 {
-    hsfv_err_t err;
-    hsfv_buffer_t buf = {0};
     const char *p = input;
 
     if (p == input_end) {
-        err = HSFV_ERR_EOF;
-        goto error;
+        return HSFV_ERR_EOF;
     }
-
     if (!hsfv_is_token_leading_char(*p)) {
-        err = HSFV_ERR_INVALID;
-        goto error;
+        return HSFV_ERR_INVALID;
     }
 
     for (++p; p < input_end; ++p) {
@@ -407,22 +402,16 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
         }
     }
 
-    err = hsfv_buffer_append_bytes(&buf, allocator, input, p - input);
-    if (err) {
-        goto error;
+    item->token.base = hsfv_strndup(allocator, input, p - input);
+    if (item->token.base == NULL) {
+        return HSFV_ERR_OUT_OF_MEMORY;
     }
-
+    item->token.len = p - input;
     item->type = HSFV_BARE_ITEM_TYPE_TOKEN;
-    item->token.base = buf.bytes.base;
-    item->token.len = buf.bytes.len;
     if (out_rest) {
         *out_rest = p;
     }
     return HSFV_OK;
-
-error:
-    hsfv_buffer_deinit(&buf, allocator);
-    return err;
 }
 
 /* Key */
@@ -448,18 +437,13 @@ hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key, hsfv_allocator_t *allocator
 hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                           const char **out_rest)
 {
-    hsfv_err_t err;
-    hsfv_buffer_t buf = {0};
     const char *p = input;
 
     if (p == input_end) {
-        err = HSFV_ERR_EOF;
-        goto error;
+        return HSFV_ERR_EOF;
     }
-
     if (!hsfv_is_key_leaading_char(*p)) {
-        err = HSFV_ERR_INVALID;
-        goto error;
+        return HSFV_ERR_INVALID;
     }
 
     for (++p; p < input_end; ++p) {
@@ -468,21 +452,15 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
         }
     }
 
-    err = hsfv_buffer_append_bytes(&buf, allocator, input, p - input);
-    if (err) {
-        goto error;
+    key->base = hsfv_strndup(allocator, input, p - input);
+    if (key->base == NULL) {
+        return HSFV_ERR_OUT_OF_MEMORY;
     }
-
-    key->base = buf.bytes.base;
-    key->len = buf.bytes.len;
+    key->len = p - input;
     if (out_rest) {
         *out_rest = p;
     }
     return HSFV_OK;
-
-error:
-    hsfv_buffer_deinit(&buf, allocator);
-    return err;
 }
 
 /* Byte sequence */

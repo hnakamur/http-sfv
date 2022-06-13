@@ -20,3 +20,13 @@ hsfv_allocator_t hsfv_global_allocator = {
     .realloc = global_allocator_realloc,
     .free = global_allocator_free,
 };
+
+char *hsfv_strndup(hsfv_allocator_t *allocator, const char *src, size_t len)
+{
+    char *copy = allocator->alloc(allocator, len);
+    if (copy == NULL) {
+        return NULL;
+    }
+    memcpy(copy, src, len);
+    return copy;
+}
