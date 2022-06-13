@@ -3,7 +3,7 @@ project(http_sfv)
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
 
 # Catch2 v3 requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
