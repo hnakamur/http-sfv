@@ -59,35 +59,39 @@ typedef struct st_hsfv_iovec_const_t {
     size_t len;
 } hsfv_iovec_const_t;
 
-static inline void hsfv_iovec_deinit(hsfv_iovec_t *v, hsfv_allocator_t *allocator)
-{
-    allocator->free(allocator, (void *)v->base);
-}
+bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self, const hsfv_iovec_const_t *other);
+void hsfv_iovec_deinit(hsfv_iovec_t *v, hsfv_allocator_t *allocator);
+void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v, hsfv_allocator_t *allocator);
 
-static inline void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v, hsfv_allocator_t *allocator)
-{
-    allocator->free(allocator, (void *)v->base);
-}
+typedef struct st_hsfv_key_t {
+    const char *base;
+    size_t len;
+} hsfv_key_t;
 
-typedef hsfv_iovec_const_t hsfv_key_t;
-typedef hsfv_iovec_const_t hsfv_string_t;
-typedef hsfv_iovec_const_t hsfv_token_t;
-typedef hsfv_iovec_const_t hsfv_byte_seq_t;
+typedef struct st_hsfv_string_t {
+    const char *base;
+    size_t len;
+} hsfv_string_t;
 
-static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self, const hsfv_iovec_const_t *other)
-{
-    return self->len == other->len && !memcmp(self->base, other->base, self->len);
-}
+typedef struct st_hsfv_token_t {
+    const char *base;
+    size_t len;
+} hsfv_token_t;
 
-#define hsfv_key_eq hsfv_iovec_const_eq
-#define hsfv_string_eq hsfv_iovec_const_eq
-#define hsfv_token_eq hsfv_iovec_const_eq
-#define hsfv_byte_seq_eq hsfv_iovec_const_eq
+typedef struct st_hsfv_byte_seq_t {
+    const char *base;
+    size_t len;
+} hsfv_byte_seq_t;
 
-#define hsfv_key_deinit hsfv_iovec_const_deinit
-#define hsfv_string_deinit hsfv_iovec_const_deinit
-#define hsfv_token_deinit hsfv_iovec_const_deinit
-#define hsfv_byte_seq_deinit hsfv_iovec_const_deinit
+bool hsfv_string_eq(const hsfv_string_t *self, const hsfv_string_t *other);
+bool hsfv_key_eq(const hsfv_key_t *self, const hsfv_key_t *other);
+bool hsfv_token_eq(const hsfv_token_t *self, const hsfv_token_t *other);
+bool hsfv_byte_seq_eq(const hsfv_byte_seq_t *self, const hsfv_byte_seq_t *other);
+
+void hsfv_key_deinit(hsfv_key_t *v, hsfv_allocator_t *allocator);
+void hsfv_string_deinit(hsfv_string_t *v, hsfv_allocator_t *allocator);
+void hsfv_token_deinit(hsfv_token_t *v, hsfv_allocator_t *allocator);
+void hsfv_byte_seq_deinit(hsfv_byte_seq_t *v, hsfv_allocator_t *allocator);
 
 typedef struct st_hsfv_buffer_t {
     hsfv_iovec_t bytes;
@@ -100,11 +104,12 @@ void hsfv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator);
 hsfv_err_t hsfv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, size_t len);
 hsfv_err_t hsfv_buffer_append_byte(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, const char src);
 hsfv_err_t hsfv_buffer_append_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, const char *src, size_t len);
+
 static inline void hsfv_buffer_append_byte_unchecked(hsfv_buffer_t *buf, const char src)
 {
-    buf->bytes.base[buf->bytes.len] = src;
-    buf->bytes.len++;
+    buf->bytes.base[buf->bytes.len++] = src;
 }
+
 static inline void hsfv_buffer_append_bytes_unchecked(hsfv_buffer_t *buf, const char *src, size_t len)
 {
     memcpy(buf->bytes.base + buf->bytes.len, src, len);
@@ -289,12 +294,12 @@ hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *
 hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 
-#define hsfv_skip_sp(input, input_end)                                                                                             \
+#define HSFV_SKIP_SP(input, input_end)                                                                                             \
     while ((input) < (input_end) && *(input) == ' ') {                                                                             \
         ++(input);                                                                                                                 \
     }
 
-#define hsfv_skip_ows(input, input_end)                                                                                            \
+#define HSFV_SKIP_OWS(input, input_end)                                                                                            \
     while ((input) < (input_end) && (*(input) == ' ' || *(input) == '\t')) {                                                       \
         ++(input);                                                                                                                 \
     }

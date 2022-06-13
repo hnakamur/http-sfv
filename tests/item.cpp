@@ -22,7 +22,7 @@ TEST_CASE("serialize item", "[serialze][item]")
         },
         {
             .key = hsfv_key_t{.base = "*bar", .len = 4},
-            .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_token_t{.base = "baz", .len = 3}},
+            .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "baz", .len = 3}},
         },
         {
             .key = hsfv_key_t{.base = "baz", .len = 3},

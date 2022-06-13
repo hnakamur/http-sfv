@@ -5,15 +5,15 @@
 extern "C" {
 #endif
 
-#define hsfv_is_digit(c) ('0' <= (c) && (c) <= '9')
-#define hsfv_is_lcalpha(c) (('a' <= (c) && (c) <= 'z'))
-#define hsfv_is_alpha(c) (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
+#define HSFV_IS_DIGIT(c) ('0' <= (c) && (c) <= '9')
+#define HSFV_IS_LCALPHA(c) (('a' <= (c) && (c) <= 'z'))
+#define HSFV_IS_ALPHA(c) (('A' <= (c) && (c) <= 'Z') || ('a' <= (c) && (c) <= 'z'))
 
-#define hsfv_is_key_leaading_char(c) (hsfv_is_lcalpha(c) || (c) == '*')
-#define hsfv_is_key_trailing_char(c)                                                                                               \
-    (hsfv_is_lcalpha(c) || hsfv_is_digit(c) || (c) == '_' || (c) == '-' || (c) == '.' || (c) == '*')
+#define HSFV_IS_KEY_LEAADING_CHAR(c) (HSFV_IS_LCALPHA(c) || (c) == '*')
+#define HSFV_IS_KEY_TRAILING_CHAR(c)                                                                                               \
+    (HSFV_IS_LCALPHA(c) || HSFV_IS_DIGIT(c) || (c) == '_' || (c) == '-' || (c) == '.' || (c) == '*')
 
-#define hsfv_is_token_leading_char(c) (hsfv_is_alpha(c) || (c) == '*')
+#define HSFV_IS_TOKEN_LEADING_CHAR(c) (HSFV_IS_ALPHA(c) || (c) == '*')
 
 /*
  * token_trailing_char = tchar / ":" / "/"
@@ -21,19 +21,11 @@ extern "C" {
  * https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.6
  */
 extern const char hsfv_token_trailing_char_map[256];
-#define hsfv_is_trailing_token_char(c) hsfv_token_trailing_char_map[(unsigned char)(c)]
+#define HSFV_IS_TOKEN_TRAILING_CHAR(c) hsfv_token_trailing_char_map[(unsigned char)(c)]
 
-#define hsfv_is_ascii(c) ((c) <= '\x7f')
+#define HSFV_IS_ASCII(c) ((c) <= '\x7f')
 
-static inline bool hsfv_is_ascii_string(const char *input, const char *input_end)
-{
-    for (; input < input_end; ++input) {
-        if (!hsfv_is_ascii(*input)) {
-            return false;
-        }
-    }
-    return true;
-}
+bool hsfv_is_ascii_string(const char *input, const char *input_end);
 
 #ifdef __cplusplus
 }

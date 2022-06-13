@@ -16,23 +16,24 @@ TEST_CASE("serialize parameters", "[serialze][parameters]")
         hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
     }
 
-    hsfv_parameter_t want_params[3];
-    want_params[0] = hsfv_parameter_t{
-        .key = hsfv_key_t{.base = "foo", .len = 3},
-        .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
-    };
-    want_params[1] = hsfv_parameter_t{
-        .key = hsfv_key_t{.base = "*bar", .len = 4},
-        .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_token_t{.base = "baz", .len = 3}},
-    };
-    want_params[2] = hsfv_parameter_t{
-        .key = hsfv_key_t{.base = "baz", .len = 3},
-        .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = false},
+    hsfv_parameter_t want_params[] = {
+        {
+            .key = {.base = "foo", .len = 3},
+            .value = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+        },
+        {
+            .key = {.base = "*bar", .len = 4},
+            .value = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "baz", .len = 3}},
+        },
+        {
+            .key = {.base = "baz", .len = 3},
+            .value = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = false},
+        },
     };
 
     OK_HELPER("case 1",
               (hsfv_parameters_t{
-                  .params = &want_params[0],
+                  .params = want_params,
                   .len = 3,
                   .capacity = 3,
               }),
@@ -56,16 +57,17 @@ TEST_CASE("parse parameters", "[parse][parameters]")
         hsfv_parameters_deinit(&params, &hsfv_global_allocator);                                                                   \
     }
 
-    hsfv_parameter_t want_params[2];
-    want_params[0] = hsfv_parameter_t{
-        .key = hsfv_key_t{.base = "foo", .len = 3},
-        .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+    hsfv_parameter_t want_params[] = {
+        {
+            .key = {.base = "foo", .len = 3},
+            .value = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+        },
+        {
+            .key = {.base = "*bar", .len = 4},
+            .value = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "baz", .len = 3}},
+        },
     };
-    want_params[1] = hsfv_parameter_t{
-        .key = hsfv_key_t{.base = "*bar", .len = 4},
-        .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_token_t{.base = "baz", .len = 3}},
-    };
-    hsfv_parameters_t want = hsfv_parameters_t{
+    hsfv_parameters_t want = {
         .params = &want_params[0],
         .len = 2,
         .capacity = 2,

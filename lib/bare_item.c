@@ -23,6 +23,46 @@ static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const
 static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input, const char *input_end, int dec_sep_off, bool neg,
                                 const char **out_rest);
 
+bool hsfv_string_eq(const hsfv_string_t *self, const hsfv_string_t *other)
+{
+    return self->len == other->len && !memcmp(self->base, other->base, self->len);
+}
+
+bool hsfv_key_eq(const hsfv_key_t *self, const hsfv_key_t *other)
+{
+    return self->len == other->len && !memcmp(self->base, other->base, self->len);
+}
+
+bool hsfv_token_eq(const hsfv_token_t *self, const hsfv_token_t *other)
+{
+    return self->len == other->len && !memcmp(self->base, other->base, self->len);
+}
+
+bool hsfv_byte_seq_eq(const hsfv_byte_seq_t *self, const hsfv_byte_seq_t *other)
+{
+    return self->len == other->len && !memcmp(self->base, other->base, self->len);
+}
+
+void hsfv_key_deinit(hsfv_key_t *v, hsfv_allocator_t *allocator)
+{
+    allocator->free(allocator, (void *)v->base);
+}
+
+void hsfv_string_deinit(hsfv_string_t *v, hsfv_allocator_t *allocator)
+{
+    allocator->free(allocator, (void *)v->base);
+}
+
+void hsfv_token_deinit(hsfv_token_t *v, hsfv_allocator_t *allocator)
+{
+    allocator->free(allocator, (void *)v->base);
+}
+
+void hsfv_byte_seq_deinit(hsfv_byte_seq_t *v, hsfv_allocator_t *allocator)
+{
+    allocator->free(allocator, (void *)v->base);
+}
+
 bool hsfv_bare_item_eq(const hsfv_bare_item_t *self, const hsfv_bare_item_t *other)
 {
     if (self->type != other->type) {
@@ -178,7 +218,7 @@ hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const ch
     if (input == input_end) {
         return HSFV_ERR_EOF;
     }
-    if (!hsfv_is_digit(*input)) {
+    if (!HSFV_IS_DIGIT(*input)) {
         return HSFV_ERR_INVALID;
     }
 
@@ -190,7 +230,7 @@ hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const ch
         }
 
         ch = *input;
-        if (hsfv_is_digit(ch)) {
+        if (HSFV_IS_DIGIT(ch)) {
             ++input;
             continue;
         }
@@ -363,11 +403,11 @@ hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token, hsfv_allocator_t *all
     hsfv_err_t err;
 
     p = token->base;
-    if (!hsfv_is_token_leading_char(*p)) {
+    if (!HSFV_IS_TOKEN_LEADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
     }
     for (++p; p < token->base + token->len; ++p) {
-        if (!hsfv_is_trailing_token_char(*p)) {
+        if (!HSFV_IS_TOKEN_TRAILING_CHAR(*p)) {
             return HSFV_ERR_INVALID;
         }
     }
@@ -392,12 +432,12 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
     if (p == input_end) {
         return HSFV_ERR_EOF;
     }
-    if (!hsfv_is_token_leading_char(*p)) {
+    if (!HSFV_IS_TOKEN_LEADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
     }
 
     for (++p; p < input_end; ++p) {
-        if (!hsfv_is_trailing_token_char(*p)) {
+        if (!HSFV_IS_TOKEN_TRAILING_CHAR(*p)) {
             break;
         }
     }
@@ -420,11 +460,11 @@ hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key, hsfv_allocator_t *allocator
 {
     hsfv_err_t err;
     const char *p = key->base;
-    if (!p || key->len == 0 || !hsfv_is_key_leaading_char(*p)) {
+    if (!p || key->len == 0 || !HSFV_IS_KEY_LEAADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
     }
     for (++p; p < key->base + key->len; ++p) {
-        if (!hsfv_is_key_trailing_char(*p)) {
+        if (!HSFV_IS_KEY_TRAILING_CHAR(*p)) {
             return HSFV_ERR_INVALID;
         }
     }
@@ -442,12 +482,12 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
     if (p == input_end) {
         return HSFV_ERR_EOF;
     }
-    if (!hsfv_is_key_leaading_char(*p)) {
+    if (!HSFV_IS_KEY_LEAADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
     }
 
     for (++p; p < input_end; ++p) {
-        if (!hsfv_is_key_trailing_char(*p)) {
+        if (!HSFV_IS_KEY_TRAILING_CHAR(*p)) {
             break;
         }
     }
@@ -467,7 +507,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
 
 hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)
 {
-    size_t encoded_len = hfsv_base64_encoded_length(byte_seq->len);
+    size_t encoded_len = HSFV_BASE64_ENCODED_LENGTH(byte_seq->len);
     hsfv_err_t err;
 
     err = hsfv_buffer_ensure_unused_bytes(dest, allocator, encoded_len + 2);
@@ -477,8 +517,9 @@ hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq, hsfv_allocat
 
     hsfv_buffer_append_byte_unchecked(dest, ':');
 
-    hsfv_iovec_t dest_vec = (hsfv_iovec_t){.base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
-    hsfv_encode_base64(&dest_vec, byte_seq);
+    hsfv_iovec_const_t src_vec = {.base = byte_seq->base, .len = byte_seq->len};
+    hsfv_iovec_t dest_vec = {.base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
+    hsfv_encode_base64(&dest_vec, &src_vec);
     dest->bytes.len += encoded_len;
 
     hsfv_buffer_append_byte_unchecked(dest, ':');
@@ -510,7 +551,7 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
         c = *input;
         if (c == ':') {
             encoded_len = input - start;
-            decoded_len = hfsv_base64_decoded_length(encoded_len);
+            decoded_len = HSFV_BASE64_DECODED_LENGTH(encoded_len);
             temp.base = allocator->alloc(allocator, decoded_len);
             if (temp.base == NULL) {
                 return HSFV_ERR_OUT_OF_MEMORY;
@@ -533,7 +574,7 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
             return HSFV_OK;
         }
 
-        if (!hsfv_is_alpha(c) && !hsfv_is_digit(c) && c != '+' && c != '/' && c != '=') {
+        if (!HSFV_IS_ALPHA(c) && !HSFV_IS_DIGIT(c) && c != '+' && c != '/' && c != '=') {
             return HSFV_ERR_INVALID;
         }
     }
@@ -579,10 +620,10 @@ hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item, hsfv_allocator_t *alloca
     case '?':
         return hsfv_parse_boolean(item, input, input_end, out_rest);
     default:
-        if (c == '-' || hsfv_is_digit(c)) {
+        if (c == '-' || HSFV_IS_DIGIT(c)) {
             return hsfv_parse_number(item, input, input_end, out_rest);
         }
-        if (hsfv_is_token_leading_char(c)) {
+        if (HSFV_IS_TOKEN_LEADING_CHAR(c)) {
             return hsfv_parse_token(item, allocator, input, input_end, out_rest);
         }
         return HSFV_ERR_INVALID;

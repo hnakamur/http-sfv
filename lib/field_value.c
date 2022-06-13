@@ -71,7 +71,7 @@ hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value, hsfv_field_va
         return HSFV_ERR_INVALID;
     }
 
-    hsfv_skip_sp(input, input_end);
+    HSFV_SKIP_SP(input, input_end);
     switch (field_type) {
     case HSFV_FIELD_VALUE_TYPE_LIST:
         err = hsfv_parse_list(&field_value->list, allocator, input, input_end, &input);
@@ -96,7 +96,7 @@ hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value, hsfv_field_va
         break;
     }
 
-    hsfv_skip_sp(input, input_end);
+    HSFV_SKIP_SP(input, input_end);
 
     if (input < input_end) {
         err = HSFV_ERR_INVALID;
