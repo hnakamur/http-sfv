@@ -21,20 +21,20 @@ extern "C" {
 #define HSFV_MAX_DEC_INT 999999999999
 
 typedef enum {
-  HSFV_OK = 0,
-  HSFV_ERR = -1,
-  HSFV_ERR_OUT_OF_MEMORY = -2,
-  HSFV_ERR_EOF = -3,
-  HSFV_ERR_INVALID = -4,
-  HSFV_ERR_NUMBER_OUT_OF_RANGE = -5,
+    HSFV_OK = 0,
+    HSFV_ERR = -1,
+    HSFV_ERR_OUT_OF_MEMORY = -2,
+    HSFV_ERR_EOF = -3,
+    HSFV_ERR_INVALID = -4,
+    HSFV_ERR_NUMBER_OUT_OF_RANGE = -5,
 } hsfv_err_t;
 
 typedef struct st_hsfv_allocator_t hsfv_allocator_t;
 
 struct st_hsfv_allocator_t {
-  void *(*alloc)(hsfv_allocator_t *self, size_t size);
-  void *(*realloc)(hsfv_allocator_t *self, void *ptr, size_t size);
-  void (*free)(hsfv_allocator_t *self, void *ptr);
+    void *(*alloc)(hsfv_allocator_t *self, size_t size);
+    void *(*realloc)(hsfv_allocator_t *self, void *ptr, size_t size);
+    void (*free)(hsfv_allocator_t *self, void *ptr);
 };
 
 extern hsfv_allocator_t hsfv_global_allocator;
@@ -48,23 +48,23 @@ extern hsfv_allocator_t hsfv_global_allocator;
  * buffer structure compatible with iovec
  */
 typedef struct st_hsfv_iovec_t {
-  char *base;
-  size_t len;
+    char *base;
+    size_t len;
 } hsfv_iovec_t;
 
 typedef struct st_hsfv_iovec_const_t {
-  const char *base;
-  size_t len;
+    const char *base;
+    size_t len;
 } hsfv_iovec_const_t;
 
-static inline void hsfv_iovec_deinit(hsfv_iovec_t *v,
-                                     hsfv_allocator_t *allocator) {
-  allocator->free(allocator, (void *)v->base);
+static inline void hsfv_iovec_deinit(hsfv_iovec_t *v, hsfv_allocator_t *allocator)
+{
+    allocator->free(allocator, (void *)v->base);
 }
 
-static inline void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v,
-                                           hsfv_allocator_t *allocator) {
-  allocator->free(allocator, (void *)v->base);
+static inline void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v, hsfv_allocator_t *allocator)
+{
+    allocator->free(allocator, (void *)v->base);
 }
 
 typedef hsfv_iovec_const_t hsfv_key_t;
@@ -72,9 +72,9 @@ typedef hsfv_iovec_const_t hsfv_string_t;
 typedef hsfv_iovec_const_t hsfv_token_t;
 typedef hsfv_iovec_const_t hsfv_byte_seq_t;
 
-static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self,
-                                       const hsfv_iovec_const_t *other) {
-  return self->len == other->len && !memcmp(self->base, other->base, self->len);
+static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self, const hsfv_iovec_const_t *other)
+{
+    return self->len == other->len && !memcmp(self->base, other->base, self->len);
 }
 
 #define hsfv_key_eq hsfv_iovec_const_eq
@@ -88,273 +88,214 @@ static inline bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self,
 #define hsfv_byte_seq_deinit hsfv_iovec_const_deinit
 
 typedef struct st_hsfv_buffer_t {
-  hsfv_iovec_t bytes;
-  size_t capacity;
+    hsfv_iovec_t bytes;
+    size_t capacity;
 } hsfv_buffer_t;
 
-hsfv_err_t hsfv_buffer_alloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
-                             size_t capacity);
-hsfv_err_t hsfv_buffer_realloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator,
-                               size_t capacity);
+hsfv_err_t hsfv_buffer_alloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, size_t capacity);
+hsfv_err_t hsfv_buffer_realloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, size_t capacity);
 void hsfv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator);
-hsfv_err_t hsfv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf,
-                                           hsfv_allocator_t *allocator,
-                                           size_t len);
-hsfv_err_t hsfv_buffer_append_byte(hsfv_buffer_t *buf,
-                                   hsfv_allocator_t *allocator, const char src);
-hsfv_err_t hsfv_buffer_append_bytes(hsfv_buffer_t *buf,
-                                    hsfv_allocator_t *allocator,
-                                    const char *src, size_t len);
-static inline void hsfv_buffer_append_byte_unsafe(hsfv_buffer_t *buf,
-                                                  const char src) {
-  buf->bytes.base[buf->bytes.len] = src;
-  buf->bytes.len++;
+hsfv_err_t hsfv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, size_t len);
+hsfv_err_t hsfv_buffer_append_byte(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, const char src);
+hsfv_err_t hsfv_buffer_append_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, const char *src, size_t len);
+static inline void hsfv_buffer_append_byte_unsafe(hsfv_buffer_t *buf, const char src)
+{
+    buf->bytes.base[buf->bytes.len] = src;
+    buf->bytes.len++;
 }
-static inline void hsfv_buffer_append_bytes_unsafe(hsfv_buffer_t *buf,
-                                                   const char *src,
-                                                   size_t len) {
-  memcpy(buf->bytes.base + buf->bytes.len, src, len);
-  buf->bytes.len += len;
+static inline void hsfv_buffer_append_bytes_unsafe(hsfv_buffer_t *buf, const char *src, size_t len)
+{
+    memcpy(buf->bytes.base + buf->bytes.len, src, len);
+    buf->bytes.len += len;
 }
 
 /* Bare Item */
 
 typedef enum {
-  HSFV_BARE_ITEM_TYPE_INTEGER = 0,
-  HSFV_BARE_ITEM_TYPE_DECIMAL,
-  HSFV_BARE_ITEM_TYPE_STRING,
-  HSFV_BARE_ITEM_TYPE_TOKEN,
-  HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
-  HSFV_BARE_ITEM_TYPE_BOOLEAN,
+    HSFV_BARE_ITEM_TYPE_INTEGER = 0,
+    HSFV_BARE_ITEM_TYPE_DECIMAL,
+    HSFV_BARE_ITEM_TYPE_STRING,
+    HSFV_BARE_ITEM_TYPE_TOKEN,
+    HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
+    HSFV_BARE_ITEM_TYPE_BOOLEAN,
 } hsfv_bare_item_type_t;
 
 typedef struct st_hsfv_bare_item_t {
-  hsfv_bare_item_type_t type;
-  union {
-    int64_t integer;
-    double decimal;
-    hsfv_string_t string;
-    hsfv_token_t token;
-    hsfv_byte_seq_t byte_seq;
-    bool boolean;
-  };
+    hsfv_bare_item_type_t type;
+    union {
+        int64_t integer;
+        double decimal;
+        hsfv_string_t string;
+        hsfv_token_t token;
+        hsfv_byte_seq_t byte_seq;
+        bool boolean;
+    };
 } hsfv_bare_item_t;
 
-bool hsfv_bare_item_eq(const hsfv_bare_item_t *self,
-                       const hsfv_bare_item_t *other);
+bool hsfv_bare_item_eq(const hsfv_bare_item_t *self, const hsfv_bare_item_t *other);
 
 /* Parameters */
 
 typedef struct st_hsfv_parameter_t {
-  hsfv_key_t key;
-  hsfv_bare_item_t value;
+    hsfv_key_t key;
+    hsfv_bare_item_t value;
 } hsfv_parameter_t;
 
 typedef struct st_hsfv_parameters_t {
-  hsfv_parameter_t *params;
-  size_t len;
-  size_t capacity;
+    hsfv_parameter_t *params;
+    size_t len;
+    size_t capacity;
 } hsfv_parameters_t;
 
 /* Item */
 
 typedef struct st_hsfv_item_t {
-  hsfv_bare_item_t bare_item;
-  hsfv_parameters_t parameters;
+    hsfv_bare_item_t bare_item;
+    hsfv_parameters_t parameters;
 } hsfv_item_t;
 
 /* Inner List */
 
 typedef struct st_hsfv_inner_list_t {
-  hsfv_item_t *items;
-  size_t len;
-  size_t capacity;
-  hsfv_parameters_t parameters;
+    hsfv_item_t *items;
+    size_t len;
+    size_t capacity;
+    hsfv_parameters_t parameters;
 } hsfv_inner_list_t;
 
 /* List */
 
 typedef enum {
-  HSFV_LIST_MEMBER_TYPE_ITEM = 0,
-  HSFV_LIST_MEMBER_TYPE_INNER_LIST,
+    HSFV_LIST_MEMBER_TYPE_ITEM = 0,
+    HSFV_LIST_MEMBER_TYPE_INNER_LIST,
 } hsfv_list_member_type_t;
 
 typedef struct st_hsfv_list_member_t {
-  hsfv_list_member_type_t type;
-  union {
-    hsfv_item_t item;
-    hsfv_inner_list_t inner_list;
-  };
+    hsfv_list_member_type_t type;
+    union {
+        hsfv_item_t item;
+        hsfv_inner_list_t inner_list;
+    };
 } hsfv_list_member_t;
 
 typedef struct st_hsfv_list_t {
-  hsfv_list_member_t *members;
-  size_t len;
-  size_t capacity;
+    hsfv_list_member_t *members;
+    size_t len;
+    size_t capacity;
 } hsfv_list_t;
 
 /* Dictionary */
 
 typedef enum {
-  HSFV_DICT_MEMBER_TYPE_ITEM = 0,
-  HSFV_DICT_MEMBER_TYPE_INNER_LIST,
+    HSFV_DICT_MEMBER_TYPE_ITEM = 0,
+    HSFV_DICT_MEMBER_TYPE_INNER_LIST,
 } hsfv_dict_member_type_t;
 
 typedef struct st_hsfv_dict_member_value_t {
-  hsfv_dict_member_type_t type;
-  union {
-    hsfv_item_t item;
-    hsfv_inner_list_t inner_list;
-  };
+    hsfv_dict_member_type_t type;
+    union {
+        hsfv_item_t item;
+        hsfv_inner_list_t inner_list;
+    };
 } hsfv_dict_member_value_t;
 
 typedef struct st_hsfv_dict_member_t {
-  hsfv_key_t key;
-  hsfv_parameters_t parameters;
-  hsfv_dict_member_value_t value;
+    hsfv_key_t key;
+    hsfv_parameters_t parameters;
+    hsfv_dict_member_value_t value;
 } hsfv_dict_member_t;
 
 typedef struct st_hsfv_dict_t {
-  hsfv_dict_member_t *members;
-  size_t len;
-  size_t capacity;
+    hsfv_dict_member_t *members;
+    size_t len;
+    size_t capacity;
 } hsfv_dictionary_t;
 
 /* Field Value */
 
 typedef enum {
-  HSFV_FIELD_VALUE_TYPE_LIST = 0,
-  HSFV_FIELD_VALUE_TYPE_DICTIONARY,
-  HSFV_FIELD_VALUE_TYPE_ITEM,
+    HSFV_FIELD_VALUE_TYPE_LIST = 0,
+    HSFV_FIELD_VALUE_TYPE_DICTIONARY,
+    HSFV_FIELD_VALUE_TYPE_ITEM,
 } hsfv_field_value_type_t;
 
 typedef struct st_hsfv_field_value_t {
-  hsfv_field_value_type_t type;
-  union {
-    hsfv_list_t list;
-    hsfv_dictionary_t dictionary;
-    hsfv_item_t item;
-  };
+    hsfv_field_value_type_t type;
+    union {
+        hsfv_list_t list;
+        hsfv_dictionary_t dictionary;
+        hsfv_item_t item;
+    };
 } hsfv_field_value_t;
 
 bool hsfv_field_value_is_empty(const hsfv_field_value_t *self);
 
-bool hsfv_field_value_eq(const hsfv_field_value_t *self,
-                         const hsfv_field_value_t *other);
-bool hsfv_dictionary_eq(const hsfv_dictionary_t *self,
-                        const hsfv_dictionary_t *other);
+bool hsfv_field_value_eq(const hsfv_field_value_t *self, const hsfv_field_value_t *other);
+bool hsfv_dictionary_eq(const hsfv_dictionary_t *self, const hsfv_dictionary_t *other);
 bool hsfv_list_eq(const hsfv_list_t *self, const hsfv_list_t *other);
-bool hsfv_inner_list_eq(const hsfv_inner_list_t *self,
-                        const hsfv_inner_list_t *other);
+bool hsfv_inner_list_eq(const hsfv_inner_list_t *self, const hsfv_inner_list_t *other);
 bool hsfv_item_eq(const hsfv_item_t *self, const hsfv_item_t *other);
-bool hsfv_parameter_eq(const hsfv_parameter_t *self,
-                       const hsfv_parameter_t *other);
-bool hsfv_parameters_eq(const hsfv_parameters_t *self,
-                        const hsfv_parameters_t *other);
+bool hsfv_parameter_eq(const hsfv_parameter_t *self, const hsfv_parameter_t *other);
+bool hsfv_parameters_eq(const hsfv_parameters_t *self, const hsfv_parameters_t *other);
 
-void hsfv_field_value_deinit(hsfv_field_value_t *self,
-                             hsfv_allocator_t *allocator);
-void hsfv_dictionary_deinit(hsfv_dictionary_t *self,
-                            hsfv_allocator_t *allocator);
+void hsfv_field_value_deinit(hsfv_field_value_t *self, hsfv_allocator_t *allocator);
+void hsfv_dictionary_deinit(hsfv_dictionary_t *self, hsfv_allocator_t *allocator);
 void hsfv_list_deinit(hsfv_list_t *self, hsfv_allocator_t *allocator);
-void hsfv_inner_list_deinit(hsfv_inner_list_t *self,
-                            hsfv_allocator_t *allocator);
+void hsfv_inner_list_deinit(hsfv_inner_list_t *self, hsfv_allocator_t *allocator);
 void hsfv_item_deinit(hsfv_item_t *item, hsfv_allocator_t *allocator);
-void hsfv_parameters_deinit(hsfv_parameters_t *parameters,
-                            hsfv_allocator_t *allocator);
-void hsfv_parameter_deinit(hsfv_parameter_t *parameter,
-                           hsfv_allocator_t *allocator);
-void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item,
-                           hsfv_allocator_t *allocator);
+void hsfv_parameters_deinit(hsfv_parameters_t *parameters, hsfv_allocator_t *allocator);
+void hsfv_parameter_deinit(hsfv_parameter_t *parameter, hsfv_allocator_t *allocator);
+void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item, hsfv_allocator_t *allocator);
 
-hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value,
-                                  hsfv_field_value_type_t field_type,
-                                  hsfv_allocator_t *allocator,
-                                  const char *input, const char *input_end,
-                                  const char **out_rest);
-hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary,
-                                 hsfv_allocator_t *allocator, const char *input,
+hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value, hsfv_field_value_type_t field_type, hsfv_allocator_t *allocator,
+                                  const char *input, const char *input_end, const char **out_rest);
+hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary, hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator,
-                           const char *input, const char *input_end,
+hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                            const char **out_rest);
-hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list,
-                                 hsfv_allocator_t *allocator, const char *input,
+hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list, hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_item(hsfv_item_t *item, hsfv_allocator_t *allocator,
-                           const char *input, const char *input_end,
+hsfv_err_t hsfv_parse_item(hsfv_item_t *item, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                            const char **out_rest);
-hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters,
-                                 hsfv_allocator_t *allocator, const char *input,
+hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters, hsfv_allocator_t *allocator, const char *input,
                                  const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item,
-                                hsfv_allocator_t *allocator, const char *input,
-                                const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_boolean(hsfv_bare_item_t *item, const char *input,
-                              const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input,
-                             const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item,
-                             hsfv_allocator_t *allocator, const char *input,
-                             const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
-                            const char *input, const char *input_end,
+hsfv_err_t hsfv_parse_bare_item(hsfv_bare_item_t *item, hsfv_allocator_t *allocator, const char *input, const char *input_end,
+                                const char **out_rest);
+hsfv_err_t hsfv_parse_boolean(hsfv_bare_item_t *item, const char *input, const char *input_end, const char **out_rest);
+hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const char *input_end, const char **out_rest);
+hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item, hsfv_allocator_t *allocator, const char *input, const char *input_end,
+                             const char **out_rest);
+hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                             const char **out_rest);
-hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item,
-                               hsfv_allocator_t *allocator, const char *input,
-                               const char *input_end, const char **out_rest);
-hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator,
-                          const char *input, const char *input_end,
+hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocator, const char *input, const char *input_end,
+                               const char **out_rest);
+hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                           const char **out_rest);
 
-hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value,
-                                      hsfv_allocator_t *allocator,
-                                      hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary,
-                                     hsfv_allocator_t *allocator,
-                                     hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_list(const hsfv_list_t *list,
-                               hsfv_allocator_t *allocator,
-                               hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_item(const hsfv_item_t *item,
-                               hsfv_allocator_t *allocator,
-                               hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_inner_list(const hsfv_inner_list_t *inner_list,
-                                     hsfv_allocator_t *allocator,
-                                     hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_parameters(const hsfv_parameters_t *parameters,
-                                     hsfv_allocator_t *allocator,
-                                     hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key,
-                              hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_bare_item(const hsfv_bare_item_t *item,
-                                    hsfv_allocator_t *allocator,
-                                    hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator,
-                                  hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq,
-                                   hsfv_allocator_t *allocator,
-                                   hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token,
-                                hsfv_allocator_t *allocator,
-                                hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string,
-                                 hsfv_allocator_t *allocator,
-                                 hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator,
-                                  hsfv_buffer_t *dest);
-hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator,
-                                  hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_list(const hsfv_list_t *list, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_item(const hsfv_item_t *item, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_inner_list(const hsfv_inner_list_t *inner_list, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_parameters(const hsfv_parameters_t *parameters, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_bare_item(const hsfv_bare_item_t *item, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
+hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 
-#define hsfv_skip_sp(input, input_end)                                         \
-  while ((input) < (input_end) && *(input) == ' ') {                           \
-    ++(input);                                                                 \
-  }
+#define hsfv_skip_sp(input, input_end)                                                                                             \
+    while ((input) < (input_end) && *(input) == ' ') {                                                                             \
+        ++(input);                                                                                                                 \
+    }
 
-#define hsfv_skip_ows(input, input_end)                                        \
-  while ((input) < (input_end) && (*(input) == ' ' || *(input) == '\t')) {     \
-    ++(input);                                                                 \
-  }
+#define hsfv_skip_ows(input, input_end)                                                                                            \
+    while ((input) < (input_end) && (*(input) == ' ' || *(input) == '\t')) {                                                       \
+        ++(input);                                                                                                                 \
+    }
 
 #include "hsfv/base64.h"
 #include "hsfv/ctype.h"

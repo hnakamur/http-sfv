@@ -3,616 +3,607 @@
 
 /* Boolean */
 
-TEST_CASE("serialize boolean", "[serialize][boolean]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_boolean(input, &hsfv_global_allocator, &buf);         \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize boolean", "[serialize][boolean]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_boolean(input, &hsfv_global_allocator, &buf);                                                         \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("false", false, "?0");
-  OK_HELPER("true", true, "?1");
+    OK_HELPER("false", false, "?0");
+    OK_HELPER("true", true, "?1");
 #undef OK_HELPER
 }
 
-TEST_CASE("parse boolean", "[parse][boolean]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_boolean(&item, input, input_end, &rest);                  \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_BOOLEAN);                           \
-    CHECK(item.boolean == want);                                               \
-    CHECK(rest == input_end);                                                  \
-  }
+TEST_CASE("parse boolean", "[parse][boolean]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_boolean(&item, input, input_end, &rest);                                                                  \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(item.type == HSFV_BARE_ITEM_TYPE_BOOLEAN);                                                                           \
+        CHECK(item.boolean == want);                                                                                               \
+        CHECK(rest == input_end);                                                                                                  \
+    }
 
-  OK_HELPER("false", "?0", 0);
-  OK_HELPER("true", "?1", 1);
+    OK_HELPER("false", "?0", 0);
+    OK_HELPER("true", "?1", 1);
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION("section") {                                                         \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_boolean(&item, input, input_end, &rest);                  \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION("section")                                                                                                             \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_boolean(&item, input, input_end, &rest);                                                                  \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("unexpected EOF", "?", HSFV_ERR_EOF);
-  NG_HELPER("invalid value", "?2", HSFV_ERR_INVALID);
+    NG_HELPER("unexpected EOF", "?", HSFV_ERR_EOF);
+    NG_HELPER("invalid value", "?2", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
 /* Integer */
 
-TEST_CASE("serialize integer", "[serialize][integer]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);         \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize integer", "[serialize][integer]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);                                                         \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("case 1", 12, "12");
-  OK_HELPER("case 2", -12, "-12");
-  OK_HELPER("min", -999999999999999, "-999999999999999");
-  OK_HELPER("max", 999999999999999, "999999999999999");
+    OK_HELPER("case 1", 12, "12");
+    OK_HELPER("case 2", -12, "-12");
+    OK_HELPER("min", -999999999999999, "-999999999999999");
+    OK_HELPER("max", 999999999999999, "999999999999999");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);         \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_integer(input, &hsfv_global_allocator, &buf);                                                         \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("case 1", 1000000000000000, HSFV_ERR_INVALID);
-  NG_HELPER("case 2", -1000000000000000, HSFV_ERR_INVALID);
+    NG_HELPER("case 1", 1000000000000000, HSFV_ERR_INVALID);
+    NG_HELPER("case 2", -1000000000000000, HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("parse integer", "[parse][integer]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);                           \
-    CHECK(item.integer == want);                                               \
-  }
+TEST_CASE("parse integer", "[parse][integer]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_number(&item, input, input_end, &rest);                                                                   \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);                                                                           \
+        CHECK(item.integer == want);                                                                                               \
+    }
 
-  OK_HELPER("positive", "1871", 1871) OK_HELPER("negative", "-1871", -1871);
-  OK_HELPER("positive followed by non number", "1871next", 1871)
-  OK_HELPER("minimum", "-999999999999999", HSFV_MIN_INT);
-  OK_HELPER("minimum", "999999999999999", HSFV_MAX_INT);
+    OK_HELPER("positive", "1871", 1871) OK_HELPER("negative", "-1871", -1871);
+    OK_HELPER("positive followed by non number", "1871next", 1871)
+    OK_HELPER("minimum", "-999999999999999", HSFV_MIN_INT);
+    OK_HELPER("minimum", "999999999999999", HSFV_MAX_INT);
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_number(&item, input, input_end, &rest);                                                                   \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
-  NG_HELPER("no digit after minus sign", "-", HSFV_ERR_EOF);
-  NG_HELPER("integer with too many digits", "1234567890123456",
-            HSFV_ERR_NUMBER_OUT_OF_RANGE);
-  NG_HELPER("smaller than minimum", "-1000000000000000",
-            HSFV_ERR_NUMBER_OUT_OF_RANGE);
-  NG_HELPER("larger than maximum", "1000000000000000",
-            HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
+    NG_HELPER("no digit after minus sign", "-", HSFV_ERR_EOF);
+    NG_HELPER("integer with too many digits", "1234567890123456", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    NG_HELPER("smaller than minimum", "-1000000000000000", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    NG_HELPER("larger than maximum", "1000000000000000", HSFV_ERR_NUMBER_OUT_OF_RANGE);
 #undef NG_HELPER
 }
 
 /* Decimal */
 
-TEST_CASE("serialize decimal", "[serialize][decimal]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);         \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize decimal", "[serialize][decimal]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);                                                         \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("case 1", 12, "12.0");
-  OK_HELPER("case 2", 12.000, "12.0");
-  OK_HELPER("case 3", 12.0004, "12.0");
-  OK_HELPER("case 4", 12.3456, "12.346");
-  OK_HELPER("case 5", -12.3456, "-12.346");
-  OK_HELPER("case 6", 18.71, "18.71");
-  OK_HELPER("min", -999999999999.999, "-999999999999.999");
-  OK_HELPER("max", 999999999999.999, "999999999999.999");
+    OK_HELPER("case 1", 12, "12.0");
+    OK_HELPER("case 2", 12.000, "12.0");
+    OK_HELPER("case 3", 12.0004, "12.0");
+    OK_HELPER("case 4", 12.3456, "12.346");
+    OK_HELPER("case 5", -12.3456, "-12.346");
+    OK_HELPER("case 6", 18.71, "18.71");
+    OK_HELPER("min", -999999999999.999, "-999999999999.999");
+    OK_HELPER("max", 999999999999.999, "999999999999.999");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);         \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);                                                         \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("case 1", 1000000000000, HSFV_ERR_INVALID);
-  NG_HELPER("case 2", -1000000000000, HSFV_ERR_INVALID);
-  NG_HELPER("case 3", 100000000000000.999, HSFV_ERR_INVALID);
-  NG_HELPER("case 4", -10000000000000.999, HSFV_ERR_INVALID);
+    NG_HELPER("case 1", 1000000000000, HSFV_ERR_INVALID);
+    NG_HELPER("case 2", -1000000000000, HSFV_ERR_INVALID);
+    NG_HELPER("case 3", 100000000000000.999, HSFV_ERR_INVALID);
+    NG_HELPER("case 4", -10000000000000.999, HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("parse decimal", "[parse][decimal]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);                           \
-    CHECK(item.decimal == want);                                               \
-  }
+TEST_CASE("parse decimal", "[parse][decimal]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_number(&item, input, input_end, &rest);                                                                   \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);                                                                           \
+        CHECK(item.decimal == want);                                                                                               \
+    }
 
-  OK_HELPER("positive", "18.71", 18.71);
-  OK_HELPER("negative", "-18.71", -18.71);
-  OK_HELPER("negative followed by non number", "-18.71next", -18.71);
-  OK_HELPER("three frac digits", "-18.710", -18.71);
+    OK_HELPER("positive", "18.71", 18.71);
+    OK_HELPER("negative", "-18.71", -18.71);
+    OK_HELPER("negative followed by non number", "-18.71next", -18.71);
+    OK_HELPER("three frac digits", "-18.710", -18.71);
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_number(&item, input, input_end, &rest);                   \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_number(&item, input, input_end, &rest);                                                                   \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
-  NG_HELPER("starts with digit", ".1", HSFV_ERR_INVALID);
-  NG_HELPER("ends with digit", "1.", HSFV_ERR_INVALID);
-  NG_HELPER("more than three fraction digits", "10.1234",
-            HSFV_ERR_NUMBER_OUT_OF_RANGE);
-  NG_HELPER("more than twelve int digits", "1234567890123.0",
-            HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    NG_HELPER("not digit", "a", HSFV_ERR_INVALID);
+    NG_HELPER("starts with digit", ".1", HSFV_ERR_INVALID);
+    NG_HELPER("ends with digit", "1.", HSFV_ERR_INVALID);
+    NG_HELPER("more than three fraction digits", "10.1234", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    NG_HELPER("more than twelve int digits", "1234567890123.0", HSFV_ERR_NUMBER_OUT_OF_RANGE);
 #undef NG_HELPER
 }
 
 /* String */
 
-TEST_CASE("serialize string", "[serialize][string]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_string_t input_s =                                                    \
-        (hsfv_string_t){.base = input, .len = strlen(input)};                  \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);       \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize string", "[serialize][string]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_string_t input_s = (hsfv_string_t){.base = input, .len = strlen(input)};                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);                                                       \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("empty", "", "\"\"");
-  OK_HELPER("no escape", "foo", "\"foo\"");
-  OK_HELPER("escape", "\\\"", "\"\\\\\\\"\"");
+    OK_HELPER("empty", "", "\"\"");
+    OK_HELPER("no escape", "foo", "\"foo\"");
+    OK_HELPER("escape", "\\\"", "\"\\\\\\\"\"");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_string_t input_s =                                                    \
-        (hsfv_string_t){.base = input, .len = strlen(input)};                  \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);       \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_string_t input_s = (hsfv_string_t){.base = input, .len = strlen(input)};                                              \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_string(&input_s, &hsfv_global_allocator, &buf);                                                       \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("case 1", "\x1f", HSFV_ERR_INVALID);
-  NG_HELPER("case 2", "\x7f", HSFV_ERR_INVALID);
+    NG_HELPER("case 1", "\x1f", HSFV_ERR_INVALID);
+    NG_HELPER("case 2", "\x7f", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("parse string", "[parse][string]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    hsfv_string_t want_s;                                                      \
-    err = hsfv_parse_string(&item, &hsfv_global_allocator, input, input_end,   \
-                            &rest);                                            \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                            \
-    want_s.base = want;                                                        \
-    want_s.len = strlen(want);                                                 \
-    CHECK(hsfv_string_eq(&item.string, &want_s));                              \
-    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
-  }
+TEST_CASE("parse string", "[parse][string]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        hsfv_string_t want_s;                                                                                                      \
+        err = hsfv_parse_string(&item, &hsfv_global_allocator, input, input_end, &rest);                                           \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(item.type == HSFV_BARE_ITEM_TYPE_STRING);                                                                            \
+        want_s.base = want;                                                                                                        \
+        want_s.len = strlen(want);                                                                                                 \
+        CHECK(hsfv_string_eq(&item.string, &want_s));                                                                              \
+        hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                                                                      \
+    }
 
-  OK_HELPER("no escape", "\"foo\"", "foo");
-  OK_HELPER("escape", "\"b\\\"a\\\\r\"", "b\"a\\r");
-  OK_HELPER("empty", "\"\"", "");
+    OK_HELPER("no escape", "\"foo\"", "foo");
+    OK_HELPER("escape", "\"b\\\"a\\\\r\"", "b\"a\\r");
+    OK_HELPER("empty", "\"\"", "");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    err = hsfv_parse_string(&item, &hsfv_global_allocator, input, input_end,   \
-                            &rest);                                            \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_string(&item, &hsfv_global_allocator, input, input_end, &rest);                                           \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("empty", "", HSFV_ERR_INVALID);
-  NG_HELPER("no double quote", "a", HSFV_ERR_INVALID);
-  NG_HELPER("no characer after escape", "\"\\", HSFV_ERR_INVALID);
-  NG_HELPER("invalid characer after escape", "\"\\o", HSFV_ERR_INVALID);
-  NG_HELPER("invalid control characer", "\x1f", HSFV_ERR_INVALID);
-  NG_HELPER("invalid control characer DEL", "\x7f", HSFV_ERR_INVALID);
-  NG_HELPER("unclosed string", "\"foo", HSFV_ERR_EOF);
+    NG_HELPER("empty", "", HSFV_ERR_INVALID);
+    NG_HELPER("no double quote", "a", HSFV_ERR_INVALID);
+    NG_HELPER("no characer after escape", "\"\\", HSFV_ERR_INVALID);
+    NG_HELPER("invalid characer after escape", "\"\\o", HSFV_ERR_INVALID);
+    NG_HELPER("invalid control characer", "\x1f", HSFV_ERR_INVALID);
+    NG_HELPER("invalid control characer DEL", "\x7f", HSFV_ERR_INVALID);
+    NG_HELPER("unclosed string", "\"foo", HSFV_ERR_EOF);
 #undef NG_HELPER
 }
 
 /* Token */
 
-TEST_CASE("serialize token", "[serialize][token]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_token_t input_t =                                                     \
-        (hsfv_token_t){.base = input, .len = strlen(input)};                   \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);        \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize token", "[serialize][token]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_token_t input_t = (hsfv_token_t){.base = input, .len = strlen(input)};                                                \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);                                                        \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("case 1", "*t!o&k", "*t!o&k");
-  OK_HELPER("case 2", "a/b:c", "a/b:c");
+    OK_HELPER("case 1", "*t!o&k", "*t!o&k");
+    OK_HELPER("case 2", "a/b:c", "a/b:c");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_token_t input_t =                                                     \
-        (hsfv_token_t){.base = input, .len = strlen(input)};                   \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);        \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_token_t input_t = (hsfv_token_t){.base = input, .len = strlen(input)};                                                \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_token(&input_t, &hsfv_global_allocator, &buf);                                                        \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("case 1", "/", HSFV_ERR_INVALID);
-  NG_HELPER("case 2", "a?", HSFV_ERR_INVALID);
+    NG_HELPER("case 1", "/", HSFV_ERR_INVALID);
+    NG_HELPER("case 2", "a?", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("parse token", "[parse][token]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_token_t want_t;                                                       \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    err = hsfv_parse_token(&item, &hsfv_global_allocator, input, input_end,    \
-                           &rest);                                             \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_TOKEN);                             \
-    want_t.base = want;                                                        \
-    want_t.len = strlen(want);                                                 \
-    CHECK(hsfv_token_eq(&item.token, &want_t));                                \
-    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
-  }
+TEST_CASE("parse token", "[parse][token]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_token_t want_t;                                                                                                       \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_token(&item, &hsfv_global_allocator, input, input_end, &rest);                                            \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(item.type == HSFV_BARE_ITEM_TYPE_TOKEN);                                                                             \
+        want_t.base = want;                                                                                                        \
+        want_t.len = strlen(want);                                                                                                 \
+        CHECK(hsfv_token_eq(&item.token, &want_t));                                                                                \
+        hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                                                                      \
+    }
 
-  OK_HELPER("single character", "t", "t");
-  OK_HELPER("multipel characters", "tok", "tok");
-  OK_HELPER("starts with asterisk", "*t!o&k", "*t!o&k");
-  OK_HELPER("starts with alpha followed with equal sign", "t=", "t");
-  OK_HELPER("contains colon and slash", "a/b:c", "a/b:c");
+    OK_HELPER("single character", "t", "t");
+    OK_HELPER("multipel characters", "tok", "tok");
+    OK_HELPER("starts with asterisk", "*t!o&k", "*t!o&k");
+    OK_HELPER("starts with alpha followed with equal sign", "t=", "t");
+    OK_HELPER("contains colon and slash", "a/b:c", "a/b:c");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    err = hsfv_parse_token(&item, &hsfv_global_allocator, input, input_end,    \
-                           &rest);                                             \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_token(&item, &hsfv_global_allocator, input, input_end, &rest);                                            \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("empty", "", HSFV_ERR_EOF);
-  NG_HELPER("non ASCII character", "é", HSFV_ERR_INVALID);
+    NG_HELPER("empty", "", HSFV_ERR_EOF);
+    NG_HELPER("non ASCII character", "é", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
 /* Byte sequnce */
 
-TEST_CASE("serialize byte_seq", "[serialize][byte_seq]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_byte_seq_t input_b =                                                  \
-        (hsfv_byte_seq_t){.base = input, .len = strlen(input)};                \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_byte_seq(&input_b, &hsfv_global_allocator, &buf);     \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize byte_seq", "[serialize][byte_seq]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_byte_seq_t input_b = (hsfv_byte_seq_t){.base = input, .len = strlen(input)};                                          \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_byte_seq(&input_b, &hsfv_global_allocator, &buf);                                                     \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("case 1", "abc", ":YWJj:");
-  OK_HELPER("case 2", "any carnal pleasure", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:");
-  OK_HELPER("case 3", "any carnal pleasur", ":YW55IGNhcm5hbCBwbGVhc3Vy:");
+    OK_HELPER("case 1", "abc", ":YWJj:");
+    OK_HELPER("case 2", "any carnal pleasure", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:");
+    OK_HELPER("case 3", "any carnal pleasur", ":YW55IGNhcm5hbCBwbGVhc3Vy:");
 #undef OK_HELPER
 }
 
-TEST_CASE("parse byte_seq", "[parse][byte_seq]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_byte_seq_t want_b;                                                    \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, \
-                              &rest);                                          \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_BYTE_SEQ);                          \
-    want_b.base = want;                                                        \
-    want_b.len = strlen(want);                                                 \
-    CHECK(hsfv_byte_seq_eq(&item.byte_seq, &want_b));                          \
-    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
-  }
+TEST_CASE("parse byte_seq", "[parse][byte_seq]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_byte_seq_t want_b;                                                                                                    \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, &rest);                                         \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(item.type == HSFV_BARE_ITEM_TYPE_BYTE_SEQ);                                                                          \
+        want_b.base = want;                                                                                                        \
+        want_b.len = strlen(want);                                                                                                 \
+        CHECK(hsfv_byte_seq_eq(&item.byte_seq, &want_b));                                                                          \
+        hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                                                                      \
+    }
 
-  OK_HELPER("case 1", ":YWJj:", "abc");
-  OK_HELPER("case 2", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:", "any carnal pleasure");
-  OK_HELPER("case 3", ":YW55IGNhcm5hbCBwbGVhc3Vy:", "any carnal pleasur");
+    OK_HELPER("case 1", ":YWJj:", "abc");
+    OK_HELPER("case 2", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:", "any carnal pleasure");
+    OK_HELPER("case 3", ":YW55IGNhcm5hbCBwbGVhc3Vy:", "any carnal pleasur");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, \
-                              &rest);                                          \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, &rest);                                         \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("empty", "", HSFV_ERR_EOF);
-  NG_HELPER("just opening colon", ":", HSFV_ERR_EOF);
-  NG_HELPER("no closing colon case 1", ":YW55IGNhcm5hbCBwbGVhc3Vy",
-            HSFV_ERR_EOF);
-  NG_HELPER("no closing colon case 2", ":YW55IGNhcm5hbCBwbGVhc3Vy~",
-            HSFV_ERR_INVALID);
-  NG_HELPER("bad encoded", ":YW55IGNhcm5hbCBwbGVhc3VyZQ!=:", HSFV_ERR_INVALID);
+    NG_HELPER("empty", "", HSFV_ERR_EOF);
+    NG_HELPER("just opening colon", ":", HSFV_ERR_EOF);
+    NG_HELPER("no closing colon case 1", ":YW55IGNhcm5hbCBwbGVhc3Vy", HSFV_ERR_EOF);
+    NG_HELPER("no closing colon case 2", ":YW55IGNhcm5hbCBwbGVhc3Vy~", HSFV_ERR_INVALID);
+    NG_HELPER("bad encoded", ":YW55IGNhcm5hbCBwbGVhc3VyZQ!=:", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
 /* Key */
 
-TEST_CASE("serialize key", "[serialize][key]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};    \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);          \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize key", "[serialize][key]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};                                                    \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);                                                          \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER("case 1", "foo", "foo");
-  OK_HELPER("case 2", "*a_-.*", "*a_-.*");
+    OK_HELPER("case 1", "foo", "foo");
+    OK_HELPER("case 2", "*a_-.*", "*a_-.*");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};    \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);          \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_key_t input_k = (hsfv_key_t){.base = input, .len = strlen(input)};                                                    \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_key(&input_k, &hsfv_global_allocator, &buf);                                                          \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("case 1", "A", HSFV_ERR_INVALID);
-  NG_HELPER("case 2", "a?", HSFV_ERR_INVALID);
+    NG_HELPER("case 1", "A", HSFV_ERR_INVALID);
+    NG_HELPER("case 2", "a?", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("parse key", "[parse][key]") {
-#define OK_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_key_t want_k;                                                         \
-    hsfv_key_t key;                                                            \
-    hsfv_err_t err;                                                            \
-    err =                                                                      \
-        hsfv_parse_key(&key, &hsfv_global_allocator, input, input_end, &rest); \
-    CHECK(err == HSFV_OK);                                                     \
-    want_k.base = want;                                                        \
-    want_k.len = strlen(want);                                                 \
-    CHECK(hsfv_key_eq(&key, &want_k));                                         \
-    hsfv_key_deinit(&key, &hsfv_global_allocator);                             \
-  }
+TEST_CASE("parse key", "[parse][key]")
+{
+#define OK_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_key_t want_k;                                                                                                         \
+        hsfv_key_t key;                                                                                                            \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_key(&key, &hsfv_global_allocator, input, input_end, &rest);                                               \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        want_k.base = want;                                                                                                        \
+        want_k.len = strlen(want);                                                                                                 \
+        CHECK(hsfv_key_eq(&key, &want_k));                                                                                         \
+        hsfv_key_deinit(&key, &hsfv_global_allocator);                                                                             \
+    }
 
-  OK_HELPER("single character", "t", "t");
-  OK_HELPER("multipel characters", "tok", "tok");
-  OK_HELPER("starts with asterisk", "*k-.*", "*k-.*");
-  OK_HELPER("starts with alpha followed with equal sign", "k=", "k");
+    OK_HELPER("single character", "t", "t");
+    OK_HELPER("multipel characters", "tok", "tok");
+    OK_HELPER("starts with asterisk", "*k-.*", "*k-.*");
+    OK_HELPER("starts with alpha followed with equal sign", "k=", "k");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    const char *rest;                                                          \
-    hsfv_key_t key;                                                            \
-    hsfv_err_t err;                                                            \
-    err =                                                                      \
-        hsfv_parse_key(&key, &hsfv_global_allocator, input, input_end, &rest); \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        const char *rest;                                                                                                          \
+        hsfv_key_t key;                                                                                                            \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_parse_key(&key, &hsfv_global_allocator, input, input_end, &rest);                                               \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("empty", "", HSFV_ERR_EOF);
-  NG_HELPER("non ASCII character", "é", HSFV_ERR_INVALID);
+    NG_HELPER("empty", "", HSFV_ERR_EOF);
+    NG_HELPER("non ASCII character", "é", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
 /* Bare item */
 
-TEST_CASE("serialize bare_item", "[serialize][bare_item]") {
-#define OK_HELPER(section, input_literal, want)                                \
-  SECTION(section) {                                                           \
-    hsfv_bare_item_t item = input_literal;                                     \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);       \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(buf.bytes.len == strlen(want));                                      \
-    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                       \
-    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                          \
-  }
+TEST_CASE("serialize bare_item", "[serialize][bare_item]")
+{
+#define OK_HELPER(section, input_literal, want)                                                                                    \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_bare_item_t item = input_literal;                                                                                     \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);                                                       \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
+        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    }
 
-  OK_HELPER(
-      "boolean",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true}),
-      "?1");
-  OK_HELPER(
-      "integer",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 123}),
-      "123");
-  OK_HELPER("decimal",
-            (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL,
-                              .decimal = 123.456}),
-            "123.456");
-  OK_HELPER(
-      "string",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING,
-                        .string = hsfv_string_t{.base = "foo", .len = 3}}),
-      "\"foo\"");
-  OK_HELPER("token",
-            (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN,
-                              .token = hsfv_token_t{.base = "foo", .len = 3}}),
-            "foo");
-  OK_HELPER(
-      "byte_seq",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
-                        .byte_seq = hsfv_byte_seq_t{.base = "abc", .len = 3}}),
-      ":YWJj:");
+    OK_HELPER("boolean", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true}), "?1");
+    OK_HELPER("integer", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 123}), "123");
+    OK_HELPER("decimal", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = 123.456}), "123.456");
+    OK_HELPER("string", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_string_t{.base = "foo", .len = 3}}),
+              "\"foo\"");
+    OK_HELPER("token", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = hsfv_token_t{.base = "foo", .len = 3}}),
+              "foo");
+    OK_HELPER("byte_seq",
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = hsfv_byte_seq_t{.base = "abc", .len = 3}}),
+              ":YWJj:");
 #undef OK_HELPER
 
-#define NG_HELPER(section, input_literal, want)                                \
-  SECTION(section) {                                                           \
-    hsfv_bare_item_t item = input_literal;                                     \
-    hsfv_buffer_t buf = (hsfv_buffer_t){0};                                    \
-    hsfv_err_t err;                                                            \
-    err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);       \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input_literal, want)                                                                                    \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        hsfv_bare_item_t item = input_literal;                                                                                     \
+        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
+        hsfv_err_t err;                                                                                                            \
+        err = hsfv_serialize_bare_item(&item, &hsfv_global_allocator, &buf);                                                       \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("invalid type",
-            (hsfv_bare_item_t{.type = (hsfv_bare_item_type_t)-1}),
-            HSFV_ERR_INVALID);
+    NG_HELPER("invalid type", (hsfv_bare_item_t{.type = (hsfv_bare_item_type_t)-1}), HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
 
-TEST_CASE("parse bare_item", "[parse][bare_item]") {
-#define OK_HELPER(section, input, want_literal)                                \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t want = want_literal;                                      \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_bare_item(&item, &hsfv_global_allocator, input,           \
-                               input_end, &rest);                              \
-    CHECK(err == HSFV_OK);                                                     \
-    CHECK(hsfv_bare_item_eq(&item, &want));                                    \
-    hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                      \
-  }
+TEST_CASE("parse bare_item", "[parse][bare_item]")
+{
+#define OK_HELPER(section, input, want_literal)                                                                                    \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t want = want_literal;                                                                                      \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_bare_item(&item, &hsfv_global_allocator, input, input_end, &rest);                                        \
+        CHECK(err == HSFV_OK);                                                                                                     \
+        CHECK(hsfv_bare_item_eq(&item, &want));                                                                                    \
+        hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                                                                      \
+    }
 
-  OK_HELPER(
-      "true", "?1",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = 1}));
-  OK_HELPER(
-      "false", "?0",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = 0}));
-  OK_HELPER(
-      "integer", "22",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 22}));
-  OK_HELPER(
-      "decimal", "-2.2",
-      (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = -2.2}));
-  OK_HELPER("string", "\"foo\"",
-            (hsfv_bare_item_t{
-                .type = HSFV_BARE_ITEM_TYPE_STRING,
-                .string = hsfv_string_t{.base = "foo", .len = strlen("foo")}}));
-  OK_HELPER("token case 1", "abc",
-            (hsfv_bare_item_t{
-                .type = HSFV_BARE_ITEM_TYPE_TOKEN,
-                .token = hsfv_token_t{.base = "abc", .len = strlen("abc")}}));
-  OK_HELPER("token case 2", "*abc",
-            (hsfv_bare_item_t{
-                .type = HSFV_BARE_ITEM_TYPE_TOKEN,
-                .token = hsfv_token_t{.base = "*abc", .len = strlen("*abc")}}));
-  OK_HELPER("byte_seq", ":YWJj:",
-            (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
-                              .byte_seq = hsfv_byte_seq_t{
-                                  .base = "abc", .len = strlen("abc")}}));
+    OK_HELPER("true", "?1", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = 1}));
+    OK_HELPER("false", "?0", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = 0}));
+    OK_HELPER("integer", "22", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 22}));
+    OK_HELPER("decimal", "-2.2", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = -2.2}));
+    OK_HELPER("string", "\"foo\"",
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = hsfv_string_t{.base = "foo", .len = strlen("foo")}}));
+    OK_HELPER("token case 1", "abc",
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = hsfv_token_t{.base = "abc", .len = strlen("abc")}}));
+    OK_HELPER("token case 2", "*abc",
+              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = hsfv_token_t{.base = "*abc", .len = strlen("*abc")}}));
+    OK_HELPER(
+        "byte_seq", ":YWJj:",
+        (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = hsfv_byte_seq_t{.base = "abc", .len = strlen("abc")}}));
 #undef OK_HELPER
 
-#define NG_HELPER(section, input, want)                                        \
-  SECTION(section) {                                                           \
-    const char *input_end = input + strlen(input);                             \
-    hsfv_bare_item_t item;                                                     \
-    hsfv_err_t err;                                                            \
-    const char *rest;                                                          \
-    err = hsfv_parse_bare_item(&item, &hsfv_global_allocator, input,           \
-                               input_end, &rest);                              \
-    CHECK(err == want);                                                        \
-  }
+#define NG_HELPER(section, input, want)                                                                                            \
+    SECTION(section)                                                                                                               \
+    {                                                                                                                              \
+        const char *input_end = input + strlen(input);                                                                             \
+        hsfv_bare_item_t item;                                                                                                     \
+        hsfv_err_t err;                                                                                                            \
+        const char *rest;                                                                                                          \
+        err = hsfv_parse_bare_item(&item, &hsfv_global_allocator, input, input_end, &rest);                                        \
+        CHECK(err == want);                                                                                                        \
+    }
 
-  NG_HELPER("empty", "", HSFV_ERR_EOF);
-  NG_HELPER("invalid symbol", "~", HSFV_ERR_INVALID);
+    NG_HELPER("empty", "", HSFV_ERR_EOF);
+    NG_HELPER("invalid symbol", "~", HSFV_ERR_INVALID);
 #undef NG_HELPER
 }
