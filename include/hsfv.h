@@ -98,12 +98,12 @@ void hsfv_buffer_deinit(hsfv_buffer_t *buf, hsfv_allocator_t *allocator);
 hsfv_err_t hsfv_buffer_ensure_unused_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, size_t len);
 hsfv_err_t hsfv_buffer_append_byte(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, const char src);
 hsfv_err_t hsfv_buffer_append_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, const char *src, size_t len);
-static inline void hsfv_buffer_append_byte_unsafe(hsfv_buffer_t *buf, const char src)
+static inline void hsfv_buffer_append_byte_unchecked(hsfv_buffer_t *buf, const char src)
 {
     buf->bytes.base[buf->bytes.len] = src;
     buf->bytes.len++;
 }
-static inline void hsfv_buffer_append_bytes_unsafe(hsfv_buffer_t *buf, const char *src, size_t len)
+static inline void hsfv_buffer_append_bytes_unchecked(hsfv_buffer_t *buf, const char *src, size_t len)
 {
     memcpy(buf->bytes.base + buf->bytes.len, src, len);
     buf->bytes.len += len;

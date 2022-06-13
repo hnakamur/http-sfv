@@ -70,8 +70,8 @@ hsfv_err_t hsfv_serialize_boolean(bool boolean, hsfv_allocator_t *allocator, hsf
         return err;
     }
 
-    hsfv_buffer_append_byte_unsafe(dest, '?');
-    hsfv_buffer_append_byte_unsafe(dest, boolean ? '1' : '0');
+    hsfv_buffer_append_byte_unchecked(dest, '?');
+    hsfv_buffer_append_byte_unchecked(dest, boolean ? '1' : '0');
     return HSFV_OK;
 }
 
@@ -127,7 +127,7 @@ hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, 
         return err;
     }
 
-    hsfv_buffer_append_bytes_unsafe(dest, tmp, n);
+    hsfv_buffer_append_bytes_unchecked(dest, tmp, n);
     return HSFV_OK;
 }
 
@@ -160,7 +160,7 @@ hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, h
         return err;
     }
 
-    hsfv_buffer_append_bytes_unsafe(dest, tmp, len);
+    hsfv_buffer_append_bytes_unchecked(dest, tmp, len);
     return HSFV_OK;
 }
 
@@ -280,14 +280,14 @@ hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *
         return err;
     }
 
-    hsfv_buffer_append_byte_unsafe(dest, '"');
+    hsfv_buffer_append_byte_unchecked(dest, '"');
     for (const char *p = string->base; p < string->base + string->len; ++p) {
         if (*p == '\\' || *p == '"') {
-            hsfv_buffer_append_byte_unsafe(dest, '\\');
+            hsfv_buffer_append_byte_unchecked(dest, '\\');
         }
-        hsfv_buffer_append_byte_unsafe(dest, *p);
+        hsfv_buffer_append_byte_unchecked(dest, *p);
     }
-    hsfv_buffer_append_byte_unsafe(dest, '"');
+    hsfv_buffer_append_byte_unchecked(dest, '"');
 
     return HSFV_OK;
 }
@@ -377,7 +377,7 @@ hsfv_err_t hsfv_serialize_token(const hsfv_token_t *token, hsfv_allocator_t *all
         return err;
     }
 
-    hsfv_buffer_append_bytes_unsafe(dest, token->base, token->len);
+    hsfv_buffer_append_bytes_unchecked(dest, token->base, token->len);
 
     return HSFV_OK;
 }
@@ -521,13 +521,13 @@ hsfv_err_t hsfv_serialize_byte_seq(const hsfv_byte_seq_t *byte_seq, hsfv_allocat
         return err;
     }
 
-    hsfv_buffer_append_byte_unsafe(dest, ':');
+    hsfv_buffer_append_byte_unchecked(dest, ':');
 
     hsfv_iovec_t dest_vec = (hsfv_iovec_t){.base = &dest->bytes.base[dest->bytes.len], .len = encoded_len};
     hsfv_encode_base64(&dest_vec, byte_seq);
     dest->bytes.len += encoded_len;
 
-    hsfv_buffer_append_byte_unsafe(dest, ':');
+    hsfv_buffer_append_byte_unchecked(dest, ':');
     return HSFV_OK;
 }
 

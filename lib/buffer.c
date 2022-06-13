@@ -54,7 +54,7 @@ hsfv_err_t hsfv_buffer_append_byte(hsfv_buffer_t *buf, hsfv_allocator_t *allocat
         return err;
     }
 
-    hsfv_buffer_append_byte_unsafe(buf, src);
+    hsfv_buffer_append_byte_unchecked(buf, src);
     return HSFV_OK;
 }
 
@@ -67,6 +67,6 @@ hsfv_err_t hsfv_buffer_append_bytes(hsfv_buffer_t *buf, hsfv_allocator_t *alloca
         return err;
     }
 
-    hsfv_buffer_append_bytes_unsafe(buf, src, len);
+    hsfv_buffer_append_bytes_unchecked(buf, src, len);
     return HSFV_OK;
 }
