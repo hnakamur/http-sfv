@@ -388,47 +388,35 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
                             const char **out_rest)
 {
     hsfv_err_t err;
-    hsfv_buffer_t buf;
-    char c;
+    hsfv_buffer_t buf = {0};
+    const char *p = input;
 
-    err = hsfv_buffer_alloc(&buf, allocator, TOKEN_INITIAL_CAPACITY);
-    if (err) {
-        return err;
-    }
-
-    if (input == input_end) {
+    if (p == input_end) {
         err = HSFV_ERR_EOF;
         goto error;
     }
 
-    c = *input;
-    if (!hsfv_is_token_leading_char(c)) {
+    if (!hsfv_is_token_leading_char(*p)) {
         err = HSFV_ERR_INVALID;
         goto error;
     }
-    err = hsfv_buffer_append_byte(&buf, allocator, c);
-    if (err) {
-        goto error;
-    }
-    ++input;
 
-    for (; input < input_end; ++input) {
-        c = *input;
-        if (!hsfv_is_trailing_token_char(c)) {
+    for (++p; p < input_end; ++p) {
+        if (!hsfv_is_trailing_token_char(*p)) {
             break;
         }
+    }
 
-        err = hsfv_buffer_append_byte(&buf, allocator, c);
-        if (err) {
-            goto error;
-        }
+    err = hsfv_buffer_append_bytes(&buf, allocator, input, p - input);
+    if (err) {
+        goto error;
     }
 
     item->type = HSFV_BARE_ITEM_TYPE_TOKEN;
     item->token.base = buf.bytes.base;
     item->token.len = buf.bytes.len;
     if (out_rest) {
-        *out_rest = input;
+        *out_rest = p;
     }
     return HSFV_OK;
 
@@ -461,46 +449,34 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
                           const char **out_rest)
 {
     hsfv_err_t err;
-    hsfv_buffer_t buf;
-    char c;
+    hsfv_buffer_t buf = {0};
+    const char *p = input;
 
-    err = hsfv_buffer_alloc(&buf, allocator, KEY_INITIAL_CAPACITY);
-    if (err) {
-        return err;
-    }
-
-    if (input == input_end) {
+    if (p == input_end) {
         err = HSFV_ERR_EOF;
         goto error;
     }
 
-    c = *input;
-    if (!hsfv_is_key_leaading_char(c)) {
+    if (!hsfv_is_key_leaading_char(*p)) {
         err = HSFV_ERR_INVALID;
         goto error;
     }
-    err = hsfv_buffer_append_byte(&buf, allocator, c);
-    if (err) {
-        goto error;
-    }
-    ++input;
 
-    for (; input < input_end; ++input) {
-        c = *input;
-        if (!hsfv_is_key_trailing_char(c)) {
+    for (++p; p < input_end; ++p) {
+        if (!hsfv_is_key_trailing_char(*p)) {
             break;
         }
+    }
 
-        err = hsfv_buffer_append_byte(&buf, allocator, c);
-        if (err) {
-            goto error;
-        }
+    err = hsfv_buffer_append_bytes(&buf, allocator, input, p - input);
+    if (err) {
+        goto error;
     }
 
     key->base = buf.bytes.base;
     key->len = buf.bytes.len;
     if (out_rest) {
-        *out_rest = input;
+        *out_rest = p;
     }
     return HSFV_OK;
 
