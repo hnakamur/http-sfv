@@ -7,6 +7,9 @@
 
 static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_item_t *out_item)
 {
+    hsfv_err_t err;
+    const char *input, *input_end;
+
     if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
         return HSFV_ERR_INVALID;
     }
@@ -16,6 +19,18 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
     case YYJSON_TYPE_BOOL: {
         bool b = yyjson_get_bool(bare_item_val);
         *out_item = {.bare_item = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = b}};
+    } break;
+    case YYJSON_TYPE_STR: {
+        const char *value = yyjson_get_str(bare_item_val);
+        printf("build_expected_item, type=str, value=%s\n", value);
+        const char *str_value = hsfv_strndup(allocator, value, strlen(value));
+        printf("build_expected_item, str_value=%p\n", str_value);
+        if (!str_value) {
+            return HSFV_ERR_OUT_OF_MEMORY;
+        }
+        *out_item = hsfv_item_t{
+            .bare_item = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = str_value, .len = strlen(value)}},
+        };
     } break;
     case YYJSON_TYPE_OBJ: {
         const char *override_type = yyjson_get_str(yyjson_obj_get(bare_item_val, "__type"));
@@ -165,8 +180,8 @@ static void run_test_for_json_file(const char *json_rel_path)
                 } else {
                     CHECK(err == HSFV_OK);
                     CHECK(hsfv_field_value_eq(&got, &want));
+                    hsfv_field_value_deinit(&got, alc);
                 }
-                hsfv_field_value_deinit(&got, alc);
             }
             if (expected) {
                 hsfv_field_value_deinit(&want, alc);
@@ -189,5 +204,6 @@ TEST_CASE("httpwg tests", "[httpwg]")
 
     SECTION_HELPER("boolean.json");
     SECTION_HELPER("token.json");
+    SECTION_HELPER("string.json");
 #undef SECTION_HELPER
 }
