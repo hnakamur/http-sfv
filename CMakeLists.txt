@@ -18,6 +18,23 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+# yyjson for test
+FetchContent_Declare(
+  yyjson
+  GIT_REPOSITORY https://github.com/ibireme/yyjson.git
+  GIT_TAG 0.5.1 # or a later release
+)
+
+FetchContent_MakeAvailable(yyjson)
+
+# httpwg test cases
+FetchContent_Declare(
+  httpwg_tests
+  GIT_REPOSITORY https://github.com/httpwg/structured-field-tests.git
+  GIT_TAG main)
+
+FetchContent_MakeAvailable(httpwg_tests)
+
 # clang-format
 option(
   FORMAT_FILES_WITH_CLANG_FORMAT_BEFORE_EACH_BUILD
@@ -69,7 +86,13 @@ file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
 file(GLOB TEST_FILES tests/*.cpp)
 set(target tests)
 add_executable(${target} ${TEST_FILES} ${SRC_FILES})
-target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain yyjson)
+
+add_custom_command(
+  TARGET "${target}"
+  POST_BUILD
+  COMMAND "${CMAKE_COMMAND}" -E env HTTPWG_TEST_DIR=${httpwg_tests_SOURCE_DIR}
+          "./${target}")
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
