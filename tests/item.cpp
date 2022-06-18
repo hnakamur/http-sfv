@@ -71,7 +71,7 @@ TEST_CASE("parse item", "[parse][item]")
         },
         {
             .key = {.base = "*bar", .len = 4},
-            .value = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .string = {.base = "tok", .len = 3}},
+            .value = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "tok", .len = 3}},
         },
     };
 

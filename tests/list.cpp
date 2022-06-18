@@ -28,7 +28,7 @@ static hsfv_item_t items[] = {
         .parameters = {.params = params0params, .len = 2, .capacity = 2},
     },
     {
-        .bare_item = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .string = {.base = "bar", .len = 3}},
+        .bare_item = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "bar", .len = 3}},
         .parameters = {.params = &param1, .len = 1, .capacity = 1},
     },
 };
@@ -49,7 +49,7 @@ static hsfv_parameter_t item_params[2] = {
     },
     {
         .key = {.base = "*bar", .len = 4},
-        .value = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .string = {.base = "tok", .len = 3}},
+        .value = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "tok", .len = 3}},
     },
 };
 
