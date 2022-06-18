@@ -20,6 +20,17 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
         bool b = yyjson_get_bool(bare_item_val);
         *out_item = {.bare_item = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = b}};
     } break;
+    case YYJSON_TYPE_NUM: {
+        if (yyjson_is_int(bare_item_val)) {
+            *out_item = hsfv_item_t{
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = yyjson_get_sint(bare_item_val)},
+            };
+        } else {
+            *out_item = hsfv_item_t{
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = yyjson_get_real(bare_item_val)},
+            };
+        }
+    } break;
     case YYJSON_TYPE_STR: {
         const char *value = yyjson_get_str(bare_item_val);
         printf("build_expected_item, type=str, value=%s\n", value);
@@ -136,6 +147,7 @@ static void run_test_for_json_file(const char *json_rel_path)
 
     char path[PATH_MAX];
     sprintf(path, "%s%s%s", test_dir, PATH_SEPARATOR, json_rel_path);
+    printf("=== %s start ===\n", json_rel_path);
 
     yyjson_read_flag flg = YYJSON_READ_NOFLAG;
     yyjson_read_err err;
@@ -203,7 +215,9 @@ TEST_CASE("httpwg tests", "[httpwg]")
     }
 
     SECTION_HELPER("boolean.json");
-    SECTION_HELPER("token.json");
+    SECTION_HELPER("number.json");
+    SECTION_HELPER("number-generated.json");
     SECTION_HELPER("string.json");
+    SECTION_HELPER("token.json");
 #undef SECTION_HELPER
 }
