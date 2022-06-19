@@ -36,9 +36,7 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
     } break;
     case YYJSON_TYPE_STR: {
         const char *value = yyjson_get_str(bare_item_val);
-        printf("build_expected_item, type=str, value=%s\n", value);
         const char *str_value = hsfv_strndup(allocator, value, strlen(value));
-        printf("build_expected_item, str_value=%p\n", str_value);
         if (!str_value) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
@@ -73,12 +71,6 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
                     return HSFV_ERR_OUT_OF_MEMORY;
                 }
                 free(decoded_cstr);
-                printf("base32dec input=%s, len=%zd\n", value, strlen(value));
-                printf("decoded=");
-                for (int i = 0; i < decoded_len; i++) {
-                    printf(" %02x", decoded[i]);
-                }
-                printf("\n");
             }
             *out_item = hsfv_item_t{
                 .bare_item = {.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = decoded, .len = decoded_len}},
@@ -94,13 +86,11 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
 
 static hsfv_err_t build_expected_list(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_list_t *out_list)
 {
-    printf("build_expected_list start\n");
     if (!yyjson_is_arr(expected)) {
         return HSFV_ERR_INVALID;
     }
 
     size_t n = yyjson_arr_size(expected);
-    printf("build_expected_list n=%zd\n", n);
     hsfv_list_member_t *members = (hsfv_list_member_t *)allocator->alloc(allocator, n * sizeof(hsfv_list_member_t));
     if (!members) {
         return HSFV_ERR_OUT_OF_MEMORY;
@@ -112,7 +102,6 @@ static hsfv_err_t build_expected_list(yyjson_val *expected, hsfv_allocator_t *al
     yyjson_val *list_member_val;
     yyjson_arr_foreach(expected, idx, max, list_member_val)
     {
-        printf("list_members_loop idx=%zd, max=%zd\n", idx, max);
         if (!yyjson_is_arr(list_member_val) || yyjson_arr_size(list_member_val) != 2) {
             err = HSFV_ERR_INVALID;
             goto error;
@@ -123,7 +112,6 @@ static hsfv_err_t build_expected_list(yyjson_val *expected, hsfv_allocator_t *al
             member->type = HSFV_LIST_MEMBER_TYPE_INNER_LIST;
             fprintf(stderr, "inner_list not implemented yet\n");
         } else {
-            printf("list_member is item\n");
             member->type = HSFV_LIST_MEMBER_TYPE_ITEM;
             err = build_expected_item(list_member_val, allocator, &member->item);
             if (err) {
