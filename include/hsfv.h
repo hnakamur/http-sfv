@@ -208,7 +208,6 @@ typedef struct st_hsfv_dict_member_value_t {
 
 typedef struct st_hsfv_dict_member_t {
     hsfv_key_t key;
-    hsfv_parameters_t parameters;
     hsfv_dict_member_value_t value;
 } hsfv_dict_member_t;
 

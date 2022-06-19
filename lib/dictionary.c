@@ -17,8 +17,7 @@ static bool hsfv_dict_member_value_eq(const hsfv_dict_member_value_t *self, cons
 
 static bool hsfv_dict_member_eq(const hsfv_dict_member_t *self, const hsfv_dict_member_t *other)
 {
-    return hsfv_key_eq(&self->key, &other->key) && hsfv_parameters_eq(&self->parameters, &other->parameters) &&
-           hsfv_dict_member_value_eq(&self->value, &other->value);
+    return hsfv_key_eq(&self->key, &other->key) && hsfv_dict_member_value_eq(&self->value, &other->value);
 }
 
 bool hsfv_dictionary_eq(const hsfv_dictionary_t *self, const hsfv_dictionary_t *other)
@@ -49,7 +48,6 @@ static void hsfv_dict_member_value_deinit(hsfv_dict_member_value_t *self, hsfv_a
 static void hsfv_dict_member_deinit(hsfv_dict_member_t *self, hsfv_allocator_t *allocator)
 {
     hsfv_key_deinit(&self->key, allocator);
-    hsfv_parameters_deinit(&self->parameters, allocator);
     hsfv_dict_member_value_deinit(&self->value, allocator);
 }
 
@@ -108,7 +106,7 @@ hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary, hsfv_a
         }
         if (member->value.type == HSFV_DICT_MEMBER_TYPE_ITEM && member->value.item.bare_item.type == HSFV_BARE_ITEM_TYPE_BOOLEAN &&
             member->value.item.bare_item.boolean) {
-            err = hsfv_serialize_parameters(&member->parameters, allocator, dest);
+            err = hsfv_serialize_parameters(&member->value.item.parameters, allocator, dest);
             if (err) {
                 return err;
             }
@@ -172,7 +170,7 @@ hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary, hsfv_allocator_t
             member.value.type = HSFV_LIST_MEMBER_TYPE_ITEM;
             member.value.item.bare_item.type = HSFV_BARE_ITEM_TYPE_BOOLEAN;
             member.value.item.bare_item.boolean = true;
-            err = hsfv_parse_parameters(&member.parameters, allocator, input, input_end, &input);
+            err = hsfv_parse_parameters(&member.value.item.parameters, allocator, input, input_end, &input);
             if (err) {
                 goto error1;
             }

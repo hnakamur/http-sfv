@@ -45,12 +45,6 @@ static hsfv_dict_member_t members[] = {
     },
     {
         .key = {.base = "c", .len = 1},
-        .parameters =
-            {
-                .params = &c_param,
-                .len = 1,
-                .capacity = 1,
-            },
         .value =
             {
                 .type = HSFV_DICT_MEMBER_TYPE_ITEM,
@@ -60,6 +54,12 @@ static hsfv_dict_member_t members[] = {
                             {
                                 .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
                                 .boolean = true,
+                            },
+                        .parameters =
+                            {
+                                .params = &c_param,
+                                .len = 1,
+                                .capacity = 1,
                             },
                     },
             },
