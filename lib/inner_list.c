@@ -87,13 +87,7 @@ hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list, hsfv_allocator_t
     }
     ++input;
 
-    inner_list->items = NULL;
-    inner_list->len = 0;
-    inner_list->capacity = 0;
-    inner_list->parameters.params = NULL;
-    inner_list->parameters.len = 0;
-    inner_list->parameters.capacity = 0;
-
+    *inner_list = (hsfv_inner_list_t){0};
     while (input < input_end) {
         HSFV_SKIP_SP(input, input_end);
 
@@ -123,9 +117,19 @@ hsfv_err_t hsfv_parse_inner_list(hsfv_inner_list_t *inner_list, hsfv_allocator_t
         if (err) {
             goto error1;
         }
+        if (input == input_end) {
+            err = HSFV_ERR_EOF;
+            goto error2;
+        }
+        c = *input;
+        if (c != ' ' && c != ')') {
+            err = HSFV_ERR_INVALID;
+            goto error2;
+        }
     }
 
     err = HSFV_ERR_EOF;
+    goto error2;
 
 error1:
     hsfv_item_deinit(&item, allocator);

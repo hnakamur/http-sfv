@@ -88,11 +88,14 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
 
 static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_inner_list_t *out_inner_list)
 {
-    if (!yyjson_is_arr(expected)) {
+    if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
         return HSFV_ERR_INVALID;
     }
 
-    size_t n = yyjson_arr_size(expected);
+    yyjson_val *members_val = yyjson_arr_get(expected, 0);
+    yyjson_val *params_val = yyjson_arr_get(expected, 1);
+
+    size_t n = yyjson_arr_size(members_val);
     printf("build_expected_inner_list start n=%zd\n", n);
     hsfv_item_t *items = (hsfv_item_t *)allocator->alloc(allocator, n * sizeof(hsfv_item_t));
     if (!items) {
@@ -103,34 +106,30 @@ static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator
     hsfv_err_t err;
     size_t idx, max;
     yyjson_val *member_val;
-    yyjson_arr_foreach(expected, idx, max, member_val)
+    yyjson_arr_foreach(members_val, idx, max, member_val)
     {
-        if (idx < max - 1) {
-            // item
-            if (!yyjson_is_arr(member_val) || yyjson_arr_size(member_val) != 2) {
-                err = HSFV_ERR_INVALID;
-                goto error;
-            }
-
-            printf("build_expected_inner_list before build_expected_item idx=%zd\n", idx);
-            err = build_expected_item(yyjson_arr_get(member_val, 0), allocator, &items[idx]);
-            printf("build_expected_inner_list after build_expected_item idx=%zd, err=%d\n", idx, err);
-            if (err) {
-                goto error;
-            }
-            out_inner_list->len++;
-        } else {
-            // parameters
-            if (!yyjson_is_arr(member_val)) {
-                err = HSFV_ERR_INVALID;
-                goto error;
-            }
-            if (yyjson_arr_size(member_val) != 0) {
-                fprintf(stderr, "parse parameters in inner_list is not implemented yet!!!\n");
-                err = HSFV_ERR_INVALID;
-                goto error;
-            }
+        if (!yyjson_is_arr(member_val) || yyjson_arr_size(member_val) != 2) {
+            err = HSFV_ERR_INVALID;
+            goto error;
         }
+
+        printf("build_expected_inner_list before build_expected_item idx=%zd\n", idx);
+        err = build_expected_item(member_val, allocator, &items[idx]);
+        printf("build_expected_inner_list after build_expected_item idx=%zd, err=%d\n", idx, err);
+        if (err) {
+            goto error;
+        }
+        out_inner_list->len++;
+    }
+
+    if (!yyjson_is_arr(params_val)) {
+        err = HSFV_ERR_INVALID;
+        goto error;
+    }
+    if (yyjson_arr_size(params_val) != 0) {
+        fprintf(stderr, "build_expected_inner_list parse parameters not implemented yet!!!\n");
+        err = HSFV_ERR_INVALID;
+        goto error;
     }
 
     return HSFV_OK;
