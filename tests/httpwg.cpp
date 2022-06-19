@@ -469,6 +469,8 @@ TEST_CASE("httpwg tests", "[httpwg]")
     SECTION_HELPER("listlist.json");
     SECTION_HELPER("number.json");
     SECTION_HELPER("number-generated.json");
+    SECTION_HELPER("param-list.json");
+    SECTION_HELPER("param-listlist.json");
     SECTION_HELPER("string.json");
     SECTION_HELPER("string-generated.json");
     SECTION_HELPER("token.json");
