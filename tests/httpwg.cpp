@@ -8,62 +8,53 @@ extern "C" {
 
 #define PATH_SEPARATOR "/"
 
-static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_item_t *out_item)
+static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_allocator_t *allocator, hsfv_bare_item_t *out_item)
 {
     hsfv_err_t err;
     const char *input, *input_end;
 
-    printf("build_expected_item start\n");
-    if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
-        return HSFV_ERR_INVALID;
-    }
-    yyjson_val *bare_item_val = yyjson_arr_get(expected, 0);
     yyjson_type bare_item_type = yyjson_get_type(bare_item_val);
-    printf("build_expected_item bare_item_type=%d\n", bare_item_type);
     switch (bare_item_type) {
     case YYJSON_TYPE_BOOL: {
         bool b = yyjson_get_bool(bare_item_val);
-        *out_item = {.bare_item = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = b}};
+        *out_item = (hsfv_bare_item_t){.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = b};
     } break;
     case YYJSON_TYPE_NUM: {
         if (yyjson_is_int(bare_item_val)) {
-            *out_item = hsfv_item_t{
-                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = yyjson_get_sint(bare_item_val)},
-            };
+            *out_item = (hsfv_bare_item_t){.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = yyjson_get_sint(bare_item_val)};
         } else {
-            *out_item = hsfv_item_t{
-                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = yyjson_get_real(bare_item_val)},
-            };
+            *out_item = (hsfv_bare_item_t){.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = yyjson_get_real(bare_item_val)};
         }
     } break;
     case YYJSON_TYPE_STR: {
         const char *value = yyjson_get_str(bare_item_val);
-        const char *str_value = hsfv_strndup(allocator, value, strlen(value));
+        size_t value_len = yyjson_get_len(bare_item_val);
+        const char *str_value = hsfv_strndup(allocator, value, value_len);
         if (!str_value) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
-        *out_item = hsfv_item_t{
-            .bare_item = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = str_value, .len = strlen(value)}},
-        };
+        *out_item = (hsfv_bare_item_t){.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = str_value, .len = value_len}};
     } break;
     case YYJSON_TYPE_OBJ: {
         const char *override_type = yyjson_get_str(yyjson_obj_get(bare_item_val, "__type"));
         if (!strcmp(override_type, "token")) {
-            const char *value = yyjson_get_str(yyjson_obj_get(bare_item_val, "value"));
-            const char *token_value = hsfv_strndup(allocator, value, strlen(value));
+            yyjson_val *value_val = yyjson_obj_get(bare_item_val, "value");
+            const char *value = yyjson_get_str(value_val);
+            size_t value_len = yyjson_get_len(value_val);
+            const char *token_value = hsfv_strndup(allocator, value, value_len);
             if (!token_value) {
                 return HSFV_ERR_OUT_OF_MEMORY;
             }
-            *out_item = hsfv_item_t{
-                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = token_value, .len = strlen(value)}},
-            };
+            *out_item = (hsfv_bare_item_t){.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = token_value, .len = value_len}};
         } else if (!strcmp(override_type, "binary")) {
-            const char *value = yyjson_get_str(yyjson_obj_get(bare_item_val, "value"));
+            yyjson_val *value_val = yyjson_obj_get(bare_item_val, "value");
+            const char *value = yyjson_get_str(value_val);
+            size_t value_len = yyjson_get_len(value_val);
             size_t decoded_len = 0;
             char *decoded = NULL;
-            if (strlen(value) > 0) {
+            if (value_len > 0) {
                 baseencode_error_t err;
-                char *decoded_cstr = (char *)base32_decode(value, strlen(value), &err);
+                char *decoded_cstr = (char *)base32_decode(value, value_len, &err);
                 if (err != SUCCESS) {
                     return err == MEMORY_ALLOCATION ? HSFV_ERR_OUT_OF_MEMORY : HSFV_ERR_INVALID;
                 }
@@ -74,9 +65,7 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
                 }
                 free(decoded_cstr);
             }
-            *out_item = hsfv_item_t{
-                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = decoded, .len = decoded_len}},
-            };
+            *out_item = (hsfv_bare_item_t){.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = decoded, .len = decoded_len}};
         }
     } break;
     default:
@@ -86,6 +75,101 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
     return HSFV_OK;
 }
 
+static hsfv_err_t build_expected_key(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_key_t *out_key)
+{
+    const char *value = yyjson_get_str(expected);
+    size_t value_len = yyjson_get_len(expected);
+    const char *base = hsfv_strndup(allocator, value, value_len);
+    if (!base) {
+        *out_key = (hsfv_key_t){0};
+        return HSFV_ERR_OUT_OF_MEMORY;
+    }
+    *out_key = (hsfv_key_t){.base = base, .len = value_len};
+    return HSFV_OK;
+}
+
+static hsfv_err_t build_expected_parameters(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_parameters_t *out_parameters)
+{
+    hsfv_err_t err;
+
+    if (!yyjson_is_arr(expected)) {
+        return HSFV_ERR_INVALID;
+    }
+
+    size_t len = yyjson_arr_size(expected);
+    if (len == 0) {
+        *out_parameters = (hsfv_parameters_t){0};
+        return HSFV_OK;
+    }
+
+    hsfv_parameter_t *params = (hsfv_parameter_t *)allocator->alloc(allocator, len * sizeof(hsfv_parameter_t));
+    if (!params) {
+        return HSFV_ERR_OUT_OF_MEMORY;
+    }
+    *out_parameters = (hsfv_parameters_t){.params = params, .len = 0, .capacity = len};
+
+    size_t idx, max;
+    yyjson_val *param_val;
+    yyjson_arr_foreach(expected, idx, max, param_val)
+    {
+        if (!yyjson_is_arr(param_val) || yyjson_arr_size(param_val) != 2) {
+            return HSFV_ERR_INVALID;
+        }
+        yyjson_val *key_val = yyjson_arr_get(param_val, 0);
+        yyjson_val *bare_item_val = yyjson_arr_get(param_val, 1);
+
+        hsfv_parameter_t *param = &params[idx];
+        err = build_expected_key(key_val, allocator, &param->key);
+        if (err) {
+            goto error;
+        }
+
+        err = build_expected_bare_item(bare_item_val, allocator, &param->value);
+        if (err) {
+            hsfv_key_deinit(&param->key, allocator);
+            goto error;
+        }
+
+        out_parameters->len++;
+    }
+
+    return HSFV_OK;
+
+error:
+    hsfv_parameters_deinit(out_parameters, allocator);
+    return err;
+}
+
+static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_item_t *out_item)
+{
+    hsfv_err_t err;
+    const char *input, *input_end;
+
+    if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
+        return HSFV_ERR_INVALID;
+    }
+
+    yyjson_val *bare_item_val = yyjson_arr_get(expected, 0);
+    yyjson_val *parameters_val = yyjson_arr_get(expected, 1);
+
+    out_item->parameters = (hsfv_parameters_t){0};
+    err = build_expected_bare_item(bare_item_val, allocator, &out_item->bare_item);
+    if (err) {
+        goto error;
+    }
+
+    err = build_expected_parameters(parameters_val, allocator, &out_item->parameters);
+    if (err) {
+        goto error;
+    }
+
+    return HSFV_OK;
+
+error:
+    hsfv_item_deinit(out_item, allocator);
+    return err;
+}
+
 static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_inner_list_t *out_inner_list)
 {
     if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
@@ -93,10 +177,9 @@ static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator
     }
 
     yyjson_val *members_val = yyjson_arr_get(expected, 0);
-    yyjson_val *params_val = yyjson_arr_get(expected, 1);
+    yyjson_val *parameters_val = yyjson_arr_get(expected, 1);
 
     size_t n = yyjson_arr_size(members_val);
-    printf("build_expected_inner_list start n=%zd\n", n);
     hsfv_item_t *items = (hsfv_item_t *)allocator->alloc(allocator, n * sizeof(hsfv_item_t));
     if (!items) {
         return HSFV_ERR_OUT_OF_MEMORY;
@@ -122,13 +205,8 @@ static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator
         out_inner_list->len++;
     }
 
-    if (!yyjson_is_arr(params_val)) {
-        err = HSFV_ERR_INVALID;
-        goto error;
-    }
-    if (yyjson_arr_size(params_val) != 0) {
-        fprintf(stderr, "build_expected_inner_list parse parameters not implemented yet!!!\n");
-        err = HSFV_ERR_INVALID;
+    err = build_expected_parameters(parameters_val, allocator, &out_inner_list->parameters);
+    if (err) {
         goto error;
     }
 
@@ -262,7 +340,7 @@ static hsfv_err_t get_header_type(yyjson_val *case_obj, hsfv_field_value_type_t 
     return HSFV_OK;
 }
 
-static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocator, const char **combined)
+static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocator, const char **combined, size_t *combined_len)
 {
     size_t total_len = 0;
     size_t idx, max;
@@ -270,9 +348,8 @@ static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocat
     yyjson_arr_foreach(raw, idx, max, val)
     {
         const char *s = yyjson_get_str(val);
-        total_len += strlen(s) + (idx < max - 1 ? strlen(", ") : 0);
+        total_len += yyjson_get_len(val) + (idx < max - 1 ? strlen(", ") : 0);
     }
-    total_len++;
 
     char *temp = (char *)allocator->alloc(allocator, total_len);
     if (!temp) {
@@ -283,21 +360,25 @@ static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocat
     yyjson_arr_foreach(raw, idx, max, val)
     {
         const char *s = yyjson_get_str(val);
-        memcpy(p, s, strlen(s));
-        p += strlen(s);
+        size_t len = yyjson_get_len(val);
+        memcpy(p, s, len);
+        p += len;
         if (idx < max - 1) {
             memcpy(p, ", ", strlen(", "));
             p += strlen(", ");
         }
     }
-    *p = '\0';
     *combined = temp;
+    *combined_len = total_len;
     return HSFV_OK;
 }
 
 static void run_test_for_json_file(const char *json_rel_path)
 {
     const char *test_dir = getenv("HTTPWG_TEST_DIR");
+    if (!test_dir) {
+        test_dir = "./_deps/httpwg_tests-src";
+    }
 
     char path[PATH_MAX];
     sprintf(path, "%s%s%s", test_dir, PATH_SEPARATOR, json_rel_path);
@@ -314,6 +395,9 @@ static void run_test_for_json_file(const char *json_rel_path)
         while ((case_obj = yyjson_arr_iter_next(&iter))) {
             const char *name = yyjson_get_str(yyjson_obj_get(case_obj, "name"));
             bool must_fail = yyjson_get_bool(yyjson_obj_get(case_obj, "must_fail"));
+            // if (strcmp(name, "two line list")) {
+            //     continue;
+            // }
             printf("name=%s\n", name);
 
             hsfv_err_t err;
@@ -334,17 +418,20 @@ static void run_test_for_json_file(const char *json_rel_path)
             REQUIRE(yyjson_arr_size(raw) >= 1);
             bool multiple_headers = yyjson_arr_size(raw) > 1;
             const char *input;
+            size_t input_len;
             if (multiple_headers) {
                 REQUIRE(field_type == HSFV_FIELD_VALUE_TYPE_LIST);
-                err = combine_field_lines(raw, allocator, &input);
+                err = combine_field_lines(raw, allocator, &input, &input_len);
                 REQUIRE(err == HSFV_OK);
             } else {
-                input = yyjson_get_str(yyjson_arr_get(raw, 0));
+                yyjson_val *raw0 = yyjson_arr_get(raw, 0);
+                input = yyjson_get_str(raw0);
+                input_len = yyjson_get_len(raw0);
             }
-            printf("input=%s\n", input);
+            printf("input=%.*s, input_len=%zd\n", (int)input_len, input, input_len);
 
             hsfv_field_value_t got;
-            const char *input_end = input + strlen(input);
+            const char *input_end = input + input_len;
             const char *rest;
             err = hsfv_parse_field_value(&got, field_type, allocator, input, input_end, &rest);
             if (must_fail) {
@@ -376,13 +463,15 @@ TEST_CASE("httpwg tests", "[httpwg]")
         run_test_for_json_file(json_rel_path);                                                                                     \
     }
 
-    // SECTION_HELPER("binary.json");
-    // SECTION_HELPER("boolean.json");
-    // SECTION_HELPER("list.json");
+    SECTION_HELPER("binary.json");
+    SECTION_HELPER("boolean.json");
+    SECTION_HELPER("list.json");
     SECTION_HELPER("listlist.json");
-    // SECTION_HELPER("number.json");
-    // SECTION_HELPER("number-generated.json");
-    // SECTION_HELPER("string.json");
-    // SECTION_HELPER("token.json");
+    SECTION_HELPER("number.json");
+    SECTION_HELPER("number-generated.json");
+    SECTION_HELPER("string.json");
+    SECTION_HELPER("string-generated.json");
+    SECTION_HELPER("token.json");
+    SECTION_HELPER("token-generated.json");
 #undef SECTION_HELPER
 }
