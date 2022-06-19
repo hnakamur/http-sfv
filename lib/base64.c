@@ -12,13 +12,13 @@ void hsfv_encode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src)
 
 static void hsfv_encode_base64_internal(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src, const uint8_t *basis, uint64_t padding)
 {
-    const char *s;
-    char *d;
+    const u_char *s;
+    u_char *d;
     size_t len;
 
     len = src->len;
-    s = src->base;
-    d = dst->base;
+    s = (const u_char *)src->base;
+    d = (u_char *)dst->base;
 
     while (len > 2) {
         *d++ = basis[(s[0] >> 2) & 0x3f];
@@ -49,7 +49,7 @@ static void hsfv_encode_base64_internal(hsfv_iovec_t *dst, const hsfv_iovec_cons
         }
     }
 
-    dst->len = d - dst->base;
+    dst->len = d - (u_char *)dst->base;
 }
 
 hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src)
@@ -73,8 +73,8 @@ hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src)
 static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src, const uint8_t *basis)
 {
     size_t len;
-    const char *s;
-    char *d;
+    const u_char *s;
+    u_char *d;
 
     for (len = 0; len < src->len; len++) {
         if (src->base[len] == '=') {
@@ -90,8 +90,8 @@ static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst, const hsfv_iove
         return HSFV_ERR;
     }
 
-    s = src->base;
-    d = dst->base;
+    s = (const u_char *)src->base;
+    d = (u_char *)dst->base;
 
     while (len > 3) {
         *d++ = (uint8_t)(basis[s[0]] << 2 | basis[s[1]] >> 4);
@@ -110,7 +110,7 @@ static hsfv_err_t hsfv_decode_base64_internal(hsfv_iovec_t *dst, const hsfv_iove
         *d++ = (uint8_t)(basis[s[1]] << 4 | basis[s[2]] >> 2);
     }
 
-    dst->len = d - dst->base;
+    dst->len = d - (u_char *)dst->base;
 
     return HSFV_OK;
 }
