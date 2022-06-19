@@ -27,6 +27,19 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(yyjson)
 
+# libbaseencode for test
+FetchContent_Declare(
+  libbaseencode
+  GIT_REPOSITORY https://github.com/paolostivanin/libbaseencode.git
+  GIT_TAG v1.0.14)
+
+# Note we don't use FetchContent_MakeAvailable here since we don't want build
+# it.
+FetchContent_GetProperties(libbaseencode)
+if(NOT libbaseencode_POPULATED)
+  FetchContent_Populate(libbaseencode)
+endif()
+
 # httpwg test cases
 FetchContent_Declare(
   httpwg_tests
@@ -80,10 +93,11 @@ function(cmake_format target)
   endif()
 endfunction()
 
-include_directories(include)
+include_directories(include ${libbaseencode_SOURCE_DIR}/src)
 
 file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
-file(GLOB TEST_FILES tests/*.cpp)
+file(GLOB TEST_FILES tests/*.cpp ${libbaseencode_SOURCE_DIR}/src/base32.c)
+message(STATUS "TEST_FILES=${TEST_FILES}")
 set(target tests)
 add_executable(${target} ${TEST_FILES} ${SRC_FILES})
 target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain yyjson)

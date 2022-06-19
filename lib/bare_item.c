@@ -585,6 +585,8 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
     uint64_t encoded_len, decoded_len;
     hsfv_iovec_const_t src;
 
+    printf("hsfv_parse_byte_seq start, input=[%.*s]\n", (int)(input_end - input), input);
+
     if (input == input_end) {
         return HSFV_ERR_EOF;
     }
@@ -612,6 +614,11 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
                 allocator->free(allocator, temp.base);
                 return HSFV_ERR_INVALID;
             }
+            printf("hsfv_parse_byte_seq decoded=");
+            for (int i = 0; i < temp.len; i++) {
+                printf(" %02x", temp.base[i]);
+            }
+            printf("\n");
             item->type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ;
             item->byte_seq.base = temp.base;
             item->byte_seq.len = temp.len;

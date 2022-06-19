@@ -1,6 +1,9 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 #include <linux/limits.h>
+extern "C" {
+#include <baseencode.h>
+}
 #include <yyjson.h>
 
 #define PATH_SEPARATOR "/"
@@ -53,6 +56,32 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
             }
             *out_item = hsfv_item_t{
                 .bare_item = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = token_value, .len = strlen(value)}},
+            };
+        } else if (!strcmp(override_type, "binary")) {
+            const char *value = yyjson_get_str(yyjson_obj_get(bare_item_val, "value"));
+            size_t decoded_len = 0;
+            char *decoded = NULL;
+            if (strlen(value) > 0) {
+                baseencode_error_t err;
+                char *decoded_cstr = (char *)base32_decode(value, strlen(value), &err);
+                if (err != SUCCESS) {
+                    return err == MEMORY_ALLOCATION ? HSFV_ERR_OUT_OF_MEMORY : HSFV_ERR_INVALID;
+                }
+                decoded_len = strlen(decoded_cstr);
+                decoded = hsfv_strndup(allocator, decoded_cstr, decoded_len);
+                if (!decoded) {
+                    return HSFV_ERR_OUT_OF_MEMORY;
+                }
+                free(decoded_cstr);
+                printf("base32dec input=%s, len=%zd\n", value, strlen(value));
+                printf("decoded=");
+                for (int i = 0; i < decoded_len; i++) {
+                    printf(" %02x", decoded[i]);
+                }
+                printf("\n");
+            }
+            *out_item = hsfv_item_t{
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = decoded, .len = decoded_len}},
             };
         }
     } break;
@@ -214,6 +243,7 @@ TEST_CASE("httpwg tests", "[httpwg]")
         run_test_for_json_file(json_rel_path);                                                                                     \
     }
 
+    SECTION_HELPER("binary.json");
     SECTION_HELPER("boolean.json");
     SECTION_HELPER("number.json");
     SECTION_HELPER("number-generated.json");

@@ -421,6 +421,7 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]")
     OK_HELPER("case 1", ":YWJj:", "abc");
     OK_HELPER("case 2", ":YW55IGNhcm5hbCBwbGVhc3VyZQ==:", "any carnal pleasure");
     OK_HELPER("case 3", ":YW55IGNhcm5hbCBwbGVhc3Vy:", "any carnal pleasur");
+    OK_HELPER("empty", "::", "");
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                                                                            \
