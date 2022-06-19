@@ -304,10 +304,15 @@ hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const ch
 static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const char *input_end, bool neg, const char **out_rest)
 {
     int64_t i;
+    char temp[1 + HSFV_MAX_INT_LEN + 1];
     char *end;
 
-    i = strtoll(input, &end, 10);
-    if (end != input_end) {
+    size_t input_len = input_end - input;
+    memcpy(temp, input, input_len);
+    temp[input_len] = '\0';
+
+    i = strtoll(temp, &end, 10);
+    if (end - temp != input_len) {
         return HSFV_ERR_INVALID;
     }
     if (i < HSFV_MIN_INT || HSFV_MAX_INT < i) {
@@ -317,7 +322,7 @@ static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const
     item->type = HSFV_BARE_ITEM_TYPE_INTEGER;
     item->integer = neg ? -i : i;
     if (out_rest) {
-        *out_rest = end;
+        *out_rest = input + input_len;
     }
     return HSFV_OK;
 }
@@ -326,21 +331,26 @@ static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input, const
                                 const char **out_rest)
 {
     double d;
+    char temp[1 + HSFV_MAX_DEC_INT_LEN + 1 + HSFV_MAX_DEC_FRAC_LEN + 1];
     char *end;
 
     if (input + dec_sep_off == input_end - 1) {
         return HSFV_ERR_INVALID;
     }
 
-    d = strtod(input, &end);
-    if (end != input_end) {
+    size_t input_len = input_end - input;
+    memcpy(temp, input, input_len);
+    temp[input_len] = '\0';
+
+    d = strtod(temp, &end);
+    if (end - temp != input_len) {
         return HSFV_ERR_INVALID;
     }
 
     item->type = HSFV_BARE_ITEM_TYPE_DECIMAL;
     item->decimal = neg ? -d : d;
     if (out_rest) {
-        *out_rest = end;
+        *out_rest = input + input_len;
     }
     return HSFV_OK;
 }
