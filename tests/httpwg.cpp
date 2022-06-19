@@ -13,11 +13,13 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
     hsfv_err_t err;
     const char *input, *input_end;
 
+    printf("build_expected_item start\n");
     if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
         return HSFV_ERR_INVALID;
     }
     yyjson_val *bare_item_val = yyjson_arr_get(expected, 0);
     yyjson_type bare_item_type = yyjson_get_type(bare_item_val);
+    printf("build_expected_item bare_item_type=%d\n", bare_item_type);
     switch (bare_item_type) {
     case YYJSON_TYPE_BOOL: {
         bool b = yyjson_get_bool(bare_item_val);
@@ -84,6 +86,60 @@ static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *al
     return HSFV_OK;
 }
 
+static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_inner_list_t *out_inner_list)
+{
+    if (!yyjson_is_arr(expected)) {
+        return HSFV_ERR_INVALID;
+    }
+
+    size_t n = yyjson_arr_size(expected);
+    printf("build_expected_inner_list start n=%zd\n", n);
+    hsfv_item_t *items = (hsfv_item_t *)allocator->alloc(allocator, n * sizeof(hsfv_item_t));
+    if (!items) {
+        return HSFV_ERR_OUT_OF_MEMORY;
+    }
+    *out_inner_list = hsfv_inner_list_t{.items = items, .len = 0, .capacity = n};
+
+    hsfv_err_t err;
+    size_t idx, max;
+    yyjson_val *member_val;
+    yyjson_arr_foreach(expected, idx, max, member_val)
+    {
+        if (idx < max - 1) {
+            // item
+            if (!yyjson_is_arr(member_val) || yyjson_arr_size(member_val) != 2) {
+                err = HSFV_ERR_INVALID;
+                goto error;
+            }
+
+            printf("build_expected_inner_list before build_expected_item idx=%zd\n", idx);
+            err = build_expected_item(yyjson_arr_get(member_val, 0), allocator, &items[idx]);
+            printf("build_expected_inner_list after build_expected_item idx=%zd, err=%d\n", idx, err);
+            if (err) {
+                goto error;
+            }
+            out_inner_list->len++;
+        } else {
+            // parameters
+            if (!yyjson_is_arr(member_val)) {
+                err = HSFV_ERR_INVALID;
+                goto error;
+            }
+            if (yyjson_arr_size(member_val) != 0) {
+                fprintf(stderr, "parse parameters in inner_list is not implemented yet!!!\n");
+                err = HSFV_ERR_INVALID;
+                goto error;
+            }
+        }
+    }
+
+    return HSFV_OK;
+
+error:
+    hsfv_inner_list_deinit(out_inner_list, allocator);
+    return err;
+}
+
 static hsfv_err_t build_expected_list(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_list_t *out_list)
 {
     if (!yyjson_is_arr(expected)) {
@@ -110,7 +166,10 @@ static hsfv_err_t build_expected_list(yyjson_val *expected, hsfv_allocator_t *al
         yyjson_val *item_or_inner_list_val = yyjson_arr_get(list_member_val, 0);
         if (yyjson_is_arr(item_or_inner_list_val)) {
             member->type = HSFV_LIST_MEMBER_TYPE_INNER_LIST;
-            fprintf(stderr, "inner_list not implemented yet\n");
+            err = build_expected_inner_list(list_member_val, allocator, &member->inner_list);
+            if (err) {
+                goto error;
+            }
         } else {
             member->type = HSFV_LIST_MEMBER_TYPE_ITEM;
             err = build_expected_item(list_member_val, allocator, &member->item);
@@ -318,12 +377,13 @@ TEST_CASE("httpwg tests", "[httpwg]")
         run_test_for_json_file(json_rel_path);                                                                                     \
     }
 
-    SECTION_HELPER("binary.json");
-    SECTION_HELPER("boolean.json");
-    SECTION_HELPER("list.json");
-    SECTION_HELPER("number.json");
-    SECTION_HELPER("number-generated.json");
-    SECTION_HELPER("string.json");
-    SECTION_HELPER("token.json");
+    // SECTION_HELPER("binary.json");
+    // SECTION_HELPER("boolean.json");
+    // SECTION_HELPER("list.json");
+    SECTION_HELPER("listlist.json");
+    // SECTION_HELPER("number.json");
+    // SECTION_HELPER("number-generated.json");
+    // SECTION_HELPER("string.json");
+    // SECTION_HELPER("token.json");
 #undef SECTION_HELPER
 }
