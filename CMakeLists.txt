@@ -101,12 +101,6 @@ set(target tests)
 add_executable(${target} ${TEST_FILES} ${SRC_FILES})
 target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain yyjson)
 
-add_custom_command(
-  TARGET "${target}"
-  POST_BUILD
-  COMMAND "${CMAKE_COMMAND}" -E env HTTPWG_TEST_DIR=${httpwg_tests_SOURCE_DIR}
-          "./${target}")
-
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
