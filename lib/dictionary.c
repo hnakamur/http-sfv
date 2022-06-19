@@ -63,9 +63,9 @@ void hsfv_dictionary_deinit(hsfv_dictionary_t *self, hsfv_allocator_t *allocator
 
 static hsfv_err_t hsfv_dictionary_append(hsfv_dictionary_t *dictionary, hsfv_allocator_t *allocator, hsfv_dict_member_t *member)
 {
-    if (dictionary->len + 1 >= dictionary->capacity) {
+    if (dictionary->len + 1 > dictionary->capacity) {
         size_t new_capacity = hsfv_align(dictionary->len + 1, DICT_INITIAL_CAPACITY);
-        dictionary->members = allocator->realloc(allocator, dictionary->members, new_capacity * sizeof(hsfv_parameter_t));
+        dictionary->members = allocator->realloc(allocator, dictionary->members, new_capacity * sizeof(hsfv_dict_member_t));
         if (dictionary->members == NULL) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
@@ -153,6 +153,7 @@ hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary, hsfv_allocator_t
 
         if (input < input_end && *input == '=') {
             ++input;
+
             if (*input == '(') {
                 err = hsfv_parse_inner_list(&member.value.inner_list, allocator, input, input_end, &input);
                 if (err) {

@@ -50,5 +50,6 @@ hsfv_err_t hsfv_parse_item(hsfv_item_t *item, hsfv_allocator_t *allocator, const
 
 error:
     hsfv_bare_item_deinit(&item->bare_item, allocator);
+    item->bare_item = (hsfv_bare_item_t){0};
     return err;
 }

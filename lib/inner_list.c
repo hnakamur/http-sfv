@@ -26,7 +26,7 @@ void hsfv_inner_list_deinit(hsfv_inner_list_t *self, hsfv_allocator_t *allocator
 
 static hsfv_err_t hsfv_inner_list_append(hsfv_inner_list_t *self, hsfv_allocator_t *allocator, const hsfv_item_t *item)
 {
-    if (self->len + 1 >= self->capacity) {
+    if (self->len + 1 > self->capacity) {
         size_t new_capacity = hsfv_align(self->len + 1, INNER_LIST_INITIAL_CAPACITY);
         self->items = allocator->realloc(allocator, self->items, new_capacity * sizeof(hsfv_item_t));
         if (self->items == NULL) {

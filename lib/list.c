@@ -85,7 +85,7 @@ hsfv_err_t hsfv_serialize_list(const hsfv_list_t *list, hsfv_allocator_t *alloca
 
 static hsfv_err_t hsfv_list_append(hsfv_list_t *self, hsfv_allocator_t *allocator, const hsfv_list_member_t *member)
 {
-    if (self->len + 1 >= self->capacity) {
+    if (self->len + 1 > self->capacity) {
         size_t new_capacity = hsfv_align(self->len + 1, LIST_INITIAL_CAPACITY);
         self->members = allocator->realloc(allocator, self->members, new_capacity * sizeof(hsfv_list_member_t));
         if (self->members == NULL) {

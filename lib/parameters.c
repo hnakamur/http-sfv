@@ -69,7 +69,7 @@ hsfv_err_t hsfv_serialize_parameters(const hsfv_parameters_t *parameters, hsfv_a
 
 static hsfv_err_t hsfv_parameters_append(hsfv_allocator_t *allocator, hsfv_parameters_t *parameters, hsfv_parameter_t *param)
 {
-    if (parameters->len + 1 >= parameters->capacity) {
+    if (parameters->len + 1 > parameters->capacity) {
         size_t new_capacity = hsfv_align(parameters->len + 1, PARAMETERS_INITIAL_CAPACITY);
         parameters->params = allocator->realloc(allocator, parameters->params, new_capacity * sizeof(hsfv_parameter_t));
         if (parameters->params == NULL) {
@@ -98,16 +98,10 @@ hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters, hsfv_allocator_t
     hsfv_err_t err;
     char c;
     hsfv_parameter_t param;
-    hsfv_parameters_t temp;
+    hsfv_parameters_t temp = (hsfv_parameters_t){0};
     size_t i;
 
-    parameters->params = NULL;
-    parameters->len = 0;
-    parameters->capacity = 0;
-
-    temp.params = NULL;
-    temp.len = 0;
-    temp.capacity = 0;
+    *parameters = (hsfv_parameters_t){0};
 
     while (input < input_end) {
         c = *input;
@@ -125,6 +119,7 @@ hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters, hsfv_allocator_t
 
         if (input < input_end && *input == '=') {
             ++input;
+
             err = hsfv_parse_bare_item(&param.value, allocator, input, input_end, &input);
             if (err) {
                 goto error2;

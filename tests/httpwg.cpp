@@ -143,16 +143,16 @@ error:
 static hsfv_err_t build_expected_item(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_item_t *out_item)
 {
     hsfv_err_t err;
-    const char *input, *input_end;
 
     if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
         return HSFV_ERR_INVALID;
     }
 
+    out_item->parameters = (hsfv_parameters_t){0};
+
     yyjson_val *bare_item_val = yyjson_arr_get(expected, 0);
     yyjson_val *parameters_val = yyjson_arr_get(expected, 1);
 
-    out_item->parameters = (hsfv_parameters_t){0};
     err = build_expected_bare_item(bare_item_val, allocator, &out_item->bare_item);
     if (err) {
         goto error;
@@ -172,9 +172,13 @@ error:
 
 static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_inner_list_t *out_inner_list)
 {
+    hsfv_err_t err;
+
     if (!yyjson_is_arr(expected) || yyjson_arr_size(expected) != 2) {
         return HSFV_ERR_INVALID;
     }
+
+    out_inner_list->parameters = (hsfv_parameters_t){0};
 
     yyjson_val *members_val = yyjson_arr_get(expected, 0);
     yyjson_val *parameters_val = yyjson_arr_get(expected, 1);
@@ -186,7 +190,6 @@ static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator
     }
     *out_inner_list = hsfv_inner_list_t{.items = items, .len = 0, .capacity = n};
 
-    hsfv_err_t err;
     size_t idx, max;
     yyjson_val *member_val;
     yyjson_arr_foreach(members_val, idx, max, member_val)
@@ -196,9 +199,7 @@ static hsfv_err_t build_expected_inner_list(yyjson_val *expected, hsfv_allocator
             goto error;
         }
 
-        printf("build_expected_inner_list before build_expected_item idx=%zd\n", idx);
         err = build_expected_item(member_val, allocator, &items[idx]);
-        printf("build_expected_inner_list after build_expected_item idx=%zd, err=%d\n", idx, err);
         if (err) {
             goto error;
         }
@@ -264,8 +265,10 @@ error:
     return err;
 }
 
-static hsfv_err_t build_expected_dict(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_dictionary_t *out_dict)
+static hsfv_err_t build_expected_dictionary(yyjson_val *expected, hsfv_allocator_t *allocator, hsfv_dictionary_t *out_dict)
 {
+    hsfv_err_t err;
+
     if (!yyjson_is_arr(expected)) {
         return HSFV_ERR_INVALID;
     }
@@ -277,29 +280,45 @@ static hsfv_err_t build_expected_dict(yyjson_val *expected, hsfv_allocator_t *al
     }
     *out_dict = hsfv_dictionary_t{.members = members, .len = 0, .capacity = n};
 
-    hsfv_err_t err;
     size_t idx, max;
     yyjson_val *dict_member_val;
     yyjson_arr_foreach(expected, idx, max, dict_member_val)
     {
-#if 0
         if (!yyjson_is_arr(dict_member_val) || yyjson_arr_size(dict_member_val) != 2) {
             err = HSFV_ERR_INVALID;
             goto error;
         }
-        hsfv_list_member_t *member = &members[idx];
-        yyjson_val *item_or_inner_list_val = yyjson_arr_get(list_member_val, 0);
+
+        yyjson_val *key_val = yyjson_arr_get(dict_member_val, 0);
+        yyjson_val *value_val = yyjson_arr_get(dict_member_val, 1);
+
+        hsfv_dict_member_t *member = &members[idx];
+        err = build_expected_key(key_val, allocator, &member->key);
+        if (err) {
+            goto error;
+        }
+
+        if (!yyjson_is_arr(value_val) || yyjson_arr_size(value_val) != 2) {
+            err = HSFV_ERR_INVALID;
+            goto error;
+        }
+
+        yyjson_val *item_or_inner_list_val = yyjson_arr_get(value_val, 0);
         if (yyjson_is_arr(item_or_inner_list_val)) {
-            member->type = HSFV_LIST_MEMBER_TYPE_INNER_LIST;
-            fprintf(stderr, "inner_list not implemented yet\n");
-        } else {
-            member->type = HSFV_LIST_MEMBER_TYPE_ITEM;
-            err = build_expected_item(list_member_val, allocator, &member->item);
+            err = build_expected_inner_list(value_val, allocator, &member->value.inner_list);
             if (err) {
+                hsfv_key_deinit(&member->key, allocator);
                 goto error;
             }
+            member->value.type = HSFV_DICT_MEMBER_TYPE_INNER_LIST;
+        } else {
+            err = build_expected_item(value_val, allocator, &member->value.item);
+            if (err) {
+                hsfv_key_deinit(&member->key, allocator);
+                goto error;
+            }
+            member->value.type = HSFV_DICT_MEMBER_TYPE_ITEM;
         }
-#endif
         out_dict->len++;
     }
 
@@ -320,6 +339,9 @@ static hsfv_err_t build_expected_field_value(yyjson_val *expected, hsfv_field_va
     case HSFV_FIELD_VALUE_TYPE_LIST:
         out_value->type = field_type;
         return build_expected_list(expected, allocator, &out_value->list);
+    case HSFV_FIELD_VALUE_TYPE_DICTIONARY:
+        out_value->type = field_type;
+        return build_expected_dictionary(expected, allocator, &out_value->dictionary);
     default:
         return HSFV_ERR_INVALID;
     }
@@ -395,9 +417,6 @@ static void run_test_for_json_file(const char *json_rel_path)
         while ((case_obj = yyjson_arr_iter_next(&iter))) {
             const char *name = yyjson_get_str(yyjson_obj_get(case_obj, "name"));
             bool must_fail = yyjson_get_bool(yyjson_obj_get(case_obj, "must_fail"));
-            // if (strcmp(name, "two line list")) {
-            //     continue;
-            // }
             printf("name=%s\n", name);
 
             hsfv_err_t err;
@@ -420,7 +439,7 @@ static void run_test_for_json_file(const char *json_rel_path)
             const char *input;
             size_t input_len;
             if (multiple_headers) {
-                REQUIRE(field_type == HSFV_FIELD_VALUE_TYPE_LIST);
+                REQUIRE(field_type != HSFV_FIELD_VALUE_TYPE_ITEM);
                 err = combine_field_lines(raw, allocator, &input, &input_len);
                 REQUIRE(err == HSFV_OK);
             } else {
@@ -428,7 +447,7 @@ static void run_test_for_json_file(const char *json_rel_path)
                 input = yyjson_get_str(raw0);
                 input_len = yyjson_get_len(raw0);
             }
-            printf("input=%.*s, input_len=%zd\n", (int)input_len, input, input_len);
+            printf("input=[%.*s]\n", (int)input_len, input);
 
             hsfv_field_value_t got;
             const char *input_end = input + input_len;
@@ -438,6 +457,17 @@ static void run_test_for_json_file(const char *json_rel_path)
                 CHECK(err != HSFV_OK);
             } else {
                 CHECK(err == HSFV_OK);
+                if (!hsfv_field_value_eq(&got, &want)) {
+                    hsfv_buffer_t got_buf = {0}, want_buf = {0};
+                    hsfv_err_t err_got = hsfv_serialize_field_value(&got, allocator, &got_buf);
+                    CHECK(err_got == HSFV_OK);
+                    hsfv_err_t err_want = hsfv_serialize_field_value(&want, allocator, &want_buf);
+                    CHECK(err_want == HSFV_OK);
+                    printf(" got=%.*s,  got_len=%zd\nwant=%.*s, want_len=%zd\n", (int)got_buf.bytes.len, got_buf.bytes.base,
+                           got_buf.bytes.len, (int)want_buf.bytes.len, want_buf.bytes.base, want_buf.bytes.len);
+                    hsfv_buffer_deinit(&got_buf, allocator);
+                    hsfv_buffer_deinit(&want_buf, allocator);
+                }
                 CHECK(hsfv_field_value_eq(&got, &want));
                 hsfv_field_value_deinit(&got, allocator);
             }
@@ -465,15 +495,21 @@ TEST_CASE("httpwg tests", "[httpwg]")
 
     SECTION_HELPER("binary.json");
     SECTION_HELPER("boolean.json");
+    SECTION_HELPER("dictionary.json");
+    SECTION_HELPER("examples.json");
+    SECTION_HELPER("item.json");
+    SECTION_HELPER("key-generated.json");
+    SECTION_HELPER("large-generated.json");
     SECTION_HELPER("list.json");
     SECTION_HELPER("listlist.json");
-    SECTION_HELPER("number.json");
     SECTION_HELPER("number-generated.json");
+    SECTION_HELPER("number.json");
+    SECTION_HELPER("param-dict.json");
     SECTION_HELPER("param-list.json");
     SECTION_HELPER("param-listlist.json");
-    SECTION_HELPER("string.json");
     SECTION_HELPER("string-generated.json");
-    SECTION_HELPER("token.json");
+    SECTION_HELPER("string.json");
     SECTION_HELPER("token-generated.json");
+    SECTION_HELPER("token.json");
 #undef SECTION_HELPER
 }
