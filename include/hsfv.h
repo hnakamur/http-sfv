@@ -40,7 +40,9 @@ struct st_hsfv_allocator_t {
 
 extern hsfv_allocator_t hsfv_global_allocator;
 
-char *hsfv_strndup(hsfv_allocator_t *allocator, const char *src, size_t len);
+typedef unsigned char hsfv_byte_t;
+
+hsfv_byte_t *hsfv_bytes_dup(hsfv_allocator_t *allocator, const hsfv_byte_t *src, size_t len);
 
 #define hsfv_align(d, a) (((d) + (a - 1)) & ~(a - 1))
 #define hsfv_roundup(d, a) (((d) + (a - 1)) / (a) * (a))

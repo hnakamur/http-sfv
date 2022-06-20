@@ -29,7 +29,7 @@ static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_alloc
     case YYJSON_TYPE_STR: {
         const char *value = yyjson_get_str(bare_item_val);
         size_t value_len = yyjson_get_len(bare_item_val);
-        const char *str_value = hsfv_strndup(allocator, value, value_len);
+        const char *str_value = (const char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)value, value_len);
         if (!str_value) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
@@ -41,7 +41,7 @@ static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_alloc
             yyjson_val *value_val = yyjson_obj_get(bare_item_val, "value");
             const char *value = yyjson_get_str(value_val);
             size_t value_len = yyjson_get_len(value_val);
-            const char *token_value = hsfv_strndup(allocator, value, value_len);
+            const char *token_value = (const char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)value, value_len);
             if (!token_value) {
                 return HSFV_ERR_OUT_OF_MEMORY;
             }
@@ -59,7 +59,7 @@ static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_alloc
                     return err == MEMORY_ALLOCATION ? HSFV_ERR_OUT_OF_MEMORY : HSFV_ERR_INVALID;
                 }
                 decoded_len = strlen(decoded_cstr);
-                decoded = hsfv_strndup(allocator, decoded_cstr, decoded_len);
+                decoded = (char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)decoded_cstr, decoded_len);
                 if (!decoded) {
                     return HSFV_ERR_OUT_OF_MEMORY;
                 }
@@ -79,7 +79,7 @@ static hsfv_err_t build_expected_key(yyjson_val *expected, hsfv_allocator_t *all
 {
     const char *value = yyjson_get_str(expected);
     size_t value_len = yyjson_get_len(expected);
-    const char *base = hsfv_strndup(allocator, value, value_len);
+    char *base = (char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)value, value_len);
     if (!base) {
         *out_key = (hsfv_key_t){0};
         return HSFV_ERR_OUT_OF_MEMORY;
@@ -503,7 +503,7 @@ static hsfv_err_t dup_json_str(yyjson_val *val, hsfv_allocator_t *allocator, con
 {
     assert(yyjson_is_str(val));
     *len = yyjson_get_len(val);
-    *base = hsfv_strndup(allocator, yyjson_get_str(val), *len);
+    *base = (const char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)yyjson_get_str(val), *len);
     if (!*base) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }

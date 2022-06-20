@@ -1,4 +1,5 @@
 #include "hsfv.h"
+#include <limits.h>
 
 bool hsfv_field_value_eq(const hsfv_field_value_t *self, const hsfv_field_value_t *other)
 {
@@ -61,6 +62,8 @@ hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value, hsf
 hsfv_err_t hsfv_parse_field_value(hsfv_field_value_t *field_value, hsfv_field_value_type_t field_type, hsfv_allocator_t *allocator,
                                   const char *input, const char *input_end, const char **out_rest)
 {
+    _Static_assert(CHAR_BIT == 8, "non-8bit character is not supported");
+
     hsfv_err_t err;
 
     if (!hsfv_is_ascii_string(input, input_end)) {

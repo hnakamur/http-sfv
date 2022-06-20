@@ -515,7 +515,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
         }
     }
 
-    item->token.base = hsfv_strndup(allocator, input, p - input);
+    item->token.base = hsfv_bytes_dup(allocator, input, p - input);
     if (item->token.base == NULL) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }
@@ -565,7 +565,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
         }
     }
 
-    key->base = hsfv_strndup(allocator, input, p - input);
+    key->base = hsfv_bytes_dup(allocator, input, p - input);
     if (key->base == NULL) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }
