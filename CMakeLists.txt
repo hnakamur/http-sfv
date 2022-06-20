@@ -96,10 +96,12 @@ endfunction()
 include_directories(include ${libbaseencode_SOURCE_DIR}/src)
 
 file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
+add_library(httpsfv ${SRC_FILES})
+
 file(GLOB TEST_FILES tests/*.cpp ${libbaseencode_SOURCE_DIR}/src/base32.c)
 set(target tests)
-add_executable(${target} ${TEST_FILES} ${SRC_FILES})
-target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain yyjson m)
+add_executable(${target} ${TEST_FILES})
+target_link_libraries(${target} PRIVATE httpsfv Catch2::Catch2WithMain yyjson m)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
