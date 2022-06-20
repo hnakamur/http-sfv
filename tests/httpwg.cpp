@@ -549,9 +549,6 @@ static void run_serialize_test_for_json_file(const char *json_rel_path)
             if (must_fail) {
                 continue;
             }
-            // if (strcmp(name, "token starting with capitals - list")) {
-            //     continue;
-            // }
 
             printf("name=%s\n", name);
 
@@ -575,19 +572,19 @@ static void run_serialize_test_for_json_file(const char *json_rel_path)
             if (yyjson_is_arr(canonical) && yyjson_arr_size(canonical) > 0) {
                 REQUIRE(yyjson_arr_size(canonical) == 1);
                 yyjson_val *canonical0 = yyjson_arr_get(canonical, 0);
-                err = dup_json_str(canonical0, allocator, &want.base, &want.len);
+                err = dup_json_str(canonical0, allocator, (const char **)&want.base, &want.len);
                 REQUIRE(err == HSFV_OK);
             } else {
                 yyjson_val *raw = yyjson_obj_get(case_obj, "raw");
                 REQUIRE(yyjson_is_arr(raw));
                 if (yyjson_arr_size(raw) > 1) {
                     REQUIRE(field_type != HSFV_FIELD_VALUE_TYPE_ITEM);
-                    err = combine_field_lines(raw, allocator, &want.base, &want.len);
+                    err = combine_field_lines(raw, allocator, (const char **)&want.base, &want.len);
                     REQUIRE(err == HSFV_OK);
                 } else {
                     REQUIRE(yyjson_arr_size(raw) == 1);
                     yyjson_val *raw0 = yyjson_arr_get(raw, 0);
-                    err = dup_json_str(raw0, allocator, &want.base, &want.len);
+                    err = dup_json_str(raw0, allocator, (const char **)&want.base, &want.len);
                     REQUIRE(err == HSFV_OK);
                 }
             }

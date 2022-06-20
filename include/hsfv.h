@@ -53,7 +53,7 @@ hsfv_byte_t *hsfv_bytes_dup(hsfv_allocator_t *allocator, const hsfv_byte_t *src,
  * buffer structure compatible with iovec
  */
 typedef struct st_hsfv_iovec_t {
-    char *base;
+    hsfv_byte_t *base;
     size_t len;
 } hsfv_iovec_t;
 
@@ -61,7 +61,7 @@ bool hsfv_iovec_eq(const hsfv_iovec_t *self, const hsfv_iovec_t *other);
 void hsfv_iovec_deinit(hsfv_iovec_t *v, hsfv_allocator_t *allocator);
 
 typedef struct st_hsfv_iovec_const_t {
-    const char *base;
+    const hsfv_byte_t *base;
     size_t len;
 } hsfv_iovec_const_t;
 
