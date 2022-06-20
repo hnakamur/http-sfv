@@ -51,7 +51,7 @@ static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_alloc
             const char *value = yyjson_get_str(value_val);
             size_t value_len = yyjson_get_len(value_val);
             size_t decoded_len = 0;
-            char *decoded = NULL;
+            const hsfv_byte_t *decoded = NULL;
             if (value_len > 0) {
                 baseencode_error_t err;
                 char *decoded_cstr = (char *)base32_decode(value, value_len, &err);
@@ -59,7 +59,7 @@ static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_alloc
                     return err == MEMORY_ALLOCATION ? HSFV_ERR_OUT_OF_MEMORY : HSFV_ERR_INVALID;
                 }
                 decoded_len = strlen(decoded_cstr);
-                decoded = (char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)decoded_cstr, decoded_len);
+                decoded = hsfv_bytes_dup(allocator, (const hsfv_byte_t *)decoded_cstr, decoded_len);
                 if (!decoded) {
                     return HSFV_ERR_OUT_OF_MEMORY;
                 }

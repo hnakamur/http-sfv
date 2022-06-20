@@ -84,7 +84,7 @@ typedef struct st_hsfv_token_t {
 } hsfv_token_t;
 
 typedef struct st_hsfv_byte_seq_t {
-    const char *base;
+    const hsfv_byte_t *base;
     size_t len;
 } hsfv_byte_seq_t;
 

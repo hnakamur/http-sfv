@@ -386,7 +386,7 @@ TEST_CASE("serialize byte_seq", "[serialize][byte_seq]")
 #define OK_HELPER(section, input, want)                                                                                            \
     SECTION(section)                                                                                                               \
     {                                                                                                                              \
-        hsfv_byte_seq_t input_b = (hsfv_byte_seq_t){.base = input, .len = strlen(input)};                                          \
+        hsfv_byte_seq_t input_b = (hsfv_byte_seq_t){.base = (const hsfv_byte_t *)input, .len = strlen(input)};                     \
         hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
         hsfv_err_t err;                                                                                                            \
         err = hsfv_serialize_byte_seq(&input_b, &hsfv_global_allocator, &buf);                                                     \
@@ -415,7 +415,7 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]")
         err = hsfv_parse_byte_seq(&item, &hsfv_global_allocator, input, input_end, &rest);                                         \
         CHECK(err == HSFV_OK);                                                                                                     \
         CHECK(item.type == HSFV_BARE_ITEM_TYPE_BYTE_SEQ);                                                                          \
-        want_b.base = want;                                                                                                        \
+        want_b.base = (const hsfv_byte_t *)want;                                                                                   \
         want_b.len = strlen(want);                                                                                                 \
         CHECK(hsfv_byte_seq_eq(&item.byte_seq, &want_b));                                                                          \
         hsfv_bare_item_deinit(&item, &hsfv_global_allocator);                                                                      \
@@ -544,7 +544,11 @@ TEST_CASE("serialize bare_item", "[serialize][bare_item]")
     OK_HELPER("decimal", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_DECIMAL, .decimal = 123.456}), "123.456");
     OK_HELPER("string", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "foo", .len = 3}}), "\"foo\"");
     OK_HELPER("token", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "foo", .len = 3}}), "foo");
-    OK_HELPER("byte_seq", (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = "abc", .len = 3}}),
+    OK_HELPER("byte_seq",
+              (hsfv_bare_item_t{
+                  .type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
+                  .byte_seq = hsfv_byte_seq_t{.base = (const hsfv_byte_t *)"abc", .len = 3},
+              }),
               ":YWJj:");
 #undef OK_HELPER
 
@@ -589,7 +593,10 @@ TEST_CASE("parse bare_item", "[parse][bare_item]")
     OK_HELPER("token case 2", "*abc",
               (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "*abc", .len = strlen("*abc")}}));
     OK_HELPER("byte_seq", ":YWJj:",
-              (hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ, .byte_seq = {.base = "abc", .len = strlen("abc")}}));
+              (hsfv_bare_item_t{
+                  .type = HSFV_BARE_ITEM_TYPE_BYTE_SEQ,
+                  .byte_seq = {.base = (const hsfv_byte_t *)"abc", .len = strlen("abc")},
+              }));
 #undef OK_HELPER
 
 #define NG_HELPER(section, input, want)                                                                                            \

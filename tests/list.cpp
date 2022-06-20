@@ -12,7 +12,7 @@ static hsfv_parameter_t params0params[] = {
     },
 };
 
-static char bytes[] = {'\1', '\3', '\1', '\2'};
+static hsfv_byte_t bytes[] = {'\1', '\3', '\1', '\2'};
 static hsfv_parameter_t param1 = {
     .key = {.base = "y", .len = 1},
     .value =
