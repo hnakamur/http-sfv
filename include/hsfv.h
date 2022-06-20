@@ -54,13 +54,15 @@ typedef struct st_hsfv_iovec_t {
     size_t len;
 } hsfv_iovec_t;
 
+bool hsfv_iovec_eq(const hsfv_iovec_t *self, const hsfv_iovec_t *other);
+void hsfv_iovec_deinit(hsfv_iovec_t *v, hsfv_allocator_t *allocator);
+
 typedef struct st_hsfv_iovec_const_t {
     const char *base;
     size_t len;
 } hsfv_iovec_const_t;
 
 bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self, const hsfv_iovec_const_t *other);
-void hsfv_iovec_deinit(hsfv_iovec_t *v, hsfv_allocator_t *allocator);
 void hsfv_iovec_const_deinit(hsfv_iovec_const_t *v, hsfv_allocator_t *allocator);
 
 typedef struct st_hsfv_key_t {

@@ -146,6 +146,9 @@ TEST_CASE("serialize decimal", "[serialize][decimal]")
         err = hsfv_serialize_decimal(input, &hsfv_global_allocator, &buf);                                                         \
         CHECK(err == HSFV_OK);                                                                                                     \
         CHECK(buf.bytes.len == strlen(want));                                                                                      \
+        if (memcmp(buf.bytes.base, want, buf.bytes.len)) {                                                                         \
+            printf("got=%.*s, want=%s\n", (int)buf.bytes.len, buf.bytes.base, want);                                               \
+        };                                                                                                                         \
         CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
         hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
     }

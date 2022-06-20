@@ -1,5 +1,10 @@
 #include "hsfv.h"
 
+bool hsfv_iovec_eq(const hsfv_iovec_t *self, const hsfv_iovec_t *other)
+{
+    return self->len == other->len && !memcmp(self->base, other->base, self->len);
+}
+
 bool hsfv_iovec_const_eq(const hsfv_iovec_const_t *self, const hsfv_iovec_const_t *other)
 {
     return self->len == other->len && !memcmp(self->base, other->base, self->len);

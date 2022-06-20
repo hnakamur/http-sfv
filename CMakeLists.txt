@@ -99,7 +99,7 @@ file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
 file(GLOB TEST_FILES tests/*.cpp ${libbaseencode_SOURCE_DIR}/src/base32.c)
 set(target tests)
 add_executable(${target} ${TEST_FILES} ${SRC_FILES})
-target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain yyjson)
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain yyjson m)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)

@@ -46,10 +46,6 @@ bool hsfv_field_value_is_empty(const hsfv_field_value_t *self)
 
 hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)
 {
-    if (hsfv_field_value_is_empty(field_value)) {
-        return HSFV_ERR_INVALID;
-    }
-
     switch (field_value->type) {
     case HSFV_FIELD_VALUE_TYPE_LIST:
         return hsfv_serialize_list(&field_value->list, allocator, dest);

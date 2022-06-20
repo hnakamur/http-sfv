@@ -225,6 +225,11 @@ static hsfv_err_t build_expected_list(yyjson_val *expected, hsfv_allocator_t *al
     }
 
     size_t n = yyjson_arr_size(expected);
+    if (n == 0) {
+        *out_list = (hsfv_list_t){0};
+        return HSFV_OK;
+    }
+
     hsfv_list_member_t *members = (hsfv_list_member_t *)allocator->alloc(allocator, n * sizeof(hsfv_list_member_t));
     if (!members) {
         return HSFV_ERR_OUT_OF_MEMORY;
@@ -274,11 +279,19 @@ static hsfv_err_t build_expected_dictionary(yyjson_val *expected, hsfv_allocator
     }
 
     size_t n = yyjson_arr_size(expected);
+    if (n == 0) {
+        *out_dict = (hsfv_dictionary_t){0};
+        return HSFV_OK;
+    }
+
     hsfv_dict_member_t *members = (hsfv_dict_member_t *)allocator->alloc(allocator, n * sizeof(hsfv_dict_member_t));
     if (!members) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }
     *out_dict = hsfv_dictionary_t{.members = members, .len = 0, .capacity = n};
+    if (n == 0) {
+        return HSFV_OK;
+    }
 
     size_t idx, max;
     yyjson_val *dict_member_val;
@@ -395,7 +408,7 @@ static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocat
     return HSFV_OK;
 }
 
-static void run_test_for_json_file(const char *json_rel_path)
+static void run_parse_test_for_json_file(const char *json_rel_path)
 {
     const char *test_dir = getenv("HTTPWG_TEST_DIR");
     if (!test_dir) {
@@ -433,47 +446,49 @@ static void run_test_for_json_file(const char *json_rel_path)
             }
 
             yyjson_val *raw = yyjson_obj_get(case_obj, "raw");
-            REQUIRE(yyjson_is_arr(raw));
-            REQUIRE(yyjson_arr_size(raw) >= 1);
-            bool multiple_headers = yyjson_arr_size(raw) > 1;
-            const char *input;
-            size_t input_len;
-            if (multiple_headers) {
-                REQUIRE(field_type != HSFV_FIELD_VALUE_TYPE_ITEM);
-                err = combine_field_lines(raw, allocator, &input, &input_len);
-                REQUIRE(err == HSFV_OK);
-            } else {
-                yyjson_val *raw0 = yyjson_arr_get(raw, 0);
-                input = yyjson_get_str(raw0);
-                input_len = yyjson_get_len(raw0);
-            }
-            printf("input=[%.*s]\n", (int)input_len, input);
-
-            hsfv_field_value_t got;
-            const char *input_end = input + input_len;
-            const char *rest;
-            err = hsfv_parse_field_value(&got, field_type, allocator, input, input_end, &rest);
-            if (must_fail) {
-                CHECK(err != HSFV_OK);
-            } else {
-                CHECK(err == HSFV_OK);
-                if (!hsfv_field_value_eq(&got, &want)) {
-                    hsfv_buffer_t got_buf = {0}, want_buf = {0};
-                    hsfv_err_t err_got = hsfv_serialize_field_value(&got, allocator, &got_buf);
-                    CHECK(err_got == HSFV_OK);
-                    hsfv_err_t err_want = hsfv_serialize_field_value(&want, allocator, &want_buf);
-                    CHECK(err_want == HSFV_OK);
-                    printf(" got=%.*s,  got_len=%zd\nwant=%.*s, want_len=%zd\n", (int)got_buf.bytes.len, got_buf.bytes.base,
-                           got_buf.bytes.len, (int)want_buf.bytes.len, want_buf.bytes.base, want_buf.bytes.len);
-                    hsfv_buffer_deinit(&got_buf, allocator);
-                    hsfv_buffer_deinit(&want_buf, allocator);
+            if (yyjson_is_arr(raw)) {
+                REQUIRE(yyjson_arr_size(raw) >= 1);
+                bool multiple_headers = yyjson_arr_size(raw) > 1;
+                const char *input;
+                size_t input_len;
+                if (multiple_headers) {
+                    REQUIRE(field_type != HSFV_FIELD_VALUE_TYPE_ITEM);
+                    err = combine_field_lines(raw, allocator, &input, &input_len);
+                    REQUIRE(err == HSFV_OK);
+                } else {
+                    yyjson_val *raw0 = yyjson_arr_get(raw, 0);
+                    input = yyjson_get_str(raw0);
+                    input_len = yyjson_get_len(raw0);
                 }
-                CHECK(hsfv_field_value_eq(&got, &want));
-                hsfv_field_value_deinit(&got, allocator);
+                printf("input=[%.*s]\n", (int)input_len, input);
+
+                hsfv_field_value_t got;
+                const char *input_end = input + input_len;
+                const char *rest;
+                err = hsfv_parse_field_value(&got, field_type, allocator, input, input_end, &rest);
+                if (must_fail) {
+                    CHECK(err != HSFV_OK);
+                } else {
+                    CHECK(err == HSFV_OK);
+                    if (!hsfv_field_value_eq(&got, &want)) {
+                        hsfv_buffer_t got_buf = {0}, want_buf = {0};
+                        hsfv_err_t err_got = hsfv_serialize_field_value(&got, allocator, &got_buf);
+                        CHECK(err_got == HSFV_OK);
+                        hsfv_err_t err_want = hsfv_serialize_field_value(&want, allocator, &want_buf);
+                        CHECK(err_want == HSFV_OK);
+                        printf(" got=%.*s,  got_len=%zd\nwant=%.*s, want_len=%zd\n", (int)got_buf.bytes.len, got_buf.bytes.base,
+                               got_buf.bytes.len, (int)want_buf.bytes.len, want_buf.bytes.base, want_buf.bytes.len);
+                        hsfv_buffer_deinit(&got_buf, allocator);
+                        hsfv_buffer_deinit(&want_buf, allocator);
+                    }
+                    CHECK(hsfv_field_value_eq(&got, &want));
+                    hsfv_field_value_deinit(&got, allocator);
+                }
+                if (multiple_headers) {
+                    allocator->free(allocator, (void *)input);
+                }
             }
-            if (multiple_headers) {
-                allocator->free(allocator, (void *)input);
-            }
+
             if (expected) {
                 hsfv_field_value_deinit(&want, allocator);
             }
@@ -484,13 +499,127 @@ static void run_test_for_json_file(const char *json_rel_path)
     yyjson_doc_free(doc);
 }
 
-TEST_CASE("httpwg tests", "[httpwg]")
+static hsfv_err_t dup_json_str(yyjson_val *val, hsfv_allocator_t *allocator, const char **base, size_t *len)
+{
+    assert(yyjson_is_str(val));
+    *len = yyjson_get_len(val);
+    *base = hsfv_strndup(allocator, yyjson_get_str(val), *len);
+    if (!*base) {
+        return HSFV_ERR_OUT_OF_MEMORY;
+    }
+    return HSFV_OK;
+}
+
+static void debug_print_bytes(const char *label, const char *base, size_t len)
+{
+    printf("%s=[", label);
+    for (size_t i = 0; i < len; i++) {
+        u_char c = base[i];
+        if (c <= 0x1f || 0x7f <= c) {
+            printf("\\x%02x", c);
+        } else {
+            printf("%c", c);
+        }
+    }
+    printf("], len=%zd\n", len);
+}
+
+static void run_serialize_test_for_json_file(const char *json_rel_path)
+{
+    const char *test_dir = getenv("HTTPWG_TEST_DIR");
+    if (!test_dir) {
+        test_dir = "./_deps/httpwg_tests-src";
+    }
+
+    char path[PATH_MAX];
+    sprintf(path, "%s%s%s", test_dir, PATH_SEPARATOR, json_rel_path);
+    printf("=== %s start ===\n", json_rel_path);
+
+    yyjson_read_flag flg = YYJSON_READ_NOFLAG;
+    yyjson_read_err err;
+    yyjson_doc *doc = yyjson_read_file(path, flg, NULL, &err);
+    if (doc) {
+        yyjson_val *arr = yyjson_doc_get_root(doc);
+        yyjson_arr_iter iter;
+        yyjson_arr_iter_init(arr, &iter);
+        yyjson_val *case_obj;
+        while ((case_obj = yyjson_arr_iter_next(&iter))) {
+            const char *name = yyjson_get_str(yyjson_obj_get(case_obj, "name"));
+            bool must_fail = yyjson_get_bool(yyjson_obj_get(case_obj, "must_fail"));
+            if (must_fail) {
+                continue;
+            }
+            // if (strcmp(name, "token starting with capitals - list")) {
+            //     continue;
+            // }
+
+            printf("name=%s\n", name);
+
+            hsfv_err_t err;
+            hsfv_field_value_type_t field_type;
+            err = get_header_type(case_obj, &field_type);
+            REQUIRE(err == HSFV_OK);
+
+            hsfv_allocator_t *allocator = &hsfv_global_allocator;
+
+            yyjson_val *expected = yyjson_obj_get(case_obj, "expected");
+            REQUIRE(yyjson_is_arr(expected));
+
+            hsfv_field_value_t input;
+            err = build_expected_field_value(expected, field_type, allocator, &input);
+            REQUIRE(err == HSFV_OK);
+
+            hsfv_iovec_const_t want;
+
+            yyjson_val *canonical = yyjson_obj_get(case_obj, "canonical");
+            if (yyjson_is_arr(canonical) && yyjson_arr_size(canonical) > 0) {
+                REQUIRE(yyjson_arr_size(canonical) == 1);
+                yyjson_val *canonical0 = yyjson_arr_get(canonical, 0);
+                err = dup_json_str(canonical0, allocator, &want.base, &want.len);
+                REQUIRE(err == HSFV_OK);
+            } else {
+                yyjson_val *raw = yyjson_obj_get(case_obj, "raw");
+                REQUIRE(yyjson_is_arr(raw));
+                if (yyjson_arr_size(raw) > 1) {
+                    REQUIRE(field_type != HSFV_FIELD_VALUE_TYPE_ITEM);
+                    err = combine_field_lines(raw, allocator, &want.base, &want.len);
+                    REQUIRE(err == HSFV_OK);
+                } else {
+                    REQUIRE(yyjson_arr_size(raw) == 1);
+                    yyjson_val *raw0 = yyjson_arr_get(raw, 0);
+                    err = dup_json_str(raw0, allocator, &want.base, &want.len);
+                    REQUIRE(err == HSFV_OK);
+                }
+            }
+            printf("want=%.*s, want_len=%zd\n", (int)want.len, want.base, want.len);
+
+            hsfv_buffer_t dest = (hsfv_buffer_t){0};
+            err = hsfv_serialize_field_value(&input, allocator, &dest);
+            REQUIRE(err == HSFV_OK);
+
+            hsfv_iovec_const_t got = (hsfv_iovec_const_t){.base = dest.bytes.base, .len = dest.bytes.len};
+            if (!hsfv_iovec_const_eq(&got, &want)) {
+                printf("got=%.*s, got_len=%zd\n", (int)got.len, got.base, got.len);
+            }
+            CHECK(hsfv_iovec_const_eq(&got, &want));
+
+            hsfv_buffer_deinit(&dest, allocator);
+            hsfv_iovec_const_deinit(&want, allocator);
+            hsfv_field_value_deinit(&input, allocator);
+        }
+    } else {
+        fprintf(stderr, "read error (%u): %s at position: %ld\n", err.code, err.msg, err.pos);
+    }
+    yyjson_doc_free(doc);
+}
+
+TEST_CASE("httpwg parse test", "[httpwg]")
 {
 
 #define SECTION_HELPER(json_rel_path)                                                                                              \
     SECTION(json_rel_path)                                                                                                         \
     {                                                                                                                              \
-        run_test_for_json_file(json_rel_path);                                                                                     \
+        run_parse_test_for_json_file(json_rel_path);                                                                               \
     }
 
     SECTION_HELPER("binary.json");
@@ -511,5 +640,39 @@ TEST_CASE("httpwg tests", "[httpwg]")
     SECTION_HELPER("string.json");
     SECTION_HELPER("token-generated.json");
     SECTION_HELPER("token.json");
+#undef SECTION_HELPER
+}
+
+TEST_CASE("httpwg serialize test", "[httpwg]")
+{
+
+#define SECTION_HELPER(json_rel_path)                                                                                              \
+    SECTION(json_rel_path)                                                                                                         \
+    {                                                                                                                              \
+        run_serialize_test_for_json_file(json_rel_path);                                                                           \
+    }
+
+    SECTION_HELPER("binary.json");
+    SECTION_HELPER("boolean.json");
+    SECTION_HELPER("dictionary.json");
+    SECTION_HELPER("examples.json");
+    SECTION_HELPER("item.json");
+    SECTION_HELPER("key-generated.json");
+    SECTION_HELPER("large-generated.json");
+    SECTION_HELPER("list.json");
+    SECTION_HELPER("listlist.json");
+    SECTION_HELPER("number-generated.json");
+    SECTION_HELPER("number.json");
+    SECTION_HELPER("param-dict.json");
+    SECTION_HELPER("param-list.json");
+    SECTION_HELPER("param-listlist.json");
+    SECTION_HELPER("string-generated.json");
+    SECTION_HELPER("string.json");
+    SECTION_HELPER("token-generated.json");
+    SECTION_HELPER("token.json");
+    SECTION_HELPER("serialisation-tests" PATH_SEPARATOR "key-generated.json");
+    SECTION_HELPER("serialisation-tests" PATH_SEPARATOR "number.json");
+    SECTION_HELPER("serialisation-tests" PATH_SEPARATOR "string-generated.json");
+    SECTION_HELPER("serialisation-tests" PATH_SEPARATOR "token-generated.json");
 #undef SECTION_HELPER
 }
