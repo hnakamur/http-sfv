@@ -27,6 +27,7 @@ typedef enum {
     HSFV_ERR_EOF = -3,
     HSFV_ERR_INVALID = -4,
     HSFV_ERR_NUMBER_OUT_OF_RANGE = -5,
+    HSFV_ERR_FLOAT_ROUNDING_MODE = -6,
 } hsfv_err_t;
 
 typedef struct st_hsfv_allocator_t hsfv_allocator_t;

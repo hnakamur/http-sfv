@@ -2,7 +2,6 @@
 
 #include <fenv.h>
 #include <math.h>
-#include <threads.h>
 
 // clang-format off
 
@@ -222,30 +221,24 @@ hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, 
     return HSFV_OK;
 }
 
-static once_flag setferound_flag = ONCE_FLAG_INIT;
-
-static void once_set_feround(void)
-{
-#pragma STDC FENV_ACCESS ON
-
-    if (fegetround() != FE_TONEAREST) {
-        /* Set the mode to rounding toward nearest number. */
-        if (fesetround(FE_TONEAREST)) {
-            fputs("cannot set floating point rounding mode to rounding toward nearest number.\n", stderr);
-            exit(1);
-        }
-    }
-
-#pragma STDC FENV_ACCESS OFF
-}
-
 hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)
 {
-    call_once(&setferound_flag, once_set_feround);
+#pragma STDC FENV_ACCESS ON
+    int prev_rounding = fegetround();
+    if (prev_rounding != FE_TONEAREST && fesetround(FE_TONEAREST)) {
+        return HSFV_ERR_FLOAT_ROUNDING_MODE;
+    }
+
+    double rounded = rint(decimal * 1000);
+
+    if (prev_rounding != FE_TONEAREST && fesetround(prev_rounding)) {
+        return HSFV_ERR_FLOAT_ROUNDING_MODE;
+    }
+#pragma STDC FENV_ACCESS OFF
 
     const size_t tmp_bufsize = 1 + HSFV_MAX_DEC_INT_LEN + 1 + HSFV_MAX_DEC_FRAC_LEN + 1;
     char tmp[tmp_bufsize];
-    int n = snprintf(tmp, tmp_bufsize, "%.3f", rint(decimal * 1000) / 1000);
+    int n = snprintf(tmp, tmp_bufsize, "%.3f", rounded / 1000);
     if (n > tmp_bufsize) {
         return HSFV_ERR_INVALID;
     }
