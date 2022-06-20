@@ -1,7 +1,8 @@
 http-sfv
 ========
 
-This library is an implementation for [RFC 8941: Structured Field Values for HTTP](https://www.rfc-editor.org/rfc/rfc8941).
+This library is an implementation for [RFC 8941: Structured Field Values for HTTP](https://www.rfc-editor.org/rfc/rfc8941) written in C.
+The API is not frozen yet and may change in the future.
 
 ## How to build
 
@@ -25,3 +26,5 @@ Build and run tests
 ```
 make && ./tests
 ```
+
+It also runs test cases defined in [httpwg/structured-field-tests: Tests for HTTP Structured Field Values](https://github.com/httpwg/structured-field-tests).
