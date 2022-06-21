@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD 11)
 # Catch2 v3 requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
 
+include(ExternalProject)
 include(FetchContent)
 
 FetchContent_Declare(
@@ -41,12 +42,13 @@ if(NOT libbaseencode_POPULATED)
 endif()
 
 # httpwg test cases
-FetchContent_Declare(
-  httpwg_tests
+ExternalProject_Add(
+  HttpwgTests
   GIT_REPOSITORY https://github.com/httpwg/structured-field-tests.git
-  GIT_TAG main)
-
-FetchContent_MakeAvailable(httpwg_tests)
+  GIT_TAG faed1f92942abd4fb5d61b1f9f0dc359f499f1d7
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND "")
 
 # clang-format
 option(

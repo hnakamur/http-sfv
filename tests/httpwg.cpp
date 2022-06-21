@@ -408,11 +408,14 @@ static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocat
     return HSFV_OK;
 }
 
+static const char *default_test_data_dir =
+    "." PATH_SEPARATOR "HttpwgTests-prefix" PATH_SEPARATOR "src" PATH_SEPARATOR "HttpwgTests";
+
 static void run_parse_test_for_json_file(const char *json_rel_path)
 {
     const char *test_dir = getenv("HTTPWG_TEST_DIR");
     if (!test_dir) {
-        test_dir = "./_deps/httpwg_tests-src";
+        test_dir = default_test_data_dir;
     }
 
     char path[PATH_MAX];
@@ -528,7 +531,7 @@ static void run_serialize_test_for_json_file(const char *json_rel_path)
 {
     const char *test_dir = getenv("HTTPWG_TEST_DIR");
     if (!test_dir) {
-        test_dir = "./_deps/httpwg_tests-src";
+        test_dir = default_test_data_dir;
     }
 
     char path[PATH_MAX];
