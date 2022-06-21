@@ -8,31 +8,32 @@ set(CMAKE_C_STANDARD 11)
 # Catch2 v3 requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
 
-include(ExternalProject)
 include(FetchContent)
+include(ExternalProject)
 
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG v3.0.1 # or a later release
+  GIT_TAG 605a34765aa5d5ecbf476b4598a862ada971b0cc # v3.0.1
 )
-
 FetchContent_MakeAvailable(Catch2)
 
 # yyjson for test
-FetchContent_Declare(
-  yyjson
+ExternalProject_Add(
+  YyjsonProj
   GIT_REPOSITORY https://github.com/ibireme/yyjson.git
-  GIT_TAG 0.5.1 # or a later release
-)
-
-FetchContent_MakeAvailable(yyjson)
+  GIT_TAG c3856514de0a67d7b66939bf3ed491a2d6e61277 # 0.5.1
+  INSTALL_COMMAND "")
+ExternalProject_Get_Property(YyjsonProj SOURCE_DIR BINARY_DIR)
+set(YyjsonProj_SOURCE_DIR ${SOURCE_DIR})
+set(YyjsonProj_BINARY_DIR ${BINARY_DIR})
 
 # libbaseencode for test
 FetchContent_Declare(
   libbaseencode
   GIT_REPOSITORY https://github.com/paolostivanin/libbaseencode.git
-  GIT_TAG v1.0.14)
+  GIT_TAG 3f37e655b7c5a522a5e386cdea50cc19e629ed1a # v1.0.14
+)
 
 # Note we don't use FetchContent_MakeAvailable here since we don't want build
 # it.
@@ -48,7 +49,8 @@ ExternalProject_Add(
   GIT_TAG faed1f92942abd4fb5d61b1f9f0dc359f499f1d7
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
-  INSTALL_COMMAND "")
+  INSTALL_COMMAND ""
+)
 
 # clang-format
 option(
@@ -95,7 +97,8 @@ function(cmake_format target)
   endif()
 endfunction()
 
-include_directories(include ${libbaseencode_SOURCE_DIR}/src)
+include_directories(include ${libbaseencode_SOURCE_DIR}/src
+                    ${YyjsonProj_SOURCE_DIR}/src)
 
 file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
 add_library(httpsfv ${SRC_FILES})
@@ -103,7 +106,8 @@ add_library(httpsfv ${SRC_FILES})
 file(GLOB TEST_FILES tests/*.cpp ${libbaseencode_SOURCE_DIR}/src/base32.c)
 set(target tests)
 add_executable(${target} ${TEST_FILES})
-target_link_libraries(${target} PRIVATE httpsfv Catch2::Catch2WithMain yyjson m)
+target_link_libraries(${target} PRIVATE httpsfv Catch2::Catch2WithMain
+                                        ${YyjsonProj_BINARY_DIR}/libyyjson.a m)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
