@@ -78,25 +78,18 @@ function(clang_format target)
 endfunction()
 
 # cmake-format
-option(
-  FORMAT_FILES_WITH_CMAKE_FORMAT_BEFORE_EACH_BUILD
-  "If the command cmake-format is avilable, format source files before each build.\
-Turn this off if the build time is too slow."
-  ON)
+option(RUN_CMAKE_FORMAT
+       "If the command cmake-format is avilable, format CMakeFiles.txt." ON)
 find_program(CMAKE_FORMAT_EXE cmake-format clang-format-14)
-function(cmake_format target)
+if(RUN_CMAKE_FORMAT)
   if(CMAKE_FORMAT_EXE)
-    message(STATUS "Enable cmake-format")
-    add_custom_target(
-      "${target}_format-with-cmake-format"
-      COMMAND "${CMAKE_FORMAT_EXE}" -i ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
-    if(FORMAT_FILES_WITH_CMAKE_FORMAT_BEFORE_EACH_BUILD)
-      add_dependencies(${target} "${target}_format-with-cmake-format")
-    endif()
+    message(STATUS "Run cmake-format")
+    execute_process(COMMAND "${CMAKE_FORMAT_EXE}" -i
+                            ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
   else()
     message(STATUS "cmake-format executable not found")
   endif()
-endfunction()
+endif()
 
 include_directories(include ${libbaseencode_SOURCE_DIR}/src
                     ${YyjsonProj_SOURCE_DIR}/src)
@@ -132,7 +125,6 @@ include(CTest)
 include(Catch)
 catch_discover_tests(${target})
 
-cmake_format(${target})
 clang_format(${target})
 
 target_compile_options(${target} PRIVATE -fsanitize=address)
