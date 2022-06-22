@@ -21,8 +21,9 @@ FetchContent_MakeAvailable(Catch2)
 # yyjson for test
 ExternalProject_Add(
   YyjsonProj
-  GIT_REPOSITORY https://github.com/ibireme/yyjson.git
-  GIT_TAG c3856514de0a67d7b66939bf3ed491a2d6e61277 # 0.5.1
+  URL https://github.com/ibireme/yyjson/archive/c3856514de0a67d7b66939bf3ed491a2d6e61277.tar.gz
+  URL_HASH
+    SHA256=1b406567bbb396c85def5906e3614dec9cd83407e650dc1cb7d21278f0b82ba6
   INSTALL_COMMAND "")
 ExternalProject_Get_Property(YyjsonProj SOURCE_DIR BINARY_DIR)
 set(YyjsonProj_SOURCE_DIR ${SOURCE_DIR})
@@ -45,12 +46,12 @@ endif()
 # httpwg test cases
 ExternalProject_Add(
   HttpwgTests
-  GIT_REPOSITORY https://github.com/httpwg/structured-field-tests.git
-  GIT_TAG faed1f92942abd4fb5d61b1f9f0dc359f499f1d7
+  URL https://github.com/httpwg/structured-field-tests/archive/faed1f92942abd4fb5d61b1f9f0dc359f499f1d7.tar.gz
+  URL_HASH
+    SHA256=2bf9b56519cae6cf170eb5c7837f3b744ca2a07c0defd15aa84b541a3cb25a52
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
+  INSTALL_COMMAND "")
 
 # clang-format
 option(
@@ -100,12 +101,29 @@ endfunction()
 include_directories(include ${libbaseencode_SOURCE_DIR}/src
                     ${YyjsonProj_SOURCE_DIR}/src)
 
-file(GLOB SRC_FILES lib/*.c include/*h include/hsfv/*.h)
-add_library(httpsfv ${SRC_FILES})
+set(HttpSfv_HEADER_FILES include/hsfv.h)
+set(HttpSfv_SOURCE_FILES
+    lib/allocator.c
+    lib/base64.c
+    lib/ctype.c
+    lib/field_value.c
+    lib/iovec.c
+    lib/list.c
+    lib/bare_item.c
+    lib/buffer.c
+    lib/dictionary.c
+    lib/inner_list.c
+    lib/item.c
+    lib/parameters.c)
+add_library(httpsfv STATIC ${HttpSfv_SOURCE_FILES})
+set_target_properties(httpsfv PROPERTIES PUBLIC_HEADER ${HttpSfv_HEADER_FILES})
+include(GNUInstallDirs)
+install(TARGETS httpsfv PUBLIC_HEADER)
 
-file(GLOB TEST_FILES tests/*.cpp ${libbaseencode_SOURCE_DIR}/src/base32.c)
-set(target tests)
-add_executable(${target} ${TEST_FILES})
+file(GLOB TEST_FILES tests/*.cpp)
+
+set(target httpsfv_tests)
+add_executable(${target} ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c)
 target_link_libraries(${target} PRIVATE httpsfv Catch2::Catch2WithMain
                                         ${YyjsonProj_BINARY_DIR}/libyyjson.a m)
 
