@@ -131,6 +131,8 @@ bool hsfv_bare_item_eq(const hsfv_bare_item_t *self, const hsfv_bare_item_t *oth
         return hsfv_byte_seq_eq(&self->byte_seq, &other->byte_seq);
     case HSFV_BARE_ITEM_TYPE_BOOLEAN:
         return self->boolean == other->boolean;
+    default:
+    return false;
     }
 }
 
@@ -145,6 +147,9 @@ void hsfv_bare_item_deinit(hsfv_bare_item_t *bare_item, hsfv_allocator_t *alloca
         break;
     case HSFV_BARE_ITEM_TYPE_BYTE_SEQ:
         hsfv_byte_seq_deinit(&bare_item->byte_seq, allocator);
+        break;
+    default:
+        /* do nothing */
         break;
     }
 }
@@ -375,7 +380,6 @@ static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input, const
 
 hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)
 {
-    const char *p;
     hsfv_err_t err;
     size_t escape_count = 0;
 
@@ -444,7 +448,7 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item, hsfv_allocator_t *allocator
             }
         } else if (c == '"') {
             item->type = HSFV_BARE_ITEM_TYPE_STRING;
-            item->string.base = buf.bytes.base;
+            item->string.base = (const char *)buf.bytes.base;
             item->string.len = buf.bytes.len;
             if (out_rest) {
                 *out_rest = ++input;
@@ -515,7 +519,7 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
         }
     }
 
-    item->token.base = hsfv_bytes_dup(allocator, input, p - input);
+    item->token.base = (const char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)input, p - input);
     if (item->token.base == NULL) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }
@@ -531,7 +535,6 @@ hsfv_err_t hsfv_parse_token(hsfv_bare_item_t *item, hsfv_allocator_t *allocator,
 
 hsfv_err_t hsfv_serialize_key(const hsfv_key_t *key, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)
 {
-    hsfv_err_t err;
     const char *p = key->base;
     if (!p || key->len == 0 || !HSFV_IS_KEY_LEADING_CHAR(*p)) {
         return HSFV_ERR_INVALID;
@@ -565,7 +568,7 @@ hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const ch
         }
     }
 
-    key->base = hsfv_bytes_dup(allocator, input, p - input);
+    key->base = (const char *)hsfv_bytes_dup(allocator, (const hsfv_byte_t *)input, p - input);
     if (key->base == NULL) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }
@@ -631,7 +634,7 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
             }
             temp.len = decoded_len;
 
-            src.base = start;
+            src.base = (const hsfv_byte_t *)start;
             src.len = encoded_len;
             err = hsfv_decode_base64(&temp, &src);
             if (err) {

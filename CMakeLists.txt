@@ -4,6 +4,10 @@ project(http_sfv)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_C_STANDARD 11)
+set(CC_WARNING_FLAGS
+    "-Wall -Wno-unused-value -Wno-unused-function -Wno-nullability-completeness -Wno-expansion-to-defined -Werror=implicit-function-declaration -Werror=incompatible-pointer-types"
+)
+set(CMAKE_C_FLAGS "-g3 -frounding-math ${CC_WARNING_FLAGS} ${CMAKE_C_FLAGS}")
 
 # Catch2 v3 requires at least C++14
 set(CMAKE_CXX_STANDARD 14)

@@ -102,7 +102,6 @@ hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator, const
                            const char **out_rest)
 {
     hsfv_err_t err;
-    char c;
     hsfv_list_member_t member;
 
     *list = (hsfv_list_t){0};
