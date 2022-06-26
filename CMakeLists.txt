@@ -84,7 +84,7 @@ endfunction()
 # cmake-format
 option(RUN_CMAKE_FORMAT
        "If the command cmake-format is avilable, format CMakeFiles.txt." ON)
-find_program(CMAKE_FORMAT_EXE cmake-format clang-format-14)
+find_program(CMAKE_FORMAT_EXE cmake-format)
 if(RUN_CMAKE_FORMAT)
   if(CMAKE_FORMAT_EXE)
     message(STATUS "Run cmake-format")
