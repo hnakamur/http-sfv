@@ -159,16 +159,16 @@ hsfv_err_t hsfv_parse_dictionary(hsfv_dictionary_t *dictionary, hsfv_allocator_t
                 if (err) {
                     goto error1;
                 }
-                member.value.type = HSFV_LIST_MEMBER_TYPE_INNER_LIST;
+                member.value.type = HSFV_DICT_MEMBER_TYPE_INNER_LIST;
             } else {
                 err = hsfv_parse_item(&member.value.item, allocator, input, input_end, &input);
                 if (err) {
                     goto error1;
                 }
-                member.value.type = HSFV_LIST_MEMBER_TYPE_ITEM;
+                member.value.type = HSFV_DICT_MEMBER_TYPE_ITEM;
             }
         } else {
-            member.value.type = HSFV_LIST_MEMBER_TYPE_ITEM;
+            member.value.type = HSFV_DICT_MEMBER_TYPE_ITEM;
             member.value.item.bare_item.type = HSFV_BARE_ITEM_TYPE_BOOLEAN;
             member.value.item.bare_item.boolean = true;
             err = hsfv_parse_parameters(&member.value.item.parameters, allocator, input, input_end, &input);
