@@ -33,15 +33,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 # yyjson for test
-ExternalProject_Add(
-  YyjsonProj
-  URL https://github.com/ibireme/yyjson/archive/c3856514de0a67d7b66939bf3ed491a2d6e61277.tar.gz
-  URL_HASH
-    SHA256=1b406567bbb396c85def5906e3614dec9cd83407e650dc1cb7d21278f0b82ba6
-  INSTALL_COMMAND "")
-ExternalProject_Get_Property(YyjsonProj SOURCE_DIR BINARY_DIR)
-set(YyjsonProj_SOURCE_DIR ${SOURCE_DIR})
-set(YyjsonProj_BINARY_DIR ${BINARY_DIR})
+FetchContent_Declare(
+  yyjson_content
+  GIT_REPOSITORY https://github.com/ibireme/yyjson.git
+  GIT_TAG c3856514de0a67d7b66939bf3ed491a2d6e61277 # 0.5.1
+)
+FetchContent_GetProperties(yyjson_content)
+if(NOT yyjson_content_POPULATED)
+  FetchContent_Populate(yyjson_content)
+  message(STATUS yyjson_content_SOURCE_DIR=${yyjson_content_SOURCE_DIR})
+endif()
 
 # libbaseencode for test
 FetchContent_Declare(
@@ -49,12 +50,12 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/paolostivanin/libbaseencode.git
   GIT_TAG 3f37e655b7c5a522a5e386cdea50cc19e629ed1a # v1.0.14
 )
-
 # Note we don't use FetchContent_MakeAvailable here since we don't want build
 # it.
 FetchContent_GetProperties(libbaseencode)
 if(NOT libbaseencode_POPULATED)
   FetchContent_Populate(libbaseencode)
+  message(STATUS libbaseencode_SOURCE_DIR=${libbaseencode_SOURCE_DIR})
 endif()
 
 # httpwg test cases
@@ -106,7 +107,7 @@ if(RUN_CMAKE_FORMAT)
 endif()
 
 include_directories(include ${libbaseencode_SOURCE_DIR}/src
-                    ${YyjsonProj_SOURCE_DIR}/src)
+                    ${yyjson_content_SOURCE_DIR}/src)
 
 set(HttpSfv_HEADER_FILES include/hsfv.h)
 set(HttpSfv_SOURCE_FILES
@@ -130,10 +131,10 @@ install(TARGETS httpsfv PUBLIC_HEADER)
 file(GLOB TEST_FILES tests/*.cpp)
 
 set(target httpsfv_tests)
-add_executable(${target} ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
-                         ${HttpSfv_SOURCE_FILES})
-target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain
-                                        ${YyjsonProj_BINARY_DIR}/libyyjson.a m)
+add_executable(
+  ${target} ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
+            ${yyjson_content_SOURCE_DIR}/src/yyjson.c ${HttpSfv_SOURCE_FILES})
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain m)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
@@ -141,12 +142,10 @@ include(Catch)
 catch_discover_tests(${target})
 
 add_executable(
-  httpsfv_test_cov ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
-                   ${HttpSfv_SOURCE_FILES})
-target_link_libraries(
-  httpsfv_test_cov PRIVATE Catch2::Catch2WithMain
-                           ${YyjsonProj_BINARY_DIR}/libyyjson.a m)
-# target_compile_options(httpsfv_test_cov PRIVATE ${CODE_COV_FLAGS})
+  httpsfv_test_cov
+  ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
+  ${yyjson_content_SOURCE_DIR}/src/yyjson.c ${HttpSfv_SOURCE_FILES})
+target_link_libraries(httpsfv_test_cov PRIVATE Catch2::Catch2WithMain m)
 
 add_custom_target(
   cov
@@ -156,16 +155,6 @@ add_custom_target(
   COMMAND ${LLVM_COV_EXE} show ./httpsfv_test_cov
           -instr-profile=httpsfv_test_cov.profdata
   DEPENDS httpsfv_test_cov)
-
-# CmakeModules ExternalProject_Add( CmakeModules URL
-# https://github.com/bilke/cmake-modules/archive/03be0c7e1ad14d4e9767c72e26a4515024aec5ae.tar.gz
-# URL_HASH
-# SHA256=37232676c956ab5f367ab648d7070eec40d0aa901bf8ca77707a3de9cd4a2e7f
-# CONFIGURE_COMMAND "" BUILD_COMMAND "" INSTALL_COMMAND "")
-# set(CMAKE_MODULE_PATH ${CmakeModules_SOURCE_DIR}/CmakeModules)
-# if(CMAKE_COMPILER_IS_GNUCXX) include(CodeCoverage)
-# setup_target_for_coverage(${target}_coverage ${PROJECT_TEST_NAME} coverage)
-# target_link_libraries(${target} gcov) endif()
 
 clang_format(${target})
 
