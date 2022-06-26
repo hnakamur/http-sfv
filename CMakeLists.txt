@@ -4,13 +4,23 @@ project(http_sfv)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_C_STANDARD 11)
-set(CC_WARNING_FLAGS
-    "-Wall -Wno-unused-value -Wno-unused-function -Wno-nullability-completeness -Wno-expansion-to-defined -Werror=implicit-function-declaration -Werror=incompatible-pointer-types"
-)
-set(CMAKE_C_FLAGS "-g3 -frounding-math ${CC_WARNING_FLAGS} ${CMAKE_C_FLAGS}")
 
 # Catch2 v3 requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
+
+# code coverage with llvm
+find_program(LLVM_PROFDATA_EXE NAMES llvm-profdata llvm-profdata-14)
+find_program(LLVM_COV_EXE NAMES llvm-cov llvm-cov-14)
+set(CODE_COV_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
+
+set(CC_WARNING_FLAGS
+    "-Wall -Wno-unused-value -Wno-unused-function -Wno-nullability-completeness -Wno-expansion-to-defined -Werror=implicit-function-declaration -Werror=incompatible-pointer-types"
+)
+set(CMAKE_C_FLAGS
+    "-g3 -frounding-math ${CODE_COV_FLAGS} ${CC_WARNING_FLAGS} ${CMAKE_C_FLAGS}"
+)
+set(CMAKE_CXX_FLAGS
+    "-g3 ${CODE_COV_FLAGS} ${CC_WARNING_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 include(FetchContent)
 include(ExternalProject)
@@ -120,14 +130,42 @@ install(TARGETS httpsfv PUBLIC_HEADER)
 file(GLOB TEST_FILES tests/*.cpp)
 
 set(target httpsfv_tests)
-add_executable(${target} ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c)
-target_link_libraries(${target} PRIVATE httpsfv Catch2::Catch2WithMain
+add_executable(${target} ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
+                         ${HttpSfv_SOURCE_FILES})
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain
                                         ${YyjsonProj_BINARY_DIR}/libyyjson.a m)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
 catch_discover_tests(${target})
+
+add_executable(
+  httpsfv_test_cov ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
+                   ${HttpSfv_SOURCE_FILES})
+target_link_libraries(
+  httpsfv_test_cov PRIVATE Catch2::Catch2WithMain
+                           ${YyjsonProj_BINARY_DIR}/libyyjson.a m)
+# target_compile_options(httpsfv_test_cov PRIVATE ${CODE_COV_FLAGS})
+
+add_custom_target(
+  cov
+  LLVM_PROFILE_FILE=httpsfv_test_cov.profraw ./httpsfv_test_cov
+  COMMAND ${LLVM_PROFDATA_EXE} merge -sparse httpsfv_test_cov.profraw -o
+          httpsfv_test_cov.profdata
+  COMMAND ${LLVM_COV_EXE} show ./httpsfv_test_cov
+          -instr-profile=httpsfv_test_cov.profdata
+  DEPENDS httpsfv_test_cov)
+
+# CmakeModules ExternalProject_Add( CmakeModules URL
+# https://github.com/bilke/cmake-modules/archive/03be0c7e1ad14d4e9767c72e26a4515024aec5ae.tar.gz
+# URL_HASH
+# SHA256=37232676c956ab5f367ab648d7070eec40d0aa901bf8ca77707a3de9cd4a2e7f
+# CONFIGURE_COMMAND "" BUILD_COMMAND "" INSTALL_COMMAND "")
+# set(CMAKE_MODULE_PATH ${CmakeModules_SOURCE_DIR}/CmakeModules)
+# if(CMAKE_COMPILER_IS_GNUCXX) include(CodeCoverage)
+# setup_target_for_coverage(${target}_coverage ${PROJECT_TEST_NAME} coverage)
+# target_link_libraries(${target} gcov) endif()
 
 clang_format(${target})
 
