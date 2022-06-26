@@ -132,7 +132,7 @@ bool hsfv_bare_item_eq(const hsfv_bare_item_t *self, const hsfv_bare_item_t *oth
     case HSFV_BARE_ITEM_TYPE_BOOLEAN:
         return self->boolean == other->boolean;
     default:
-    return false;
+        return false;
     }
 }
 
@@ -226,9 +226,9 @@ hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, 
     return HSFV_OK;
 }
 
+#pragma STDC FENV_ACCESS ON
 hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)
 {
-#pragma STDC FENV_ACCESS ON
     int prev_rounding = fegetround();
     if (prev_rounding != FE_TONEAREST && fesetround(FE_TONEAREST)) {
         return HSFV_ERR_FLOAT_ROUNDING_MODE;
@@ -239,7 +239,6 @@ hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, h
     if (prev_rounding != FE_TONEAREST && fesetround(prev_rounding)) {
         return HSFV_ERR_FLOAT_ROUNDING_MODE;
     }
-#pragma STDC FENV_ACCESS OFF
 
     const size_t tmp_bufsize = 1 + HSFV_MAX_DEC_INT_LEN + 1 + HSFV_MAX_DEC_FRAC_LEN + 1;
     char tmp[tmp_bufsize];
@@ -271,6 +270,7 @@ hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, h
     hsfv_buffer_append_bytes_unchecked(dest, tmp, len);
     return HSFV_OK;
 }
+#pragma STDC FENV_ACCESS OFF
 
 hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const char *input_end, const char **out_rest)
 {
