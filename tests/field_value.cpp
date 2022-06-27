@@ -204,6 +204,22 @@ static hsfv_field_value_t test_item = {
         },
 };
 
+TEST_CASE("hsfv_field_value_eq", "[field_value]")
+{
+    SECTION("not equal")
+    {
+        CHECK(!hsfv_field_value_eq(&test_list, &test_item));
+    }
+
+    SECTION("invalid field_type")
+    {
+        hsfv_field_value_t bad = {
+            .type = (hsfv_field_value_type_t)(-1),
+        };
+        CHECK(!hsfv_field_value_eq(&bad, &bad));
+    }
+}
+
 static void check_field_value_is_empty_ok_test(hsfv_field_value_t input, bool want)
 {
     bool got = hsfv_field_value_is_empty(&input);
