@@ -1,20 +1,19 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
+static void serialize_item_ok_test(hsfv_item_t input, const char *want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_item(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == HSFV_OK);
+    CHECK(buf.bytes.len == strlen(want));
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
+}
+
 TEST_CASE("serialize item", "[serialze][item]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
-        hsfv_err_t err;                                                                                                            \
-        err = hsfv_serialize_item(input, &hsfv_global_allocator, &buf);                                                            \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(buf.bytes.len == strlen(want));                                                                                      \
-        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
-        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
-    }
-
     hsfv_parameter_t want_params[] = {
         {
             .key = hsfv_key_t{.base = "foo", .len = 3},
@@ -44,26 +43,37 @@ TEST_CASE("serialize item", "[serialze][item]")
             },
     };
 
-    OK_HELPER("case 1", &input, "?1;foo;*bar=\"baz\";baz=?0");
-#undef OK_HELPER
+    SECTION("case 1")
+    {
+        serialize_item_ok_test(input, "?1;foo;*bar=\"baz\";baz=?0");
+    }
+}
+
+static void parse_item_ok_test(const char *input, size_t want_len, hsfv_item_t want)
+{
+    hsfv_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_item(&item, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(hsfv_item_eq(&item, &want));
+    CHECK(rest == input + want_len);
+    hsfv_item_deinit(&item, &hsfv_global_allocator);
+}
+
+static void parse_item_ng_test(const char *input, hsfv_err_t want)
+{
+    hsfv_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_item(&item, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == want);
 }
 
 TEST_CASE("parse item", "[parse][item]")
 {
-#define OK_HELPER(section, input, want_len, want)                                                                                  \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_item_t item;                                                                                                          \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_item(&item, &hsfv_global_allocator, input, input_end, &rest);                                             \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(hsfv_item_eq(&item, want));                                                                                          \
-        CHECK(rest == input + want_len);                                                                                           \
-        hsfv_item_deinit(&item, &hsfv_global_allocator);                                                                           \
-    }
-
     hsfv_parameter_t want_params[] = {
         {
             .key = {.base = "foo", .len = 3},
@@ -89,21 +99,17 @@ TEST_CASE("parse item", "[parse][item]")
             },
     };
 
-    OK_HELPER("case 1", "?1;foo;*bar=tok", strlen("?1;foo;*bar=tok"), &want);
-#undef OK_HELPER
-
-#define NG_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_item_t item;                                                                                                          \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_item(&item, &hsfv_global_allocator, input, input_end, &rest);                                             \
-        CHECK(err == want);                                                                                                        \
+    SECTION("case 1")
+    {
+        parse_item_ok_test("?1;foo;*bar=tok", strlen("?1;foo;*bar=tok"), want);
     }
 
-    NG_HELPER("invalid bare item", "é", HSFV_ERR_INVALID);
-    NG_HELPER("invalid parameter", "tok;é", HSFV_ERR_INVALID);
-#undef NG_HELPER
+    SECTION("invalid bare item")
+    {
+        parse_item_ng_test("é", HSFV_ERR_INVALID);
+    }
+    SECTION("invalid parameter")
+    {
+        parse_item_ng_test("tok;é", HSFV_ERR_INVALID);
+    }
 }

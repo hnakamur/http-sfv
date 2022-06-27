@@ -23,7 +23,7 @@ static bool is_token_trailing_char_ref_impl(char c)
     case '/':
         return true;
     default:
-        return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z');
+        return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z');
     }
 }
 

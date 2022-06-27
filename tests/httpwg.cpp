@@ -10,9 +10,6 @@ extern "C" {
 
 static hsfv_err_t build_expected_bare_item(yyjson_val *bare_item_val, hsfv_allocator_t *allocator, hsfv_bare_item_t *out_item)
 {
-    hsfv_err_t err;
-    const char *input, *input_end;
-
     yyjson_type bare_item_type = yyjson_get_type(bare_item_val);
     switch (bare_item_type) {
     case YYJSON_TYPE_BOOL: {
@@ -382,7 +379,6 @@ static hsfv_err_t combine_field_lines(yyjson_val *raw, hsfv_allocator_t *allocat
     yyjson_val *val;
     yyjson_arr_foreach(raw, idx, max, val)
     {
-        const char *s = yyjson_get_str(val);
         total_len += yyjson_get_len(val) + (idx < max - 1 ? strlen(", ") : 0);
     }
 
@@ -615,7 +611,6 @@ static void run_serialize_test_for_json_file(const char *json_rel_path)
 
 TEST_CASE("httpwg parse test", "[httpwg]")
 {
-
 #define SECTION_HELPER(json_rel_path)                                                                                              \
     SECTION(json_rel_path)                                                                                                         \
     {                                                                                                                              \
@@ -645,7 +640,6 @@ TEST_CASE("httpwg parse test", "[httpwg]")
 
 TEST_CASE("httpwg serialize test", "[httpwg]")
 {
-
 #define SECTION_HELPER(json_rel_path)                                                                                              \
     SECTION(json_rel_path)                                                                                                         \
     {                                                                                                                              \

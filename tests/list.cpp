@@ -89,55 +89,61 @@ static hsfv_list_t test_list = {
     .capacity = 2,
 };
 
+static void serialize_list_ok_test(hsfv_list_t input, const char *want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_list(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == HSFV_OK);
+    CHECK(buf.bytes.len == strlen(want));
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
+}
+
 TEST_CASE("serialize list", "[serialze][list]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
-        hsfv_err_t err;                                                                                                            \
-        err = hsfv_serialize_list(input, &hsfv_global_allocator, &buf);                                                            \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(buf.bytes.len == strlen(want));                                                                                      \
-        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
-        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    SECTION("case 1")
+    {
+        serialize_list_ok_test(test_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok");
     }
+}
 
-    OK_HELPER("case 1", &test_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok");
-#undef OK_HELPER
+static void parse_list_ok_test(const char *input, hsfv_list_t want)
+{
+    hsfv_list_t list;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_list(&list, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(hsfv_list_eq(&list, &want));
+    CHECK(rest == input_end);
+    hsfv_list_deinit(&list, &hsfv_global_allocator);
+}
+
+static void parse_list_ng_test(const char *input, hsfv_err_t want)
+{
+    hsfv_list_t innser_list;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_list(&innser_list, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == want);
 }
 
 TEST_CASE("parse list", "[parse][list]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_list_t list;                                                                                                          \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_list(&list, &hsfv_global_allocator, input, input_end, &rest);                                             \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(hsfv_list_eq(&list, want));                                                                                          \
-        CHECK(rest == input_end);                                                                                                  \
-        hsfv_list_deinit(&list, &hsfv_global_allocator);                                                                           \
+    SECTION("ok case 1")
+    {
+        parse_list_ok_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok", test_list);
     }
 
-    OK_HELPER("case 1", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok", &test_list);
-#undef OK_HELPER
-
-#define NG_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_list_t innser_list;                                                                                                   \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_list(&innser_list, &hsfv_global_allocator, input, input_end, &rest);                                      \
-        CHECK(err == want);                                                                                                        \
+    SECTION("ng case 1")
+    {
+        parse_list_ng_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, ", HSFV_ERR_EOF);
     }
-
-    NG_HELPER("case 1", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, ", HSFV_ERR_EOF);
-    NG_HELPER("case 1", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, é", HSFV_ERR_INVALID);
-#undef NG_HELPER
+    SECTION("ng case 2")
+    {
+        parse_list_ng_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, é", HSFV_ERR_INVALID);
+    }
 }

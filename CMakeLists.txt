@@ -16,11 +16,15 @@ set(CODE_COV_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
 set(CC_WARNING_FLAGS
     "-Wall -Wno-unused-value -Wno-unused-function -Wno-nullability-completeness -Wno-expansion-to-defined -Werror=implicit-function-declaration -Werror=incompatible-pointer-types"
 )
+set(CXX_WARNING_FLAGS
+    "-Wall -Wno-unused-value -Wno-unused-function -Wno-nullability-completeness -Wno-expansion-to-defined -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Wno-missing-braces"
+)
+
 set(CMAKE_C_FLAGS
     "-g3 -frounding-math ${CODE_COV_FLAGS} ${CC_WARNING_FLAGS} ${CMAKE_C_FLAGS}"
 )
 set(CMAKE_CXX_FLAGS
-    "-g3 ${CODE_COV_FLAGS} ${CC_WARNING_FLAGS} ${CMAKE_CXX_FLAGS}")
+    "-g3 ${CODE_COV_FLAGS} ${CXX_WARNING_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 include(FetchContent)
 include(ExternalProject)
@@ -109,26 +113,36 @@ endif()
 include_directories(include ${libbaseencode_SOURCE_DIR}/src
                     ${yyjson_content_SOURCE_DIR}/src)
 
-set(HttpSfv_HEADER_FILES include/hsfv.h)
+set(HttpSfv_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/hsfv.h)
 set(HttpSfv_SOURCE_FILES
-    lib/allocator.c
-    lib/base64.c
-    lib/ctype.c
-    lib/field_value.c
-    lib/iovec.c
-    lib/list.c
-    lib/bare_item.c
-    lib/buffer.c
-    lib/dictionary.c
-    lib/inner_list.c
-    lib/item.c
-    lib/parameters.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/allocator.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/base64.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/ctype.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/field_value.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/iovec.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/list.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/bare_item.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/buffer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/dictionary.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/inner_list.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/item.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/parameters.c)
 add_library(httpsfv STATIC ${HttpSfv_SOURCE_FILES})
 set_target_properties(httpsfv PROPERTIES PUBLIC_HEADER ${HttpSfv_HEADER_FILES})
 include(GNUInstallDirs)
 install(TARGETS httpsfv PUBLIC_HEADER)
 
-file(GLOB TEST_FILES tests/*.cpp)
+set(TEST_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/allocator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/bare_item.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/ctype.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/dictionary.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/field_value.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/httpwg.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/inner_list.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/item.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp)
 
 set(target httpsfv_tests)
 add_executable(
@@ -153,7 +167,7 @@ add_custom_target(
   COMMAND ${LLVM_PROFDATA_EXE} merge -sparse httpsfv_test_cov.profraw -o
           httpsfv_test_cov.profdata
   COMMAND ${LLVM_COV_EXE} show ./httpsfv_test_cov
-          -instr-profile=httpsfv_test_cov.profdata
+          -instr-profile=httpsfv_test_cov.profdata ${HttpSfv_SOURCE_FILES}
   DEPENDS httpsfv_test_cov)
 
 clang_format(${target})

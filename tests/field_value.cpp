@@ -204,16 +204,14 @@ static hsfv_field_value_t test_item = {
         },
 };
 
+static void check_field_value_is_empty_ok_test(hsfv_field_value_t input, bool want)
+{
+    bool got = hsfv_field_value_is_empty(&input);
+    CHECK(got == want);
+}
+
 TEST_CASE("check field_value is_empty", "[is_empty][field_value]")
 {
-#define OK_HELPER(section, input_literal, want)                                                                                    \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_field_value_t field_value = input_literal;                                                                            \
-        bool got = hsfv_field_value_is_empty(&field_value);                                                                        \
-        CHECK(got == want);                                                                                                        \
-    }
-
     hsfv_dict_member_t dict_member = {
         .key = {.base = "foo", .len = 3},
         .value =
@@ -242,101 +240,137 @@ TEST_CASE("check field_value is_empty", "[is_empty][field_value]")
             },
     };
 
-    OK_HELPER("empty dict",
-              (hsfv_field_value_t{
-                  .type = HSFV_FIELD_VALUE_TYPE_DICTIONARY,
-                  .dictionary = {.members = NULL, .len = 0, .capacity = 8},
-              }),
-              true);
-    OK_HELPER("non empty dict",
-              (hsfv_field_value_t{
-                  .type = HSFV_FIELD_VALUE_TYPE_DICTIONARY,
-                  .dictionary = {.members = &dict_member, .len = 1, .capacity = 8},
-              }),
-              false);
-    OK_HELPER("empty list",
-              (hsfv_field_value_t{
-                  .type = HSFV_FIELD_VALUE_TYPE_LIST,
-                  .list = {.members = NULL, .len = 0, .capacity = 8},
-              }),
-              true);
-    OK_HELPER("non empty list",
-              (hsfv_field_value_t{
-                  .type = HSFV_FIELD_VALUE_TYPE_LIST,
-                  .list = {.members = &list_member, .len = 1, .capacity = 8},
-              }),
-              false);
-    OK_HELPER("item",
-              (hsfv_field_value_t{
-                  .type = HSFV_FIELD_VALUE_TYPE_ITEM,
-                  .item =
-                      {
-                          .bare_item =
-                              {
-                                  .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
-                                  .boolean = true,
-                              },
-                      },
-              }),
-              false);
-#undef OK_HELPER
+    SECTION("empty dict")
+    {
+        check_field_value_is_empty_ok_test(
+            hsfv_field_value_t{
+                .type = HSFV_FIELD_VALUE_TYPE_DICTIONARY,
+                .dictionary = {.members = NULL, .len = 0, .capacity = 8},
+            },
+            true);
+    }
+    SECTION("non empty dict")
+    {
+        check_field_value_is_empty_ok_test(
+            hsfv_field_value_t{
+                .type = HSFV_FIELD_VALUE_TYPE_DICTIONARY,
+                .dictionary = {.members = &dict_member, .len = 1, .capacity = 8},
+            },
+            false);
+    }
+    SECTION("empty list")
+    {
+        check_field_value_is_empty_ok_test(
+            hsfv_field_value_t{
+                .type = HSFV_FIELD_VALUE_TYPE_LIST,
+                .list = {.members = NULL, .len = 0, .capacity = 8},
+            },
+            true);
+    }
+    SECTION("non empty list")
+    {
+        check_field_value_is_empty_ok_test(
+            hsfv_field_value_t{
+                .type = HSFV_FIELD_VALUE_TYPE_LIST,
+                .list = {.members = &list_member, .len = 1, .capacity = 8},
+            },
+            false);
+    }
+    SECTION("item")
+    {
+        check_field_value_is_empty_ok_test(
+            hsfv_field_value_t{
+                .type = HSFV_FIELD_VALUE_TYPE_ITEM,
+                .item =
+                    {
+                        .bare_item =
+                            {
+                                .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                .boolean = true,
+                            },
+                    },
+            },
+            false);
+    }
+}
+
+static void serialize_field_value_ok_test(hsfv_field_value_t input, const char *want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_field_value(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == HSFV_OK);
+    CHECK(buf.bytes.len == strlen(want));
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
 }
 
 TEST_CASE("serialize field_value", "[serialze][field_value]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
-        hsfv_err_t err;                                                                                                            \
-        err = hsfv_serialize_field_value(input, &hsfv_global_allocator, &buf);                                                     \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(buf.bytes.len == strlen(want));                                                                                      \
-        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
-        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    SECTION("list")
+    {
+        serialize_field_value_ok_test(test_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok");
     }
+    SECTION("dict")
+    {
+        serialize_field_value_ok_test(test_dict, "a=?0, b, c;foo=bar");
+    }
+    SECTION("item")
+    {
+        serialize_field_value_ok_test(test_item, "?1;foo;*bar=tok");
+    }
+}
 
-    OK_HELPER("list", &test_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok");
-    OK_HELPER("dict", &test_dict, "a=?0, b, c;foo=bar");
-    OK_HELPER("item", &test_item, "?1;foo;*bar=tok");
-#undef OK_HELPER
+static void parse_field_value_ok_test(const char *input, hsfv_field_value_type_t field_type, hsfv_field_value_t want)
+{
+    hsfv_field_value_t field_value;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_field_value(&field_value, field_type, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(hsfv_field_value_eq(&field_value, &want));
+    CHECK(rest == input_end);
+    hsfv_field_value_deinit(&field_value, &hsfv_global_allocator);
+}
+
+static void parse_field_value_ng_test(const char *input, hsfv_field_value_type_t field_type, hsfv_err_t want)
+{
+    hsfv_field_value_t field_value;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_field_value(&field_value, field_type, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == want);
 }
 
 TEST_CASE("parse field_value", "[parse][field_value]")
 {
-#define OK_HELPER(section, input, field_type, want)                                                                                \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_field_value_t field_value;                                                                                            \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_field_value(&field_value, field_type, &hsfv_global_allocator, input, input_end, &rest);                   \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(hsfv_field_value_eq(&field_value, want));                                                                            \
-        CHECK(rest == input_end);                                                                                                  \
-        hsfv_field_value_deinit(&field_value, &hsfv_global_allocator);                                                             \
+    SECTION("ok list")
+    {
+        parse_field_value_ok_test("   (\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok   ", HSFV_FIELD_VALUE_TYPE_LIST,
+                                  test_list);
+    }
+    SECTION("ok dict")
+    {
+        parse_field_value_ok_test("   a=?0, b, c; foo=bar  ", HSFV_FIELD_VALUE_TYPE_DICTIONARY, test_dict);
+    }
+    SECTION("ok item")
+    {
+        parse_field_value_ok_test("  ?1;foo;*bar=tok  ", HSFV_FIELD_VALUE_TYPE_ITEM, test_item);
     }
 
-    OK_HELPER("list", "   (\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok   ", HSFV_FIELD_VALUE_TYPE_LIST, &test_list);
-    OK_HELPER("dict", "   a=?0, b, c; foo=bar  ", HSFV_FIELD_VALUE_TYPE_DICTIONARY, &test_dict);
-    OK_HELPER("item", "  ?1;foo;*bar=tok  ", HSFV_FIELD_VALUE_TYPE_ITEM, &test_item);
-#undef OK_HELPER
-
-#define NG_HELPER(section, input, field_type, want)                                                                                \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_field_value_t field_value;                                                                                            \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_field_value(&field_value, field_type, &hsfv_global_allocator, input, input_end, &rest);                   \
-        CHECK(err == want);                                                                                                        \
+    SECTION("ng list")
+    {
+        parse_field_value_ng_test("   (\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok   a", HSFV_FIELD_VALUE_TYPE_LIST,
+                                  HSFV_ERR_INVALID);
     }
-
-    NG_HELPER("list", "   (\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok   a", HSFV_FIELD_VALUE_TYPE_LIST,
-              HSFV_ERR_INVALID);
-    NG_HELPER("dict", "   a=?0, b, c; foo=bar  a", HSFV_FIELD_VALUE_TYPE_DICTIONARY, HSFV_ERR_INVALID);
-    NG_HELPER("item", "  ?1;foo;*bar=tok  a", HSFV_FIELD_VALUE_TYPE_ITEM, HSFV_ERR_INVALID);
-#undef NG_HELPER
+    SECTION("ng dict")
+    {
+        parse_field_value_ng_test("   a=?0, b, c; foo=bar  a", HSFV_FIELD_VALUE_TYPE_DICTIONARY, HSFV_ERR_INVALID);
+    }
+    SECTION("ng item")
+    {
+        parse_field_value_ng_test("  ?1;foo;*bar=tok  a", HSFV_FIELD_VALUE_TYPE_ITEM, HSFV_ERR_INVALID);
+    }
 }

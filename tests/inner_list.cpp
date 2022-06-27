@@ -51,55 +51,61 @@ static hsfv_inner_list_t test_inner_list = {
     .parameters = {.params = &param, .len = 1, .capacity = 1},
 };
 
+static void serialize_inner_list_ok_test(hsfv_inner_list_t input, const char *want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_inner_list(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == HSFV_OK);
+    CHECK(buf.bytes.len == strlen(want));
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
+}
+
 TEST_CASE("serialize inner_list", "[serialze][inner_list]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
-        hsfv_err_t err;                                                                                                            \
-        err = hsfv_serialize_inner_list(input, &hsfv_global_allocator, &buf);                                                      \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(buf.bytes.len == strlen(want));                                                                                      \
-        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
-        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    SECTION("case 1")
+    {
+        serialize_inner_list_ok_test(test_inner_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71");
     }
+}
 
-    OK_HELPER("case 1", &test_inner_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71");
-#undef OK_HELPER
+static void parse_inner_list_ok_test(const char *input, hsfv_inner_list_t want)
+{
+    hsfv_inner_list_t inner_list;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_inner_list(&inner_list, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(hsfv_inner_list_eq(&inner_list, &want));
+    CHECK(rest == input_end);
+    hsfv_inner_list_deinit(&inner_list, &hsfv_global_allocator);
+}
+
+static void parse_inner_list_ng_test(const char *input, hsfv_err_t want)
+{
+    hsfv_inner_list_t innser_list;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_inner_list(&innser_list, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == want);
 }
 
 TEST_CASE("parse inner_list", "[parse][inner_list]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_inner_list_t inner_list;                                                                                              \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_inner_list(&inner_list, &hsfv_global_allocator, input, input_end, &rest);                                 \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(hsfv_inner_list_eq(&inner_list, want));                                                                              \
-        CHECK(rest == input_end);                                                                                                  \
-        hsfv_inner_list_deinit(&inner_list, &hsfv_global_allocator);                                                               \
+    SECTION("ok case 1")
+    {
+        parse_inner_list_ok_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71", test_inner_list);
     }
 
-    OK_HELPER("case 1", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71", &test_inner_list);
-#undef OK_HELPER
-
-#define NG_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_inner_list_t innser_list;                                                                                             \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_inner_list(&innser_list, &hsfv_global_allocator, input, input_end, &rest);                                \
-        CHECK(err == want);                                                                                                        \
+    SECTION("ng case 1")
+    {
+        parse_inner_list_ng_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:;é);d=18.71", HSFV_ERR_INVALID);
     }
-
-    NG_HELPER("case 1", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:;é);d=18.71", HSFV_ERR_INVALID);
-    NG_HELPER("case 2", "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71;é", HSFV_ERR_INVALID);
-#undef NG_HELPER
+    SECTION("ng case 2")
+    {
+        parse_inner_list_ng_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71;é", HSFV_ERR_INVALID);
+    }
 }

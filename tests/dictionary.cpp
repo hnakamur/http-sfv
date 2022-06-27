@@ -72,56 +72,65 @@ static hsfv_dictionary_t test_dict = {
     .capacity = 3,
 };
 
+static void serialize_dictionary_ok_test(hsfv_dictionary_t input, const char *want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_dictionary(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == HSFV_OK);
+    CHECK(buf.bytes.len == strlen(want));
+    CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
+}
+
 TEST_CASE("serialize dictionary", "[serialze][dictionary]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION("section")                                                                                                             \
-    {                                                                                                                              \
-        hsfv_buffer_t buf = (hsfv_buffer_t){0};                                                                                    \
-        hsfv_err_t err;                                                                                                            \
-        err = hsfv_serialize_dictionary(input, &hsfv_global_allocator, &buf);                                                      \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(buf.bytes.len == strlen(want));                                                                                      \
-        CHECK(!memcmp(buf.bytes.base, want, buf.bytes.len));                                                                       \
-        hsfv_buffer_deinit(&buf, &hsfv_global_allocator);                                                                          \
+    SECTION("case 1")
+    {
+        serialize_dictionary_ok_test(test_dict, "a=?0, b, c;foo=bar");
     }
+}
 
-    OK_HELPER("case 1", &test_dict, "a=?0, b, c;foo=bar");
-#undef OK_HELPER
+static void parse_dictionary_ok_test(const char *input, hsfv_dictionary_t want)
+{
+    hsfv_dictionary_t dictionary;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_dictionary(&dictionary, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(hsfv_dictionary_eq(&dictionary, &want));
+    CHECK(rest == input_end);
+    hsfv_dictionary_deinit(&dictionary, &hsfv_global_allocator);
+}
+
+static void parse_dictionary_ng_test(const char *input, hsfv_err_t want)
+{
+    hsfv_dictionary_t dictionary;
+    hsfv_err_t err;
+    const char *rest;
+    const char *input_end = input + strlen(input);
+    err = hsfv_parse_dictionary(&dictionary, &hsfv_global_allocator, input, input_end, &rest);
+    CHECK(err == want);
 }
 
 TEST_CASE("parse dictionary", "[parse][dictionary]")
 {
-#define OK_HELPER(section, input, want)                                                                                            \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_dictionary_t dictionary;                                                                                              \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_dictionary(&dictionary, &hsfv_global_allocator, input, input_end, &rest);                                 \
-        CHECK(err == HSFV_OK);                                                                                                     \
-        CHECK(hsfv_dictionary_eq(&dictionary, want));                                                                              \
-        CHECK(rest == input_end);                                                                                                  \
-        hsfv_dictionary_deinit(&dictionary, &hsfv_global_allocator);                                                               \
+    SECTION("ok case 1")
+    {
+        parse_dictionary_ok_test("a=?0, b, c; foo=bar", test_dict);
+    }
+    SECTION("ok case 2")
+    {
+        parse_dictionary_ok_test("a, b, a=?0, c; foo=bar", test_dict);
     }
 
-    OK_HELPER("case 1", "a=?0, b, c; foo=bar", &test_dict);
-    OK_HELPER("case 2", "a, b, a=?0, c; foo=bar", &test_dict);
-#undef OK_HELPER
-
-#define NG_HELPER(section, input, want)                                                                                            \
-    SECTION(section)                                                                                                               \
-    {                                                                                                                              \
-        hsfv_dictionary_t dictionary;                                                                                              \
-        hsfv_err_t err;                                                                                                            \
-        const char *rest;                                                                                                          \
-        const char *input_end = input + strlen(input);                                                                             \
-        err = hsfv_parse_dictionary(&dictionary, &hsfv_global_allocator, input, input_end, &rest);                                 \
-        CHECK(err == want);                                                                                                        \
+    SECTION("ng case 1")
+    {
+        parse_dictionary_ng_test("a=?0, b, c; foo=bar, ", HSFV_ERR_EOF);
     }
-
-    NG_HELPER("case 1", "a=?0, b, c; foo=bar, ", HSFV_ERR_EOF);
-    NG_HELPER("case 2", "a=?0, b, c; foo=bar, é", HSFV_ERR_INVALID);
-#undef NG_HELPER
+    SECTION("ng case 2")
+    {
+        parse_dictionary_ng_test("a=?0, b, c; foo=bar, é", HSFV_ERR_INVALID);
+    }
 }
