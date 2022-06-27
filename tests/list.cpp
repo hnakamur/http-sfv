@@ -89,6 +89,72 @@ static hsfv_list_t test_list = {
     .capacity = 2,
 };
 
+TEST_CASE("hsfv_list_eq", "[field_value]")
+{
+    SECTION("different length")
+    {
+        hsfv_list_t empty = hsfv_list_t{0};
+        CHECK(!hsfv_list_eq(&test_list, &empty));
+    }
+
+    SECTION("different member type")
+    {
+        hsfv_list_member_t members2[] = {
+            {
+                .type = HSFV_LIST_MEMBER_TYPE_ITEM,
+                .item =
+                    {
+                        .bare_item =
+                            {
+                                .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                .boolean = true,
+                            },
+                    },
+            },
+            {
+                .type = HSFV_LIST_MEMBER_TYPE_ITEM,
+                .item =
+                    {
+                        .bare_item =
+                            {
+                                .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                .boolean = true,
+                            },
+                        .parameters =
+                            {
+                                .params = item_params,
+                                .len = 2,
+                                .capacity = 2,
+                            },
+                    },
+            },
+        };
+        hsfv_list_t test_list2 = {
+            .members = members2,
+            .len = 2,
+            .capacity = 2,
+        };
+
+        CHECK(!hsfv_list_eq(&test_list, &test_list2));
+    }
+
+    SECTION("invalid member type")
+    {
+        hsfv_list_member_t bad_members[] = {
+            {
+                .type = (hsfv_list_member_type_t)(-1),
+            },
+        };
+        hsfv_list_t bad_list = {
+            .members = bad_members,
+            .len = 1,
+            .capacity = 1,
+        };
+
+        CHECK(!hsfv_list_eq(&bad_list, &bad_list));
+    }
+}
+
 static void serialize_list_ok_test(hsfv_list_t input, const char *want)
 {
     hsfv_buffer_t buf = (hsfv_buffer_t){0};

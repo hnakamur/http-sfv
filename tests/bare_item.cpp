@@ -3,6 +3,28 @@
 
 /* Boolean */
 
+TEST_CASE("hsfv_bare_item_eq", "[eq][bare_item]")
+{
+    SECTION("different bare_item type")
+    {
+        hsfv_bare_item_t item1 = hsfv_bare_item_t{
+            .type = HSFV_BARE_ITEM_TYPE_INTEGER,
+        };
+        hsfv_bare_item_t item2 = hsfv_bare_item_t{
+            .type = HSFV_BARE_ITEM_TYPE_DECIMAL,
+        };
+        CHECK(!hsfv_bare_item_eq(&item1, &item2));
+    }
+
+    SECTION("invalid bare_item type")
+    {
+        hsfv_bare_item_t bad = hsfv_bare_item_t{
+            .type = (hsfv_bare_item_type_t)(-1),
+        };
+        CHECK(!hsfv_bare_item_eq(&bad, &bad));
+    }
+}
+
 static void serialize_boolean_ok_test(bool input, const char *want)
 {
     hsfv_buffer_t buf = (hsfv_buffer_t){0};

@@ -51,6 +51,37 @@ static hsfv_inner_list_t test_inner_list = {
     .parameters = {.params = &param, .len = 1, .capacity = 1},
 };
 
+TEST_CASE("hsfv_inner_list_eq", "[eq][inner_list]")
+{
+    SECTION("different length")
+    {
+        hsfv_inner_list_t empty = hsfv_inner_list_t{0};
+
+        CHECK(!hsfv_inner_list_eq(&empty, &test_inner_list));
+    }
+
+    SECTION("different member")
+    {
+        hsfv_item_t items2[] = {
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "foo", .len = 3}},
+                .parameters = {.params = params0params, .len = 2, .capacity = 2},
+            },
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .token = {.base = "baz", .len = 3}},
+                .parameters = {.params = &param1, .len = 1, .capacity = 1},
+            },
+        };
+        hsfv_inner_list_t test_inner_list2 = {
+            .items = items2,
+            .len = 2,
+            .capacity = 2,
+            .parameters = {.params = &param, .len = 1, .capacity = 1},
+        };
+        CHECK(!hsfv_inner_list_eq(&test_inner_list, &test_inner_list2));
+    }
+}
+
 static void serialize_inner_list_ok_test(hsfv_inner_list_t input, const char *want)
 {
     hsfv_buffer_t buf = (hsfv_buffer_t){0};

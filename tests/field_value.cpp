@@ -206,7 +206,7 @@ static hsfv_field_value_t test_item = {
 
 TEST_CASE("hsfv_field_value_eq", "[field_value]")
 {
-    SECTION("not equal")
+    SECTION("different field_type")
     {
         CHECK(!hsfv_field_value_eq(&test_list, &test_item));
     }

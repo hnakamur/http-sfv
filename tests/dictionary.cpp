@@ -72,6 +72,96 @@ static hsfv_dictionary_t test_dict = {
     .capacity = 3,
 };
 
+TEST_CASE("hsfv_dicreionary_eq", "[eq][dicreionary]")
+{
+    SECTION("different length")
+    {
+        hsfv_dictionary_t empty = hsfv_dictionary_t{0};
+
+        CHECK(!hsfv_dictionary_eq(&empty, &test_dict));
+    }
+
+    SECTION("different member type")
+    {
+        hsfv_item_t items2[] = {
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "foo", .len = 3}},
+            },
+        };
+
+        hsfv_dict_member_t members2[] = {
+            {
+                .key = {.base = "a", .len = 1},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_ITEM,
+                        .item =
+                            {
+                                .bare_item =
+                                    {
+                                        .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                        .boolean = false,
+                                    },
+                            },
+                    },
+            },
+            {
+                .key = {.base = "b", .len = 1},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_ITEM,
+                        .item =
+                            {
+                                .bare_item =
+                                    {
+                                        .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                        .boolean = true,
+                                    },
+                            },
+                    },
+            },
+            {
+                .key = {.base = "c", .len = 1},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_INNER_LIST,
+                        .inner_list =
+                            {
+                                .items = items2,
+                                .len = 1,
+                                .capacity = 1,
+                            },
+                    },
+            },
+        };
+        static hsfv_dictionary_t test_dict2 = {
+            .members = members2,
+            .len = 3,
+            .capacity = 3,
+        };
+        CHECK(!hsfv_dictionary_eq(&test_dict, &test_dict2));
+    }
+
+    SECTION("invalid member type")
+    {
+        hsfv_dict_member_t bad_members[] = {
+            {
+                .key = {.base = "a", .len = 1},
+                .value =
+                    {
+                        .type = (hsfv_dict_member_type_t)(-1),
+                    },
+            },
+        };
+        static hsfv_dictionary_t bad_dict = {
+            .members = bad_members,
+            .len = 3,
+            .capacity = 3,
+        };
+        CHECK(!hsfv_dictionary_eq(&bad_dict, &bad_dict));
+    }
+}
+
 static void serialize_dictionary_ok_test(hsfv_dictionary_t input, const char *want)
 {
     hsfv_buffer_t buf = (hsfv_buffer_t){0};

@@ -1,6 +1,55 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
+TEST_CASE("hsfv_parameters_eq", "[eq][parameters]")
+{
+    SECTION("different length")
+    {
+        hsfv_parameters_t parameters1 = hsfv_parameters_t{0};
+
+        hsfv_parameter_t params2[] = {
+            {
+                .key = {.base = "foo", .len = 3},
+                .value = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+            },
+        };
+        hsfv_parameters_t parameters2 = hsfv_parameters_t{
+            .params = params2,
+            .len = 1,
+            .capacity = 1,
+        };
+        CHECK(!hsfv_parameters_eq(&parameters1, &parameters2));
+    }
+
+    SECTION("different parameter")
+    {
+        hsfv_parameter_t params1[] = {
+            {
+                .key = {.base = "foo", .len = 3},
+                .value = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = false},
+            },
+        };
+        hsfv_parameters_t parameters1 = hsfv_parameters_t{
+            .params = params1,
+            .len = 1,
+            .capacity = 1,
+        };
+
+        hsfv_parameter_t params2[] = {
+            {
+                .key = {.base = "foo", .len = 3},
+                .value = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+            },
+        };
+        hsfv_parameters_t parameters2 = hsfv_parameters_t{
+            .params = params2,
+            .len = 1,
+            .capacity = 1,
+        };
+        CHECK(!hsfv_parameters_eq(&parameters1, &parameters2));
+    }
+}
+
 static void serialize_parameters_ok_test(hsfv_parameters_t input, const char *want)
 {
     hsfv_buffer_t buf = (hsfv_buffer_t){0};
