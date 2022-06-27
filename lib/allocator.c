@@ -21,32 +21,39 @@ hsfv_allocator_t hsfv_global_allocator = {
     .free = global_allocator_free,
 };
 
-static void *counting_allocator_alloc(hsfv_allocator_t *self, size_t size)
+static void *failing_allocator_alloc(hsfv_allocator_t *self, size_t size)
 {
-    hsfv_couting_allocator_t *ca = (hsfv_couting_allocator_t *)self;
+    hsfv_failing_allocator_t *ca = (hsfv_failing_allocator_t *)self;
+    if (ca->alloc_count == ca->fail_index) {
+        return NULL;
+    }
     ca->alloc_count++;
     return global_allocator_alloc(self, size);
 }
 
-static void *counting_allocator_realloc(hsfv_allocator_t *self, void *ptr, size_t size)
+static void *failing_allocator_realloc(hsfv_allocator_t *self, void *ptr, size_t size)
 {
-    hsfv_couting_allocator_t *ca = (hsfv_couting_allocator_t *)self;
+    hsfv_failing_allocator_t *ca = (hsfv_failing_allocator_t *)self;
+    if (ca->alloc_count == ca->fail_index) {
+        return NULL;
+    }
     ca->alloc_count++;
     return global_allocator_realloc(self, ptr, size);
 }
 
-static void counting_allocator_free(hsfv_allocator_t *self, void *ptr)
+static void failing_allocator_free(hsfv_allocator_t *self, void *ptr)
 {
     global_allocator_free(self, ptr);
 }
 
-hsfv_couting_allocator_t hsfv_counting_allocator = {
+hsfv_failing_allocator_t hsfv_failing_allocator = {
     .allocator =
         {
-            .alloc = counting_allocator_alloc,
-            .realloc = counting_allocator_realloc,
-            .free = counting_allocator_free,
+            .alloc = failing_allocator_alloc,
+            .realloc = failing_allocator_realloc,
+            .free = failing_allocator_free,
         },
+    .fail_index = -1,
 };
 
 hsfv_byte_t *hsfv_bytes_dup(hsfv_allocator_t *allocator, const hsfv_byte_t *src, size_t len)

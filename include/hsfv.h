@@ -42,10 +42,11 @@ extern hsfv_allocator_t hsfv_global_allocator;
 
 typedef struct {
     hsfv_allocator_t allocator;
+    int fail_index;
     int alloc_count;
-} hsfv_couting_allocator_t;
+} hsfv_failing_allocator_t;
 
-extern hsfv_couting_allocator_t hsfv_counting_allocator;
+extern hsfv_failing_allocator_t hsfv_failing_allocator;
 
 typedef unsigned char hsfv_byte_t;
 
