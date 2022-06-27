@@ -40,6 +40,13 @@ struct st_hsfv_allocator_t {
 
 extern hsfv_allocator_t hsfv_global_allocator;
 
+typedef struct {
+    hsfv_allocator_t allocator;
+    int alloc_count;
+} hsfv_couting_allocator_t;
+
+extern hsfv_couting_allocator_t hsfv_counting_allocator;
+
 typedef unsigned char hsfv_byte_t;
 
 hsfv_byte_t *hsfv_bytes_dup(hsfv_allocator_t *allocator, const hsfv_byte_t *src, size_t len);

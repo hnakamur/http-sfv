@@ -11,4 +11,15 @@ TEST_CASE("allocator", "[allocator]")
         CHECK(buf != NULL);
         hsfv_global_allocator.free(&hsfv_global_allocator, buf);
     }
+
+    SECTION("counting_allocator")
+    {
+        hsfv_allocator_t *allocator = &hsfv_counting_allocator.allocator;
+        void *buf = allocator->alloc(allocator, 8);
+        CHECK(buf != NULL);
+        buf = allocator->realloc(allocator, buf, 16);
+        CHECK(buf != NULL);
+        allocator->free(allocator, buf);
+        CHECK(hsfv_counting_allocator.alloc_count == 2);
+    }
 }
