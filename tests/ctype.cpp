@@ -36,3 +36,20 @@ TEST_CASE("is_token_trailing_char", "[ctype]")
         }
     }
 }
+
+TEST_CASE("hsfv_is_ascii_string", "[ctype]")
+{
+    SECTION("ok")
+    {
+        const char *input = "abc";
+        const char *input_end = input + strlen(input);
+        CHECK(hsfv_is_ascii_string(input, input_end));
+    }
+
+    SECTION("ng")
+    {
+        const char *input = "ab\x80";
+        const char *input_end = input + strlen(input);
+        CHECK(!hsfv_is_ascii_string(input, input_end));
+    }
+}
