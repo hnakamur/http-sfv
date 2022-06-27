@@ -321,6 +321,14 @@ static void serialize_field_value_ok_test(hsfv_field_value_t input, const char *
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
 }
 
+static void serialize_field_value_ng_test(hsfv_field_value_t input, hsfv_err_t want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_field_value(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == want);
+}
+
 TEST_CASE("serialize field_value", "[serialze][field_value]")
 {
     SECTION("list")
@@ -334,6 +342,11 @@ TEST_CASE("serialize field_value", "[serialze][field_value]")
     SECTION("item")
     {
         serialize_field_value_ok_test(test_item, "?1;foo;*bar=tok");
+    }
+
+    SECTION("invalid field type")
+    {
+        serialize_field_value_ng_test(hsfv_field_value_t{.type = (hsfv_field_value_type_t)(-1)}, HSFV_ERR_INVALID);
     }
 }
 
