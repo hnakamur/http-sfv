@@ -144,33 +144,27 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp)
 
-set(target httpsfv_tests)
 add_executable(
-  ${target} ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
-            ${yyjson_content_SOURCE_DIR}/src/yyjson.c ${HttpSfv_SOURCE_FILES})
-target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain m)
+  httpsfv_tests
+  ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
+  ${yyjson_content_SOURCE_DIR}/src/yyjson.c ${HttpSfv_SOURCE_FILES})
+target_link_libraries(httpsfv_tests PRIVATE Catch2::Catch2WithMain m)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
-catch_discover_tests(${target})
-
-add_executable(
-  httpsfv_test_cov
-  ${TEST_FILES} ${libbaseencode_SOURCE_DIR}/src/base32.c
-  ${yyjson_content_SOURCE_DIR}/src/yyjson.c ${HttpSfv_SOURCE_FILES})
-target_link_libraries(httpsfv_test_cov PRIVATE Catch2::Catch2WithMain m)
+catch_discover_tests(httpsfv_tests)
 
 add_custom_target(
-  cov
-  LLVM_PROFILE_FILE=httpsfv_test_cov.profraw ./httpsfv_test_cov
-  COMMAND ${LLVM_PROFDATA_EXE} merge -sparse httpsfv_test_cov.profraw -o
-          httpsfv_test_cov.profdata
-  COMMAND ${LLVM_COV_EXE} show ./httpsfv_test_cov
-          -instr-profile=httpsfv_test_cov.profdata ${HttpSfv_SOURCE_FILES}
-  DEPENDS httpsfv_test_cov)
+  check
+  LLVM_PROFILE_FILE=httpsfv_tests.profraw ./httpsfv_tests
+  COMMAND ${LLVM_PROFDATA_EXE} merge -sparse httpsfv_tests.profraw -o
+          httpsfv_tests.profdata
+  COMMAND ${LLVM_COV_EXE} show ./httpsfv_tests
+          -instr-profile=httpsfv_tests.profdata ${HttpSfv_SOURCE_FILES}
+  DEPENDS httpsfv_tests)
 
-clang_format(${target})
+clang_format(httpsfv_tests)
 
-target_compile_options(${target} PRIVATE -fsanitize=address)
-target_link_options(${target} PRIVATE -fsanitize=address)
+target_compile_options(httpsfv_tests PRIVATE -fsanitize=address)
+target_link_options(httpsfv_tests PRIVATE -fsanitize=address)

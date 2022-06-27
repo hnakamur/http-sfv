@@ -10,12 +10,13 @@ Install code formatters.
 
 ```
 sudo apt-get update \
-sudo apt-get install -y clang-format cmake-format
+sudo apt-get install -y clang-14 clang-format cmake-format
 ```
 
 Generate Makefile.
 
 ```
+. env
 mkdir build
 cd build
 cmake ..
@@ -24,7 +25,7 @@ cmake ..
 Build and run tests
 
 ```
-make && ./tests
+make -j check
 ```
 
 It also runs test cases defined in [httpwg/structured-field-tests: Tests for HTTP Structured Field Values](https://github.com/httpwg/structured-field-tests).
