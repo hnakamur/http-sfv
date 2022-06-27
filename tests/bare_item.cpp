@@ -1,8 +1,6 @@
 #include "hsfv.h"
 #include <catch2/catch_test_macros.hpp>
 
-/* Boolean */
-
 TEST_CASE("hsfv_bare_item_eq", "[eq][bare_item]")
 {
     SECTION("different bare_item type")
@@ -24,6 +22,8 @@ TEST_CASE("hsfv_bare_item_eq", "[eq][bare_item]")
         CHECK(!hsfv_bare_item_eq(&bad, &bad));
     }
 }
+
+/* Boolean */
 
 static void serialize_boolean_ok_test(bool input, const char *want)
 {

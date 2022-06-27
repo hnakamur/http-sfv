@@ -13,14 +13,15 @@ hsfv_err_t hsfv_buffer_alloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, si
 
 hsfv_err_t hsfv_buffer_realloc(hsfv_buffer_t *buf, hsfv_allocator_t *allocator, size_t capacity)
 {
-    buf->bytes.base = allocator->realloc(allocator, buf->bytes.base, capacity);
-    if (buf->bytes.base == NULL) {
+    void *base2 = allocator->realloc(allocator, buf->bytes.base, capacity);
+    if (base2 == NULL) {
         return HSFV_ERR_OUT_OF_MEMORY;
     }
     if (capacity < buf->bytes.len) {
         buf->bytes.len = capacity;
     }
     buf->capacity = capacity;
+    buf->bytes.base = base2;
     return HSFV_OK;
 }
 

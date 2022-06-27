@@ -71,10 +71,11 @@ static hsfv_err_t hsfv_parameters_append(hsfv_allocator_t *allocator, hsfv_param
 {
     if (parameters->len + 1 > parameters->capacity) {
         size_t new_capacity = hsfv_align(parameters->len + 1, PARAMETERS_INITIAL_CAPACITY);
-        parameters->params = allocator->realloc(allocator, parameters->params, new_capacity * sizeof(hsfv_parameter_t));
-        if (parameters->params == NULL) {
+        void *params2 = allocator->realloc(allocator, parameters->params, new_capacity * sizeof(hsfv_parameter_t));
+        if (params2 == NULL) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
+        parameters->params = params2;
         parameters->capacity = new_capacity;
     }
     parameters->params[parameters->len] = *param;
