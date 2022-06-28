@@ -141,6 +141,7 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/field_value.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/httpwg.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/inner_list.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/iovec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp)
