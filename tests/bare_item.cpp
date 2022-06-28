@@ -659,6 +659,14 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]")
     {
         parse_byte_seq_ng_test(":YW55IGNhcm5hbCBwbGVhc3Vy", HSFV_ERR_EOF);
     }
+    SECTION("not start with colon")
+    {
+        parse_byte_seq_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("bad base64 encode")
+    {
+        parse_byte_seq_ng_test(":a:", HSFV_ERR_INVALID);
+    }
     SECTION("no closing colon case 2")
     {
         parse_byte_seq_ng_test(":YW55IGNhcm5hbCBwbGVhc3Vy~", HSFV_ERR_INVALID);
