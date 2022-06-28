@@ -7,8 +7,9 @@ TEST_CASE("allocator", "[allocator]")
     {
         void *buf = hsfv_global_allocator.alloc(&hsfv_global_allocator, 8);
         CHECK(buf != NULL);
-        buf = hsfv_global_allocator.realloc(&hsfv_global_allocator, buf, 16);
-        CHECK(buf != NULL);
+        void *buf2 = hsfv_global_allocator.realloc(&hsfv_global_allocator, buf, 16);
+        CHECK(buf2 != NULL);
+        buf = buf2;
         hsfv_global_allocator.free(&hsfv_global_allocator, buf);
     }
 
@@ -17,8 +18,9 @@ TEST_CASE("allocator", "[allocator]")
         hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
         void *buf = allocator->alloc(allocator, 8);
         CHECK(buf != NULL);
-        buf = allocator->realloc(allocator, buf, 16);
-        CHECK(buf != NULL);
+        void *buf2 = allocator->realloc(allocator, buf, 16);
+        CHECK(buf2 != NULL);
+        buf = buf2;
         allocator->free(allocator, buf);
         CHECK(hsfv_failing_allocator.alloc_count == 2);
 
@@ -28,8 +30,9 @@ TEST_CASE("allocator", "[allocator]")
 
         hsfv_failing_allocator.fail_index = 1;
         hsfv_failing_allocator.alloc_count = 0;
-        buf = allocator->alloc(allocator, 8);
-        CHECK(buf != NULL);
+        buf2 = allocator->alloc(allocator, 8);
+        CHECK(buf2 != NULL);
+        buf = buf2;
         CHECK(allocator->realloc(allocator, buf, 16) == NULL);
         allocator->free(allocator, buf);
     }

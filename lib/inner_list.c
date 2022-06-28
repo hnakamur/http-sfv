@@ -28,10 +28,11 @@ static hsfv_err_t hsfv_inner_list_append(hsfv_inner_list_t *self, hsfv_allocator
 {
     if (self->len + 1 > self->capacity) {
         size_t new_capacity = hsfv_align(self->len + 1, INNER_LIST_INITIAL_CAPACITY);
-        self->items = allocator->realloc(allocator, self->items, new_capacity * sizeof(hsfv_item_t));
-        if (self->items == NULL) {
+        void *items2 = allocator->realloc(allocator, self->items, new_capacity * sizeof(hsfv_item_t));
+        if (items2 == NULL) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
+        self->items = items2;
         self->capacity = new_capacity;
     }
     self->items[self->len] = *item;

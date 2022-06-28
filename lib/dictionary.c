@@ -65,10 +65,11 @@ static hsfv_err_t hsfv_dictionary_append(hsfv_dictionary_t *dictionary, hsfv_all
 {
     if (dictionary->len + 1 > dictionary->capacity) {
         size_t new_capacity = hsfv_align(dictionary->len + 1, DICT_INITIAL_CAPACITY);
-        dictionary->members = allocator->realloc(allocator, dictionary->members, new_capacity * sizeof(hsfv_dict_member_t));
-        if (dictionary->members == NULL) {
+        void *members2 = allocator->realloc(allocator, dictionary->members, new_capacity * sizeof(hsfv_dict_member_t));
+        if (members2 == NULL) {
             return HSFV_ERR_OUT_OF_MEMORY;
         }
+        dictionary->members = members2;
         dictionary->capacity = new_capacity;
     }
     dictionary->members[dictionary->len] = *member;
