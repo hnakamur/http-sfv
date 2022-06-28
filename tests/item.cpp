@@ -12,40 +12,84 @@ static void serialize_item_ok_test(hsfv_item_t input, const char *want)
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
 }
 
+static void serialize_item_ng_test(hsfv_item_t input, hsfv_err_t want)
+{
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_item(&input, &hsfv_global_allocator, &buf);
+    CHECK(err == want);
+    hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
+}
+
 TEST_CASE("serialize item", "[serialze][item]")
 {
-    hsfv_parameter_t want_params[] = {
-        {
-            .key = hsfv_key_t{.base = "foo", .len = 3},
-            .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
-        },
-        {
-            .key = hsfv_key_t{.base = "*bar", .len = 4},
-            .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "baz", .len = 3}},
-        },
-        {
-            .key = hsfv_key_t{.base = "baz", .len = 3},
-            .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = false},
-        },
-    };
-
-    hsfv_item_t input = {
-        .bare_item =
-            hsfv_bare_item_t{
-                .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
-                .boolean = true,
-            },
-        .parameters =
-            hsfv_parameters_t{
-                .params = want_params,
-                .len = 3,
-                .capacity = 3,
-            },
-    };
-
-    SECTION("case 1")
+    SECTION("ok case 1")
     {
+        hsfv_parameter_t params[] = {
+            {
+                .key = hsfv_key_t{.base = "foo", .len = 3},
+                .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+            },
+            {
+                .key = hsfv_key_t{.base = "*bar", .len = 4},
+                .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "baz", .len = 3}},
+            },
+            {
+                .key = hsfv_key_t{.base = "baz", .len = 3},
+                .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = false},
+            },
+        };
+
+        hsfv_item_t input = {
+            .bare_item =
+                hsfv_bare_item_t{
+                    .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                    .boolean = true,
+                },
+            .parameters =
+                hsfv_parameters_t{
+                    .params = params,
+                    .len = 3,
+                    .capacity = 3,
+                },
+        };
+
         serialize_item_ok_test(input, "?1;foo;*bar=\"baz\";baz=?0");
+    }
+
+    SECTION("invalid bare_item type")
+    {
+        serialize_item_ng_test(
+            hsfv_item_t{
+                .bare_item = {.type = (hsfv_bare_item_type_t)(-1)},
+            },
+            HSFV_ERR_INVALID);
+    }
+
+    SECTION("invalid parameter key")
+    {
+        hsfv_parameter_t params[] = {
+            {
+                .key = hsfv_key_t{.base = "foo?", .len = 4},
+                .value = hsfv_bare_item_t{.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = true},
+            },
+        };
+
+        hsfv_item_t input = {
+            .bare_item =
+                hsfv_bare_item_t{
+                    .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                    .boolean = true,
+                },
+            .parameters =
+                hsfv_parameters_t{
+                    .params = params,
+                    .len = 1,
+                    .capacity = 1,
+                },
+        };
+
+        serialize_item_ng_test(input, HSFV_ERR_INVALID);
     }
 }
 
