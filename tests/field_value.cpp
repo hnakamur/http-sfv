@@ -329,6 +329,29 @@ static void serialize_field_value_ng_test(hsfv_field_value_t input, hsfv_err_t w
     CHECK(err == want);
 }
 
+static void serialize_field_value_alloc_error_test(hsfv_field_value_t input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_field_value(&input, allocator, &buf);
+    CHECK(err == HSFV_OK);
+    hsfv_buffer_deinit(&buf, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        buf = (hsfv_buffer_t){0};
+        err = hsfv_serialize_field_value(&input, allocator, &buf);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+        hsfv_buffer_deinit(&buf, allocator);
+    }
+}
+
 TEST_CASE("serialize field_value", "[serialze][field_value]")
 {
     SECTION("list")
@@ -347,6 +370,10 @@ TEST_CASE("serialize field_value", "[serialze][field_value]")
     SECTION("invalid field type")
     {
         serialize_field_value_ng_test(hsfv_field_value_t{.type = (hsfv_field_value_type_t)(-1)}, HSFV_ERR_INVALID);
+    }
+    SECTION("alloc error")
+    {
+        serialize_field_value_alloc_error_test(test_list);
     }
 }
 

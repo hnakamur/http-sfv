@@ -166,11 +166,67 @@ static void serialize_list_ok_test(hsfv_list_t input, const char *want)
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
 }
 
+static void serialize_list_alloc_error_test(hsfv_list_t input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_list(&input, allocator, &buf);
+    CHECK(err == HSFV_OK);
+    hsfv_buffer_deinit(&buf, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        buf = (hsfv_buffer_t){0};
+        err = hsfv_serialize_list(&input, allocator, &buf);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+        hsfv_buffer_deinit(&buf, allocator);
+    }
+}
+
 TEST_CASE("serialize list", "[serialze][list]")
 {
     SECTION("case 1")
     {
         serialize_list_ok_test(test_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok");
+    }
+
+    SECTION("alloc error 1")
+    {
+        hsfv_list_member_t members[] = {
+            {
+                .type = HSFV_LIST_MEMBER_TYPE_ITEM,
+                .item =
+                    {
+                        .bare_item =
+                            {
+                                .type = HSFV_BARE_ITEM_TYPE_TOKEN,
+                                .token = {.base = "abcdefg", .len = 7},
+                            },
+                    },
+            },
+            {
+                .type = HSFV_LIST_MEMBER_TYPE_ITEM,
+                .item =
+                    {
+                        .bare_item =
+                            {
+                                .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                .boolean = false,
+                            },
+                    },
+            },
+        };
+        serialize_list_alloc_error_test(hsfv_list_t{
+            .members = members,
+            .len = 2,
+            .capacity = 2,
+        });
     }
 }
 

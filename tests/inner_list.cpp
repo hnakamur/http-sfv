@@ -93,11 +93,70 @@ static void serialize_inner_list_ok_test(hsfv_inner_list_t input, const char *wa
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
 }
 
+static void serialize_inner_list_alloc_error_test(hsfv_inner_list_t input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_inner_list(&input, allocator, &buf);
+    CHECK(err == HSFV_OK);
+    hsfv_buffer_deinit(&buf, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        buf = (hsfv_buffer_t){0};
+        err = hsfv_serialize_inner_list(&input, allocator, &buf);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+        hsfv_buffer_deinit(&buf, allocator);
+    }
+}
+
 TEST_CASE("serialize inner_list", "[serialze][inner_list]")
 {
     SECTION("case 1")
     {
         serialize_inner_list_ok_test(test_inner_list, "(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71");
+    }
+
+    SECTION("alloc error 1")
+    {
+        hsfv_item_t items[] = {
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "abcd", .len = 4}},
+            },
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_BOOLEAN, .boolean = false},
+            },
+        };
+
+        serialize_inner_list_alloc_error_test(hsfv_inner_list_t{
+            .items = items,
+            .len = 2,
+            .capacity = 2,
+        });
+    }
+
+    SECTION("alloc error 2")
+    {
+        hsfv_item_t items[] = {
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_TOKEN, .string = {.base = "abcdefg", .len = 7}},
+            },
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_INTEGER, .integer = 123456789},
+            },
+        };
+
+        serialize_inner_list_alloc_error_test(hsfv_inner_list_t{
+            .items = items,
+            .len = 2,
+            .capacity = 2,
+        });
     }
 }
 

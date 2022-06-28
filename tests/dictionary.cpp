@@ -173,11 +173,135 @@ static void serialize_dictionary_ok_test(hsfv_dictionary_t input, const char *wa
     hsfv_buffer_deinit(&buf, &hsfv_global_allocator);
 }
 
+static void serialize_dictionary_alloc_error_test(hsfv_dictionary_t input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    hsfv_buffer_t buf = (hsfv_buffer_t){0};
+    hsfv_err_t err;
+    err = hsfv_serialize_dictionary(&input, allocator, &buf);
+    CHECK(err == HSFV_OK);
+    hsfv_buffer_deinit(&buf, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        buf = (hsfv_buffer_t){0};
+        err = hsfv_serialize_dictionary(&input, allocator, &buf);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+        hsfv_buffer_deinit(&buf, allocator);
+    }
+}
+
 TEST_CASE("serialize dictionary", "[serialze][dictionary]")
 {
     SECTION("case 1")
     {
         serialize_dictionary_ok_test(test_dict, "a=?0, b, c;foo=bar");
+    }
+
+    SECTION("alloc error 1")
+    {
+        hsfv_item_t items[] = {
+            {
+                .bare_item = {.type = HSFV_BARE_ITEM_TYPE_STRING, .string = {.base = "foofoofoo", .len = 9}},
+            },
+        };
+
+        hsfv_dict_member_t members[] = {
+            {
+                .key = {.base = "abcdefg", .len = 7},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_ITEM,
+                        .item =
+                            {
+                                .bare_item =
+                                    {
+                                        .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                        .boolean = true,
+                                    },
+                            },
+                    },
+            },
+            {
+                .key = {.base = "bcdefghi", .len = 8},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_INNER_LIST,
+                        .inner_list =
+                            {
+                                .items = items,
+                                .len = 1,
+                                .capacity = 1,
+                            },
+                    },
+            },
+        };
+        serialize_dictionary_alloc_error_test(hsfv_dictionary_t{
+            .members = members,
+            .len = 2,
+            .capacity = 2,
+        });
+    }
+
+    SECTION("alloc error 2")
+    {
+        hsfv_parameter_t param = {
+            .key = {.base = "foo", .len = 3},
+            .value =
+                {
+                    .type = HSFV_BARE_ITEM_TYPE_TOKEN,
+                    .token = {.base = "barbarbar", .len = 9},
+                },
+        };
+
+        hsfv_dict_member_t members[] = {
+            {
+                .key = {.base = "abcdefgi", .len = 8},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_ITEM,
+                        .item =
+                            {
+                                .bare_item =
+                                    {
+                                        .type = HSFV_BARE_ITEM_TYPE_INTEGER,
+                                        .integer = 123456789,
+                                    },
+                            },
+                    },
+            },
+            {
+                .key = {.base = "bcdefghi", .len = 8},
+                .value =
+                    {
+                        .type = HSFV_DICT_MEMBER_TYPE_ITEM,
+                        .item =
+                            {
+                                .bare_item =
+                                    {
+                                        .type = HSFV_BARE_ITEM_TYPE_BOOLEAN,
+                                        .boolean = true,
+                                    },
+                                .parameters =
+                                    {
+                                        .params = &param,
+                                        .len = 1,
+                                        .capacity = 1,
+                                    },
+                            },
+                    },
+            },
+        };
+        serialize_dictionary_alloc_error_test(hsfv_dictionary_t{
+            .members = members,
+            .len = 2,
+            .capacity = 2,
+        });
     }
 }
 
