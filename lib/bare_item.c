@@ -433,11 +433,12 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item, hsfv_allocator_t *allocator
     for (; input < input_end; ++input) {
         c = *input;
         if (c == '\\') {
+            ++input;
             if (input == input_end) {
                 err = HSFV_ERR_INVALID;
                 goto error;
             }
-            c = *++input;
+            c = *input;
             if (c != '"' && c != '\\') {
                 err = HSFV_ERR_INVALID;
                 goto error;
