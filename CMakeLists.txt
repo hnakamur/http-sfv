@@ -136,6 +136,7 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/allocator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/bare_item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/base64.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/buffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/ctype.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/dictionary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/field_value.cpp
