@@ -139,4 +139,16 @@ TEST_CASE("parse inner_list", "[parse][inner_list]")
     {
         parse_inner_list_ng_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71;é", HSFV_ERR_INVALID);
     }
+    SECTION("no input")
+    {
+        parse_inner_list_ng_test("", HSFV_ERR_EOF);
+    }
+    SECTION("not start open paren")
+    {
+        parse_inner_list_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("unexpected EOF")
+    {
+        parse_inner_list_ng_test("(a ", HSFV_ERR_EOF);
+    }
 }
