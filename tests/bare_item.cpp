@@ -432,6 +432,29 @@ static void parse_string_ng_test(const char *input, hsfv_err_t want)
     CHECK(err == want);
 }
 
+static void serialize_string_alloc_error_test(const char *input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_string(&item, allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    hsfv_bare_item_deinit(&item, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        err = hsfv_parse_string(&item, allocator, input, input_end, &rest);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+    }
+}
+
 TEST_CASE("parse string", "[parse][string]")
 {
     SECTION("no escape")
@@ -474,6 +497,15 @@ TEST_CASE("parse string", "[parse][string]")
     SECTION("unclosed string")
     {
         parse_string_ng_test("\"foo", HSFV_ERR_EOF);
+    }
+
+    SECTION("alloc error 1")
+    {
+        serialize_string_alloc_error_test("\"12345678\\\"\"");
+    }
+    SECTION("alloc error 2")
+    {
+        serialize_string_alloc_error_test("\"123456789\"");
     }
 }
 
@@ -547,6 +579,29 @@ static void parse_token_ng_test(const char *input, hsfv_err_t want)
     CHECK(err == want);
 }
 
+static void serialize_token_alloc_error_test(const char *input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_token(&item, allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    hsfv_bare_item_deinit(&item, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        err = hsfv_parse_token(&item, allocator, input, input_end, &rest);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+    }
+}
+
 TEST_CASE("parse token", "[parse][token]")
 {
     SECTION("single character")
@@ -577,6 +632,11 @@ TEST_CASE("parse token", "[parse][token]")
     SECTION("non ASCII character")
     {
         parse_token_ng_test("é", HSFV_ERR_INVALID);
+    }
+
+    SECTION("alloc error")
+    {
+        serialize_token_alloc_error_test("abcdefghij");
     }
 }
 
@@ -636,6 +696,29 @@ static void parse_byte_seq_ng_test(const char *input, hsfv_err_t want)
     CHECK(err == want);
 }
 
+static void parse_byte_seq_alloc_error_test(const char *input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_byte_seq(&item, allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    hsfv_bare_item_deinit(&item, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        err = hsfv_parse_byte_seq(&item, allocator, input, input_end, &rest);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+    }
+}
+
 TEST_CASE("parse byte_seq", "[parse][byte_seq]")
 {
     SECTION("case 1")
@@ -682,6 +765,11 @@ TEST_CASE("parse byte_seq", "[parse][byte_seq]")
     SECTION("bad encoded")
     {
         parse_byte_seq_ng_test(":YW55IGNhcm5hbCBwbGVhc3VyZQ!=:", HSFV_ERR_INVALID);
+    }
+
+    SECTION("alloc error")
+    {
+        parse_byte_seq_alloc_error_test(":YW55IGNhcm5hbCBwbGVhc3VyZQ==:");
     }
 }
 

@@ -371,6 +371,10 @@ TEST_CASE("serialize field_value", "[serialze][field_value]")
     {
         serialize_field_value_ng_test(hsfv_field_value_t{.type = (hsfv_field_value_type_t)(-1)}, HSFV_ERR_INVALID);
     }
+    SECTION("alloc error 1")
+    {
+        serialize_field_value_alloc_error_test(test_list);
+    }
     SECTION("alloc error")
     {
         serialize_field_value_alloc_error_test(test_list);

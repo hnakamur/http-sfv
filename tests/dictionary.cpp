@@ -328,6 +328,29 @@ static void parse_dictionary_ng_test(const char *input, hsfv_err_t want)
     CHECK(err == want);
 }
 
+static void parse_dictionary_alloc_error_test(const char *input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    const char *input_end = input + strlen(input);
+    hsfv_dictionary_t dictionary;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_dictionary(&dictionary, allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    hsfv_dictionary_deinit(&dictionary, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        err = hsfv_parse_dictionary(&dictionary, allocator, input, input_end, &rest);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+    }
+}
+
 TEST_CASE("parse dictionary", "[parse][dictionary]")
 {
     SECTION("ok case 1")
@@ -346,5 +369,15 @@ TEST_CASE("parse dictionary", "[parse][dictionary]")
     SECTION("ng case 2")
     {
         parse_dictionary_ng_test("a=?0, b, c; foo=bar, é", HSFV_ERR_INVALID);
+    }
+
+    SECTION("alloc error 1")
+    {
+        parse_dictionary_alloc_error_test("a=?0, b, c, d, e, f, g, h");
+    }
+
+    SECTION("alloc error 2")
+    {
+        parse_dictionary_alloc_error_test("a=(a b c d e f g h i), b;a=1;b=2;c=3;d=4;e=5;f=6;g=7;h=8;i=9");
     }
 }

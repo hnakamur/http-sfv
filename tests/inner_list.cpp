@@ -183,6 +183,29 @@ static void parse_inner_list_ng_test(const char *input, hsfv_err_t want)
     CHECK(err == want);
 }
 
+static void parse_inner_list_alloc_error_test(const char *input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    const char *input_end = input + strlen(input);
+    hsfv_inner_list_t inner_list;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_inner_list(&inner_list, allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    hsfv_inner_list_deinit(&inner_list, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        err = hsfv_parse_inner_list(&inner_list, allocator, input, input_end, &rest);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+    }
+}
+
 TEST_CASE("parse inner_list", "[parse][inner_list]")
 {
     SECTION("ok case 1")
@@ -209,5 +232,10 @@ TEST_CASE("parse inner_list", "[parse][inner_list]")
     SECTION("unexpected EOF")
     {
         parse_inner_list_ng_test("(a ", HSFV_ERR_EOF);
+    }
+
+    SECTION("alloc error")
+    {
+        parse_inner_list_alloc_error_test("(a b c d e f g h i)");
     }
 }

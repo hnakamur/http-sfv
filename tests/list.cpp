@@ -253,6 +253,29 @@ static void parse_list_ng_test(const char *input, hsfv_err_t want)
     CHECK(err == want);
 }
 
+static void parse_list_alloc_error_test(const char *input)
+{
+    hsfv_allocator_t *allocator = &hsfv_failing_allocator.allocator;
+    hsfv_failing_allocator.fail_index = -1;
+    hsfv_failing_allocator.alloc_count = 0;
+
+    const char *input_end = input + strlen(input);
+    hsfv_list_t list;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_list(&list, allocator, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    hsfv_list_deinit(&list, allocator);
+
+    int alloc_count = hsfv_failing_allocator.alloc_count;
+    for (int i = 0; i < alloc_count; i++) {
+        hsfv_failing_allocator.fail_index = i;
+        hsfv_failing_allocator.alloc_count = 0;
+        err = hsfv_parse_list(&list, allocator, input, input_end, &rest);
+        CHECK(err == HSFV_ERR_OUT_OF_MEMORY);
+    }
+}
+
 TEST_CASE("parse list", "[parse][list]")
 {
     SECTION("ok case 1")
@@ -267,5 +290,10 @@ TEST_CASE("parse list", "[parse][list]")
     SECTION("ng case 2")
     {
         parse_list_ng_test("(\"foo\";a;b=1936 bar;y=:AQMBAg==:);d=18.71, ?1;foo;*bar=tok, é", HSFV_ERR_INVALID);
+    }
+
+    SECTION("alloc error")
+    {
+        parse_list_alloc_error_test("a, b, c, d, e, f, g, h, i");
     }
 }
