@@ -83,9 +83,17 @@ TEST_CASE("parse boolean", "[parse][boolean]")
         parse_boolean_ok_test("?1", 1);
     }
 
-    SECTION("unexpected EOF")
+    SECTION("unexpected EOF with no char")
+    {
+        parse_boolean_ng_test("", HSFV_ERR_EOF);
+    }
+    SECTION("unexpected EOF after question")
     {
         parse_boolean_ng_test("?", HSFV_ERR_EOF);
+    }
+    SECTION("not start with question")
+    {
+        parse_boolean_ng_test("0", HSFV_ERR_INVALID);
     }
     SECTION("invalid value")
     {
