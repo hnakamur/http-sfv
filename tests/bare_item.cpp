@@ -197,6 +197,10 @@ TEST_CASE("parse integer", "[parse][integer]")
         parse_integer_ok_test("2a", 2);
     }
 
+    SECTION("empty")
+    {
+        parse_integer_ng_test("", HSFV_ERR_EOF);
+    }
     SECTION("not digit")
     {
         parse_integer_ng_test("a", HSFV_ERR_INVALID);
@@ -268,6 +272,10 @@ TEST_CASE("parse integer number", "[parse][integer]")
         parse_integer_number_ok_test("999999999999999", HSFV_MAX_INT);
     }
 
+    SECTION("empty")
+    {
+        parse_integer_number_ng_test("", HSFV_ERR_EOF);
+    }
     SECTION("not digit")
     {
         parse_integer_number_ng_test("a", HSFV_ERR_INVALID);
@@ -409,6 +417,14 @@ TEST_CASE("parse decimal", "[parse][decimal]")
         parse_decimal_ok_test("-18.712", -18.712);
     }
 
+    SECTION("empty")
+    {
+        parse_decimal_ng_test("", HSFV_ERR_EOF);
+    }
+    SECTION("no digit after minus")
+    {
+        parse_decimal_ng_test("-", HSFV_ERR_EOF);
+    }
     SECTION("not digit")
     {
         parse_decimal_ng_test("a", HSFV_ERR_INVALID);
