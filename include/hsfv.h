@@ -309,6 +309,8 @@ hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *
 hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 
+bool hsfv_is_parsable_boolean(const char *input, const char *input_end, const char **out_rest);
+
 #define HSFV_SKIP_SP(input, input_end)                                                                                             \
     while ((input) < (input_end) && *(input) == ' ') {                                                                             \
         ++(input);                                                                                                                 \

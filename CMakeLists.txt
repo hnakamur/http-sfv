@@ -126,6 +126,7 @@ set(HttpSfv_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/dictionary.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/inner_list.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/item.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/parsable.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/parameters.c)
 add_library(httpsfv STATIC ${HttpSfv_SOURCE_FILES})
 set_target_properties(httpsfv PROPERTIES PUBLIC_HEADER ${HttpSfv_HEADER_FILES})
@@ -145,6 +146,7 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/iovec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/parsable.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp)
 
 add_executable(
