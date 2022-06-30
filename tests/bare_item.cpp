@@ -280,7 +280,7 @@ TEST_CASE("parse integer number", "[parse][integer]")
     {
         parse_integer_number_ng_test("a", HSFV_ERR_INVALID);
     }
-    SECTION("no digit after minus sign")
+    SECTION("eof after minus sign")
     {
         parse_integer_number_ng_test("-", HSFV_ERR_EOF);
     }
