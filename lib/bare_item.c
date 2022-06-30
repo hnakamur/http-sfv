@@ -434,6 +434,69 @@ hsfv_err_t hsfv_parse_integer(const char *input, const char *input_end, int64_t 
     return HSFV_OK;
 }
 
+hsfv_err_t hsfv_parse_decimal(const char *input, const char *input_end, double *out_decimal, const char **out_rest)
+{
+    if (input == input_end) {
+        return HSFV_ERR_EOF;
+    }
+
+    const char *digit_start = input;
+    if (*input == '-') {
+        ++digit_start;
+    }
+    if (input == input_end) {
+        return HSFV_ERR_EOF;
+    }
+
+    const char *p = digit_start;
+    if (HSFV_IS_DIGIT(*p)) {
+        ++p;
+    } else {
+        return p == input_end ? HSFV_ERR_EOF : HSFV_ERR_INVALID;
+    }
+
+    const char *dot = NULL;
+    const char *out_of_range = digit_start + HSFV_MAX_DEC_INT_LEN;
+    for (; p < input_end; ++p) {
+        if (p >= out_of_range) {
+            return HSFV_ERR_NUMBER_OUT_OF_RANGE;
+        }
+
+        char ch = *p;
+        if (HSFV_IS_DIGIT(ch)) {
+            continue;
+        }
+
+        if (ch == '.') {
+            if (dot) {
+                return HSFV_ERR_INVALID;
+            }
+            dot = p;
+            out_of_range = dot + 1 + HSFV_MAX_DEC_FRAC_LEN;
+            continue;
+        }
+
+        break;
+    }
+
+    const char *end = p;
+    if (!dot || end == dot + 1) {
+        return HSFV_ERR_INVALID;
+    }
+
+    if (out_decimal) {
+        char temp[1 + HSFV_MAX_DEC_INT_LEN + 1 + HSFV_MAX_DEC_FRAC_LEN + 1];
+        size_t input_len = end - input;
+        memcpy(temp, input, input_len);
+        temp[input_len] = '\0';
+        *out_decimal = strtod(temp, NULL);
+    }
+    if (out_rest) {
+        *out_rest = end;
+    }
+    return HSFV_OK;
+}
+
 /* String */
 
 hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *allocator, hsfv_buffer_t *dest)

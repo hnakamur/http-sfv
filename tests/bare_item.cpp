@@ -370,22 +370,19 @@ TEST_CASE("serialize decimal", "[serialize][decimal]")
 static void parse_decimal_ok_test(const char *input, double want)
 {
     const char *input_end = input + strlen(input);
-    hsfv_bare_item_t item;
     hsfv_err_t err;
+    double got;
     const char *rest;
-    err = hsfv_parse_number(&item, input, input_end, &rest);
+    err = hsfv_parse_decimal(input, input_end, &got, &rest);
     CHECK(err == HSFV_OK);
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);
-    CHECK(item.decimal == want);
+    CHECK(got == want);
 }
 
 static void parse_decimal_ng_test(const char *input, hsfv_err_t want)
 {
     const char *input_end = input + strlen(input);
-    hsfv_bare_item_t item;
     hsfv_err_t err;
-    const char *rest;
-    err = hsfv_parse_number(&item, input, input_end, &rest);
+    err = hsfv_parse_decimal(input, input_end, NULL, NULL);
     CHECK(err == want);
 }
 
@@ -403,14 +400,30 @@ TEST_CASE("parse decimal", "[parse][decimal]")
     {
         parse_decimal_ok_test("-18.71next", -18.71);
     }
-    SECTION("three frac digits")
+    SECTION("three frac digits, last zero")
     {
         parse_decimal_ok_test("-18.710", -18.71);
+    }
+    SECTION("three frac digits, last non-zero")
+    {
+        parse_decimal_ok_test("-18.712", -18.712);
     }
 
     SECTION("not digit")
     {
         parse_decimal_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("no dot")
+    {
+        parse_decimal_ng_test("1", HSFV_ERR_INVALID);
+    }
+    SECTION("multiple dots case 1")
+    {
+        parse_decimal_ng_test("1..0", HSFV_ERR_INVALID);
+    }
+    SECTION("multiple dots case 2")
+    {
+        parse_decimal_ng_test("1.2.0", HSFV_ERR_INVALID);
     }
     SECTION("starts with digit")
     {
@@ -427,6 +440,69 @@ TEST_CASE("parse decimal", "[parse][decimal]")
     SECTION("more than twelve int digits")
     {
         parse_decimal_ng_test("1234567890123.0", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    }
+}
+
+static void parse_decimal_number_ok_test(const char *input, double want)
+{
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_number(&item, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(item.type == HSFV_BARE_ITEM_TYPE_DECIMAL);
+    CHECK(item.decimal == want);
+}
+
+static void parse_decimal_number_ng_test(const char *input, hsfv_err_t want)
+{
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_number(&item, input, input_end, &rest);
+    CHECK(err == want);
+}
+
+TEST_CASE("parse decimal number", "[parse][decimal]")
+{
+    SECTION("positive")
+    {
+        parse_decimal_number_ok_test("18.71", 18.71);
+    }
+    SECTION("negative")
+    {
+        parse_decimal_number_ok_test("-18.71", -18.71);
+    }
+    SECTION("negative followed by non number")
+    {
+        parse_decimal_number_ok_test("-18.71next", -18.71);
+    }
+    SECTION("three frac digits")
+    {
+        parse_decimal_number_ok_test("-18.710", -18.71);
+    }
+
+    SECTION("not digit")
+    {
+        parse_decimal_number_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("starts with digit")
+    {
+        parse_decimal_number_ng_test(".1", HSFV_ERR_INVALID);
+    }
+    SECTION("ends with digit")
+    {
+        parse_decimal_number_ng_test("1.", HSFV_ERR_INVALID);
+    }
+    SECTION("more than three fraction digits")
+    {
+        parse_decimal_number_ng_test("10.1234", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    }
+    SECTION("more than twelve int digits")
+    {
+        parse_decimal_number_ng_test("1234567890123.0", HSFV_ERR_NUMBER_OUT_OF_RANGE);
     }
 }
 
