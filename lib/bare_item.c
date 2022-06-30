@@ -69,9 +69,10 @@ const char hsfv_base64_char_map[256] = {
 
 // clang-format on
 
-static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const char *input_end, bool neg, const char **out_rest);
-static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input, const char *input_end, int dec_sep_off, bool neg,
-                                const char **out_rest);
+static hsfv_err_t parse_integer_unchecked(hsfv_bare_item_t *item, const char *input, const char *input_end, bool neg,
+                                          const char **out_rest);
+static hsfv_err_t parse_decimal_unchecked(hsfv_bare_item_t *item, const char *input, const char *input_end, int dec_sep_off,
+                                          bool neg, const char **out_rest);
 
 bool hsfv_string_eq(const hsfv_string_t *self, const hsfv_string_t *other)
 {
@@ -317,12 +318,13 @@ hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const ch
     }
 
     if (is_integer) {
-        return parse_integer(item, start, input, neg, out_rest);
+        return parse_integer_unchecked(item, start, input, neg, out_rest);
     }
-    return parse_decimal(item, start, input, dec_sep_off, neg, out_rest);
+    return parse_decimal_unchecked(item, start, input, dec_sep_off, neg, out_rest);
 }
 
-static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const char *input_end, bool neg, const char **out_rest)
+static hsfv_err_t parse_integer_unchecked(hsfv_bare_item_t *item, const char *input, const char *input_end, bool neg,
+                                          const char **out_rest)
 {
     int64_t i;
     char temp[1 + HSFV_MAX_INT_LEN + 1];
@@ -348,8 +350,8 @@ static hsfv_err_t parse_integer(hsfv_bare_item_t *item, const char *input, const
     return HSFV_OK;
 }
 
-static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input, const char *input_end, int dec_sep_off, bool neg,
-                                const char **out_rest)
+static hsfv_err_t parse_decimal_unchecked(hsfv_bare_item_t *item, const char *input, const char *input_end, int dec_sep_off,
+                                          bool neg, const char **out_rest)
 {
     double d;
     char temp[1 + HSFV_MAX_DEC_INT_LEN + 1 + HSFV_MAX_DEC_FRAC_LEN + 1];
@@ -372,6 +374,62 @@ static hsfv_err_t parse_decimal(hsfv_bare_item_t *item, const char *input, const
     item->decimal = neg ? -d : d;
     if (out_rest) {
         *out_rest = input + input_len;
+    }
+    return HSFV_OK;
+}
+
+hsfv_err_t hsfv_parse_integer(const char *input, const char *input_end, int64_t *out_integer, const char **out_rest)
+{
+    if (input == input_end) {
+        return HSFV_ERR_EOF;
+    }
+
+    bool neg = false;
+    if (*input == '-') {
+        ++input;
+        neg = true;
+    }
+    if (input == input_end) {
+        return HSFV_ERR_EOF;
+    }
+
+    const char *p = input;
+    if (HSFV_IS_DIGIT(*p)) {
+        ++p;
+    } else {
+        return p == input_end ? HSFV_ERR_EOF : HSFV_ERR_INVALID;
+    }
+
+    const char *out_of_range = input + HSFV_MAX_INT_LEN;
+    for (; p < input_end; ++p) {
+        if (p >= out_of_range) {
+            return HSFV_ERR_NUMBER_OUT_OF_RANGE;
+        }
+
+        char ch = *p;
+        if (HSFV_IS_DIGIT(ch)) {
+            continue;
+        }
+
+        if (ch == '.') {
+            return HSFV_ERR_INVALID;
+        }
+
+        break;
+    }
+
+    const char *end = p;
+    if (out_integer) {
+        int64_t i = 0;
+        for (p = input; p < end - 1; p++) {
+            i += *p - '0';
+            i *= 10;
+        }
+        i += *p - '0';
+        *out_integer = neg ? -i : i;
+    }
+    if (out_rest) {
+        *out_rest = end;
     }
     return HSFV_OK;
 }

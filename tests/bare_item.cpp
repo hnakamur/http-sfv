@@ -154,22 +154,19 @@ TEST_CASE("serialize integer", "[serialize][integer]")
 static void parse_integer_ok_test(const char *input, int64_t want)
 {
     const char *input_end = input + strlen(input);
-    hsfv_bare_item_t item;
+    int64_t got;
     hsfv_err_t err;
     const char *rest;
-    err = hsfv_parse_number(&item, input, input_end, &rest);
+    err = hsfv_parse_integer(input, input_end, &got, &rest);
     CHECK(err == HSFV_OK);
-    CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);
-    CHECK(item.integer == want);
+    CHECK(got == want);
 }
 
 static void parse_integer_ng_test(const char *input, hsfv_err_t want)
 {
     const char *input_end = input + strlen(input);
-    hsfv_bare_item_t item;
     hsfv_err_t err;
-    const char *rest;
-    err = hsfv_parse_number(&item, input, input_end, &rest);
+    err = hsfv_parse_integer(input, input_end, NULL, NULL);
     CHECK(err == want);
 }
 
@@ -195,10 +192,18 @@ TEST_CASE("parse integer", "[parse][integer]")
     {
         parse_integer_ok_test("999999999999999", HSFV_MAX_INT);
     }
+    SECTION("not digit after digit")
+    {
+        parse_integer_ok_test("2a", 2);
+    }
 
     SECTION("not digit")
     {
         parse_integer_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("dot after digit")
+    {
+        parse_integer_ng_test("2.", HSFV_ERR_INVALID);
     }
     SECTION("no digit after minus sign")
     {
@@ -215,6 +220,73 @@ TEST_CASE("parse integer", "[parse][integer]")
     SECTION("larger than maximum")
     {
         parse_integer_ng_test("1000000000000000", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    }
+}
+
+static void parse_integer_number_ok_test(const char *input, int64_t want)
+{
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_number(&item, input, input_end, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(item.type == HSFV_BARE_ITEM_TYPE_INTEGER);
+    CHECK(item.integer == want);
+}
+
+static void parse_integer_number_ng_test(const char *input, hsfv_err_t want)
+{
+    const char *input_end = input + strlen(input);
+    hsfv_bare_item_t item;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_number(&item, input, input_end, &rest);
+    CHECK(err == want);
+}
+
+TEST_CASE("parse integer number", "[parse][integer]")
+{
+    SECTION("positive")
+    {
+        parse_integer_number_ok_test("1871", 1871);
+    }
+    SECTION("negative")
+    {
+        parse_integer_number_ok_test("-1871", -1871);
+    }
+    SECTION("positive followed by non number")
+    {
+        parse_integer_number_ok_test("1871next", 1871);
+    }
+    SECTION("minimum")
+    {
+        parse_integer_number_ok_test("-999999999999999", HSFV_MIN_INT);
+    }
+    SECTION("minimum")
+    {
+        parse_integer_number_ok_test("999999999999999", HSFV_MAX_INT);
+    }
+
+    SECTION("not digit")
+    {
+        parse_integer_number_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("no digit after minus sign")
+    {
+        parse_integer_number_ng_test("-", HSFV_ERR_EOF);
+    }
+    SECTION("integer with too many digits")
+    {
+        parse_integer_number_ng_test("1234567890123456", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    }
+    SECTION("smaller than minimum")
+    {
+        parse_integer_number_ng_test("-1000000000000000", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    }
+    SECTION("larger than maximum")
+    {
+        parse_integer_number_ng_test("1000000000000000", HSFV_ERR_NUMBER_OUT_OF_RANGE);
     }
 }
 
