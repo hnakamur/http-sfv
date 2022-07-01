@@ -309,8 +309,20 @@ hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *
 hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 
-bool hsfv_is_parsable_boolean(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_is_parsable_number(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_boolean(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_number(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_string(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_token(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_key(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_byte_seq(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_bare_item(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_parameters(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_item(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_inner_list(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_parse_ignore_dictionary_member_value(const char *input, const char *input_end, const char **out_rest);
+
+void hsfv_skip_sp(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_ows_comma_ows(const char *input, const char *input_end, const char **out_rest);
 
 #define HSFV_SKIP_SP(input, input_end)                                                                                             \
     while ((input) < (input_end) && *(input) == ' ') {                                                                             \
@@ -327,6 +339,7 @@ bool hsfv_is_parsable_number(const char *input, const char *input_end, const cha
 
 void hsfv_encode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src);
 hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src);
+bool hsfv_is_base64_decodable(const hsfv_iovec_const_t *src);
 
 #define HSFV_IS_DIGIT(c) ('0' <= (c) && (c) <= '9')
 

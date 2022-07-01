@@ -511,6 +511,16 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item, hsfv_allocator_t *allocator
 
     for (; input < input_end; ++input) {
         c = *input;
+        if (c == '"') {
+            item->type = HSFV_BARE_ITEM_TYPE_STRING;
+            item->string.base = (const char *)buf.bytes.base;
+            item->string.len = buf.bytes.len;
+            if (out_rest) {
+                *out_rest = ++input;
+            }
+            return HSFV_OK;
+        }
+
         if (c == '\\') {
             ++input;
             if (input == input_end) {
@@ -526,22 +536,16 @@ hsfv_err_t hsfv_parse_string(hsfv_bare_item_t *item, hsfv_allocator_t *allocator
             if (err) {
                 goto error;
             }
-        } else if (c == '"') {
-            item->type = HSFV_BARE_ITEM_TYPE_STRING;
-            item->string.base = (const char *)buf.bytes.base;
-            item->string.len = buf.bytes.len;
-            if (out_rest) {
-                *out_rest = ++input;
-            }
-            return HSFV_OK;
-        } else if (c <= '\x1f' || '\x7f' <= c) {
-            err = HSFV_ERR_INVALID;
+            continue;
+        }
+
+        if (c <= '\x1f' || '\x7f' <= c) {
+            break;
+        }
+
+        err = hsfv_buffer_append_byte(&buf, allocator, c);
+        if (err) {
             goto error;
-        } else {
-            err = hsfv_buffer_append_byte(&buf, allocator, c);
-            if (err) {
-                goto error;
-            }
         }
     }
 
