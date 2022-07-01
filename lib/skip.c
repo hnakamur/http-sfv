@@ -1,6 +1,6 @@
 #include "hsfv.h"
 
-bool hsfv_parse_ignore_boolean(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_boolean(const char *input, const char *input_end, const char **out_rest)
 {
     if (input_end < input + 2 || input[0] != '?' || (input[1] != '1' && input[1] != '0')) {
         return false;
@@ -9,7 +9,7 @@ bool hsfv_parse_ignore_boolean(const char *input, const char *input_end, const c
     return true;
 }
 
-bool hsfv_parse_ignore_number(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_number(const char *input, const char *input_end, const char **out_rest)
 {
     if (input == input_end) {
         return false;
@@ -66,7 +66,7 @@ bool hsfv_parse_ignore_number(const char *input, const char *input_end, const ch
     return true;
 }
 
-bool hsfv_parse_ignore_string(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_string(const char *input, const char *input_end, const char **out_rest)
 {
     const char *p = input;
     char c = *p;
@@ -99,7 +99,7 @@ bool hsfv_parse_ignore_string(const char *input, const char *input_end, const ch
     return false;
 }
 
-bool hsfv_parse_ignore_token(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_token(const char *input, const char *input_end, const char **out_rest)
 {
     const char *p = input;
 
@@ -119,7 +119,7 @@ bool hsfv_parse_ignore_token(const char *input, const char *input_end, const cha
     return true;
 }
 
-bool hsfv_parse_ignore_key(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_key(const char *input, const char *input_end, const char **out_rest)
 {
     const char *p = input;
 
@@ -139,7 +139,7 @@ bool hsfv_parse_ignore_key(const char *input, const char *input_end, const char 
     return true;
 }
 
-bool hsfv_parse_ignore_byte_seq(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_byte_seq(const char *input, const char *input_end, const char **out_rest)
 {
     const char *start;
     char c;
@@ -175,7 +175,7 @@ bool hsfv_parse_ignore_byte_seq(const char *input, const char *input_end, const 
     return false;
 }
 
-bool hsfv_parse_ignore_bare_item(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_bare_item(const char *input, const char *input_end, const char **out_rest)
 {
     char c;
     if (input == input_end) {
@@ -185,23 +185,23 @@ bool hsfv_parse_ignore_bare_item(const char *input, const char *input_end, const
     c = *input;
     switch (c) {
     case '"':
-        return hsfv_parse_ignore_string(input, input_end, out_rest);
+        return hsfv_skip_string(input, input_end, out_rest);
     case ':':
-        return hsfv_parse_ignore_byte_seq(input, input_end, out_rest);
+        return hsfv_skip_byte_seq(input, input_end, out_rest);
     case '?':
-        return hsfv_parse_ignore_boolean(input, input_end, out_rest);
+        return hsfv_skip_boolean(input, input_end, out_rest);
     default:
         if (c == '-' || HSFV_IS_DIGIT(c)) {
-            return hsfv_parse_ignore_number(input, input_end, out_rest);
+            return hsfv_skip_number(input, input_end, out_rest);
         }
         if (HSFV_IS_TOKEN_LEADING_CHAR(c)) {
-            return hsfv_parse_ignore_token(input, input_end, out_rest);
+            return hsfv_skip_token(input, input_end, out_rest);
         }
         return false;
     }
 }
 
-bool hsfv_parse_ignore_parameters(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_parameters(const char *input, const char *input_end, const char **out_rest)
 {
     while (input < input_end) {
         char c = *input;
@@ -212,13 +212,13 @@ bool hsfv_parse_ignore_parameters(const char *input, const char *input_end, cons
 
         HSFV_SKIP_SP(input, input_end);
 
-        if (!hsfv_parse_ignore_key(input, input_end, &input)) {
+        if (!hsfv_skip_key(input, input_end, &input)) {
             return false;
         }
 
         if (input < input_end && *input == '=') {
             ++input;
-            if (!hsfv_parse_ignore_bare_item(input, input_end, &input)) {
+            if (!hsfv_skip_bare_item(input, input_end, &input)) {
                 return false;
             }
         }
@@ -228,13 +228,13 @@ bool hsfv_parse_ignore_parameters(const char *input, const char *input_end, cons
     return true;
 }
 
-bool hsfv_parse_ignore_item(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_item(const char *input, const char *input_end, const char **out_rest)
 {
-    if (!hsfv_parse_ignore_bare_item(input, input_end, &input)) {
+    if (!hsfv_skip_bare_item(input, input_end, &input)) {
         return false;
     }
 
-    if (!hsfv_parse_ignore_parameters(input, input_end, &input)) {
+    if (!hsfv_skip_parameters(input, input_end, &input)) {
         return false;
     }
 
@@ -242,7 +242,7 @@ bool hsfv_parse_ignore_item(const char *input, const char *input_end, const char
     return true;
 }
 
-bool hsfv_parse_ignore_inner_list(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_inner_list(const char *input, const char *input_end, const char **out_rest)
 {
     char c;
 
@@ -265,14 +265,14 @@ bool hsfv_parse_ignore_inner_list(const char *input, const char *input_end, cons
         c = *input;
         if (c == ')') {
             ++input;
-            if (!hsfv_parse_ignore_parameters(input, input_end, &input)) {
+            if (!hsfv_skip_parameters(input, input_end, &input)) {
                 return false;
             }
             *out_rest = input;
             return true;
         }
 
-        if (!hsfv_parse_ignore_item(input, input_end, &input)) {
+        if (!hsfv_skip_item(input, input_end, &input)) {
             return false;
         }
 
@@ -288,21 +288,21 @@ bool hsfv_parse_ignore_inner_list(const char *input, const char *input_end, cons
     return false;
 }
 
-bool hsfv_parse_ignore_dictionary_member_value(const char *input, const char *input_end, const char **out_rest)
+bool hsfv_skip_dictionary_member_value(const char *input, const char *input_end, const char **out_rest)
 {
     if (input < input_end && *input == '=') {
         ++input;
         if (*input == '(') {
-            if (!hsfv_parse_ignore_inner_list(input, input_end, &input)) {
+            if (!hsfv_skip_inner_list(input, input_end, &input)) {
                 return false;
             }
         } else {
-            if (!hsfv_parse_ignore_item(input, input_end, &input)) {
+            if (!hsfv_skip_item(input, input_end, &input)) {
                 return false;
             }
         }
     } else {
-        if (!hsfv_parse_ignore_parameters(input, input_end, &input)) {
+        if (!hsfv_skip_parameters(input, input_end, &input)) {
             return false;
         }
     }

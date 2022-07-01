@@ -309,17 +309,17 @@ hsfv_err_t hsfv_serialize_string(const hsfv_string_t *string, hsfv_allocator_t *
 hsfv_err_t hsfv_serialize_decimal(double decimal, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_integer(int64_t integer, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 
-bool hsfv_parse_ignore_boolean(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_number(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_string(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_token(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_key(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_byte_seq(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_bare_item(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_parameters(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_item(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_inner_list(const char *input, const char *input_end, const char **out_rest);
-bool hsfv_parse_ignore_dictionary_member_value(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_boolean(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_number(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_string(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_token(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_key(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_byte_seq(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_bare_item(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_parameters(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_item(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_inner_list(const char *input, const char *input_end, const char **out_rest);
+bool hsfv_skip_dictionary_member_value(const char *input, const char *input_end, const char **out_rest);
 
 void hsfv_skip_sp(const char *input, const char *input_end, const char **out_rest);
 bool hsfv_skip_ows_comma_ows(const char *input, const char *input_end, const char **out_rest);

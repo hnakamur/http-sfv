@@ -126,8 +126,8 @@ set(HttpSfv_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/dictionary.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/inner_list.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/item.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/parse_ignore.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/parameters.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/parameters.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/skip.c)
 add_library(httpsfv STATIC ${HttpSfv_SOURCE_FILES})
 set_target_properties(httpsfv PROPERTIES PUBLIC_HEADER ${HttpSfv_HEADER_FILES})
 include(GNUInstallDirs)
@@ -146,8 +146,8 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/iovec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/parse_ignore.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/skip.cpp)
 
 add_executable(
   httpsfv_tests
