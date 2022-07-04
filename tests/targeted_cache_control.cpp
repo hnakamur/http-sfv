@@ -53,9 +53,10 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
 
         const char *key_end = input;
         size_t key_len = key_end - key_start;
+        // We can use memcmp below because valid keys are always lowercase.
         switch (key_len) {
         case 7:
-            if (!hsfv_strncasecmp(key_start, "max-age", 7)) {
+            if (!memcmp(key_start, "max-age", 7)) {
                 if (input < input_end && input[0] == '=') {
                     ++input;
                 } else {
@@ -68,7 +69,7 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
                 if (!hsfv_skip_parameters(input, input_end, &input)) {
                     return false;
                 }
-            } else if (!hsfv_strncasecmp(key_start, "private", 7)) {
+            } else if (!memcmp(key_start, "private", 7)) {
                 if (!hsfv_expect_boolean_true_or_ignore_token_dictionary_member_value(input, input_end, &out_cc->private_,
                                                                                       &input)) {
                     return false;
@@ -80,12 +81,12 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
             }
             break;
         case 8:
-            if (!hsfv_strncasecmp(key_start, "no-", 3)) {
-                if (!hsfv_strncasecmp(key_start + 3, "store", 5)) {
+            if (!memcmp(key_start, "no-", 3)) {
+                if (!memcmp(key_start + 3, "store", 5)) {
                     if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->no_store, &input)) {
                         return false;
                     }
-                } else if (!hsfv_strncasecmp(key_start + 3, "cache", 5)) {
+                } else if (!memcmp(key_start + 3, "cache", 5)) {
                     if (!hsfv_expect_boolean_true_or_ignore_token_dictionary_member_value(input, input_end, &out_cc->no_cache,
                                                                                           &input)) {
                         return false;
@@ -102,7 +103,7 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
             }
             break;
         case 15:
-            if (!hsfv_strncasecmp(key_start, "must-revalidate", 15)) {
+            if (!memcmp(key_start, "must-revalidate", 15)) {
                 if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->must_revalidate, &input)) {
                     return false;
                 }
