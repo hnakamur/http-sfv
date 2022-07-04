@@ -127,7 +127,8 @@ set(HttpSfv_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/item.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/parameters.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/skip.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/string.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/string.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/targeted_cache_control.c)
 add_library(httpsfv STATIC ${HttpSfv_SOURCE_FILES})
 set_target_properties(httpsfv PROPERTIES PUBLIC_HEADER ${HttpSfv_HEADER_FILES})
 include(GNUInstallDirs)

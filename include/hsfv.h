@@ -295,6 +295,17 @@ hsfv_err_t hsfv_parse_non_negative_integer(const char *input, const char *input_
 hsfv_err_t hsfv_parse_integer(const char *input, const char *input_end, int64_t *out_integer, const char **out_rest);
 hsfv_err_t hsfv_parse_decimal(const char *input, const char *input_end, double *out_decimal, const char **out_rest);
 
+typedef struct st_hsfv_targeted_cache_control_t {
+    int64_t max_age;
+    bool must_revalidate;
+    bool no_store;
+    bool no_cache;
+    bool private_;
+} hsfv_targeted_cache_control_t;
+
+bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv_targeted_cache_control_t *out_cc,
+                                  const char **rest);
+
 hsfv_err_t hsfv_serialize_field_value(const hsfv_field_value_t *field_value, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_dictionary(const hsfv_dictionary_t *dictionary, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
 hsfv_err_t hsfv_serialize_list(const hsfv_list_t *list, hsfv_allocator_t *allocator, hsfv_buffer_t *dest);
