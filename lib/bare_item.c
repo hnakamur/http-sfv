@@ -341,6 +341,52 @@ hsfv_err_t hsfv_parse_number(hsfv_bare_item_t *item, const char *input, const ch
     return HSFV_OK;
 }
 
+hsfv_err_t hsfv_parse_non_negative_integer(const char *input, const char *input_end, int64_t *out_integer, const char **out_rest)
+{
+    if (input == input_end) {
+        return HSFV_ERR_EOF;
+    }
+
+    const char *digit_start = input;
+    const char *p = digit_start;
+
+    if (!HSFV_IS_DIGIT(*p)) {
+        return HSFV_ERR_INVALID;
+    }
+    ++p;
+
+    const char *out_of_range = digit_start + HSFV_MAX_INT_LEN;
+    for (; p < input_end; ++p) {
+        if (p >= out_of_range) {
+            return HSFV_ERR_NUMBER_OUT_OF_RANGE;
+        }
+
+        char ch = *p;
+        if (HSFV_IS_DIGIT(ch)) {
+            continue;
+        }
+
+        if (ch == '.') {
+            return HSFV_ERR_INVALID;
+        }
+
+        break;
+    }
+
+    const char *end = p;
+    if (out_integer) {
+        char temp[1 + HSFV_MAX_INT_LEN + 1];
+        size_t input_len = end - input;
+        memcpy(temp, input, input_len);
+        temp[input_len] = '\0';
+        *out_integer = strtoll(temp, NULL, 10);
+    }
+    if (out_rest) {
+        *out_rest = end;
+    }
+    return HSFV_OK;
+}
+
 hsfv_err_t hsfv_parse_integer(const char *input, const char *input_end, int64_t *out_integer, const char **out_rest)
 {
     if (input == input_end) {

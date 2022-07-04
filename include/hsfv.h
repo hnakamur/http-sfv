@@ -291,6 +291,7 @@ hsfv_err_t hsfv_parse_byte_seq(hsfv_bare_item_t *item, hsfv_allocator_t *allocat
 hsfv_err_t hsfv_parse_key(hsfv_key_t *key, hsfv_allocator_t *allocator, const char *input, const char *input_end,
                           const char **out_rest);
 
+hsfv_err_t hsfv_parse_non_negative_integer(const char *input, const char *input_end, int64_t *out_integer, const char **out_rest);
 hsfv_err_t hsfv_parse_integer(const char *input, const char *input_end, int64_t *out_integer, const char **out_rest);
 hsfv_err_t hsfv_parse_decimal(const char *input, const char *input_end, double *out_decimal, const char **out_rest);
 

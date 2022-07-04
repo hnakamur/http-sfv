@@ -151,6 +151,82 @@ TEST_CASE("serialize integer", "[serialize][integer]")
     }
 }
 
+static void parse_non_negative_integer_ok_test(const char *input, int64_t want)
+{
+    const char *input_end = input + strlen(input);
+    int64_t got;
+    hsfv_err_t err;
+    const char *rest;
+    err = hsfv_parse_non_negative_integer(input, input_end, &got, &rest);
+    CHECK(err == HSFV_OK);
+    CHECK(got == want);
+}
+
+static void parse_non_negative_integer_ng_test(const char *input, hsfv_err_t want)
+{
+    const char *input_end = input + strlen(input);
+    hsfv_err_t err;
+    err = hsfv_parse_non_negative_integer(input, input_end, NULL, NULL);
+    CHECK(err == want);
+}
+
+TEST_CASE("parse non_negative_integer", "[parse][non_negative_integer]")
+{
+    SECTION("positive")
+    {
+        parse_non_negative_integer_ok_test("1871", 1871);
+    }
+    SECTION("positive followed by non number")
+    {
+        parse_non_negative_integer_ok_test("1871next", 1871);
+    }
+    SECTION("minimum")
+    {
+        parse_non_negative_integer_ok_test("0", 0);
+    }
+    SECTION("minimum")
+    {
+        parse_non_negative_integer_ok_test("999999999999999", HSFV_MAX_INT);
+    }
+    SECTION("not digit after digit")
+    {
+        parse_non_negative_integer_ok_test("2a", 2);
+    }
+
+    SECTION("empty")
+    {
+        parse_non_negative_integer_ng_test("", HSFV_ERR_EOF);
+    }
+    SECTION("not digit")
+    {
+        parse_non_negative_integer_ng_test("a", HSFV_ERR_INVALID);
+    }
+    SECTION("dot after digit")
+    {
+        parse_non_negative_integer_ng_test("2.", HSFV_ERR_INVALID);
+    }
+    SECTION("no digit after minus sign")
+    {
+        parse_non_negative_integer_ng_test("-", HSFV_ERR_INVALID);
+    }
+    SECTION("negative integer")
+    {
+        parse_non_negative_integer_ng_test("-1", HSFV_ERR_INVALID);
+    }
+    SECTION("negative integer")
+    {
+        parse_non_negative_integer_ng_test("-999999999", HSFV_ERR_INVALID);
+    }
+    SECTION("smaller than minimum")
+    {
+        parse_non_negative_integer_ng_test("-1000000000000000", HSFV_ERR_INVALID);
+    }
+    SECTION("larger than maximum")
+    {
+        parse_non_negative_integer_ng_test("1000000000000000", HSFV_ERR_NUMBER_OUT_OF_RANGE);
+    }
+}
+
 static void parse_integer_ok_test(const char *input, int64_t want)
 {
     const char *input_end = input + strlen(input);

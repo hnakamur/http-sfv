@@ -62,7 +62,7 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
                 } else {
                     return false;
                 }
-                hsfv_err_t err = hsfv_parse_integer(input, input_end, &out_cc->max_age, &input);
+                hsfv_err_t err = hsfv_parse_non_negative_integer(input, input_end, &out_cc->max_age, &input);
                 if (err) {
                     return false;
                 }
@@ -179,6 +179,18 @@ TEST_CASE("parse_targeted_cache_control", "[parse][cache_control]")
 
     SECTION("invalid")
     {
+        SECTION("negative max-age value")
+        {
+            test_parse_targeted_cache_control("max-age=-1", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("max-age without value")
+        {
+            test_parse_targeted_cache_control("max-age", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("max-age without value and private")
+        {
+            test_parse_targeted_cache_control("max-age, private", false, hsfv_targeted_cache_control_t{0});
+        }
         SECTION("uppercase is not valid key")
         {
             test_parse_targeted_cache_control("Max-Age=60", false, hsfv_targeted_cache_control_t{0});
