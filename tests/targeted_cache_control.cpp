@@ -9,13 +9,19 @@ typedef struct st_hsfv_targeted_cache_control_t {
     bool private_;
 } hsfv_targeted_cache_control_t;
 
-static bool hsfv_skip_boolean_true_dictionary_member_value(const char *input, const char *input_end, const char **rest)
+static bool hsfv_expect_boolean_true_dictionary_member_value(const char *input, const char *input_end, bool *out_bool,
+                                                             const char **rest)
 {
     if (!hsfv_skip_dictionary_member_value(input, input_end, rest)) {
         return false;
     }
 
-    return input == input_end || input[0] == ';' || input[0] == ',' || HSFV_IS_OWS(input[0]);
+    if (input == input_end || input[0] == ';' || input[0] == ',' || HSFV_IS_OWS(input[0])) {
+        *out_bool = true;
+        return true;
+    }
+
+    return false;
 }
 
 bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv_targeted_cache_control_t *out_cc,
@@ -47,10 +53,9 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
                     return false;
                 }
             } else if (!hsfv_strncasecmp(key_start, "private", 7)) {
-                if (!hsfv_skip_boolean_true_dictionary_member_value(input, input_end, &input)) {
+                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->private_, &input)) {
                     return false;
                 }
-                out_cc->private_ = true;
             } else {
                 if (!hsfv_skip_dictionary_member_value(input, input_end, &input)) {
                     return false;
@@ -59,15 +64,13 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
             break;
         case 8:
             if (!hsfv_strncasecmp(key_start, "no-store", 7)) {
-                if (!hsfv_skip_boolean_true_dictionary_member_value(input, input_end, &input)) {
+                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->no_store, &input)) {
                     return false;
                 }
-                out_cc->no_store = true;
             } else if (!hsfv_strncasecmp(key_start, "no-cache", 7)) {
-                if (!hsfv_skip_boolean_true_dictionary_member_value(input, input_end, &input)) {
+                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->no_cache, &input)) {
                     return false;
                 }
-                out_cc->no_cache = true;
             } else {
                 if (!hsfv_skip_dictionary_member_value(input, input_end, &input)) {
                     return false;
@@ -76,10 +79,9 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
             break;
         case 15:
             if (!hsfv_strncasecmp(key_start, "must-revalidate", 15)) {
-                if (!hsfv_skip_boolean_true_dictionary_member_value(input, input_end, &input)) {
+                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->must_revalidate, &input)) {
                     return false;
                 }
-                out_cc->must_revalidate = true;
             } else {
                 if (!hsfv_skip_dictionary_member_value(input, input_end, &input)) {
                     return false;
