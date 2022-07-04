@@ -24,6 +24,22 @@ static bool hsfv_expect_boolean_true_dictionary_member_value(const char *input, 
     return false;
 }
 
+static bool hsfv_expect_boolean_true_or_ignore_token_dictionary_member_value(const char *input, const char *input_end,
+                                                                             bool *out_bool, const char **rest)
+{
+    if (!hsfv_skip_dictionary_member_value(input, input_end, rest)) {
+        return false;
+    }
+
+    if (input == input_end || input[0] == ';' || input[0] == ',' || HSFV_IS_OWS(input[0])) {
+        *out_bool = true;
+        return true;
+    }
+
+    const char *token_end;
+    return hsfv_skip_token(input, input_end, &token_end);
+}
+
 bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv_targeted_cache_control_t *out_cc,
                                   const char **rest)
 {
@@ -53,7 +69,8 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
                     return false;
                 }
             } else if (!hsfv_strncasecmp(key_start, "private", 7)) {
-                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->private_, &input)) {
+                if (!hsfv_expect_boolean_true_or_ignore_token_dictionary_member_value(input, input_end, &out_cc->private_,
+                                                                                      &input)) {
                     return false;
                 }
             } else {
@@ -63,13 +80,20 @@ bool parse_targeted_cache_control(const char *input, const char *input_end, hsfv
             }
             break;
         case 8:
-            if (!hsfv_strncasecmp(key_start, "no-store", 7)) {
-                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->no_store, &input)) {
-                    return false;
-                }
-            } else if (!hsfv_strncasecmp(key_start, "no-cache", 7)) {
-                if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->no_cache, &input)) {
-                    return false;
+            if (!hsfv_strncasecmp(key_start, "no-", 3)) {
+                if (!hsfv_strncasecmp(key_start + 3, "store", 5)) {
+                    if (!hsfv_expect_boolean_true_dictionary_member_value(input, input_end, &out_cc->no_store, &input)) {
+                        return false;
+                    }
+                } else if (!hsfv_strncasecmp(key_start + 3, "cache", 5)) {
+                    if (!hsfv_expect_boolean_true_or_ignore_token_dictionary_member_value(input, input_end, &out_cc->no_cache,
+                                                                                          &input)) {
+                        return false;
+                    }
+                } else {
+                    if (!hsfv_skip_dictionary_member_value(input, input_end, &input)) {
+                        return false;
+                    }
                 }
             } else {
                 if (!hsfv_skip_dictionary_member_value(input, input_end, &input)) {
@@ -158,9 +182,33 @@ TEST_CASE("parse_targeted_cache_control", "[parse][cache_control]")
         {
             test_parse_targeted_cache_control("Max-Age=60", false, hsfv_targeted_cache_control_t{0});
         }
-        SECTION("non boolean value")
+        SECTION("max-age with string value")
         {
-            test_parse_targeted_cache_control("private=yes", false, hsfv_targeted_cache_control_t{0});
+            test_parse_targeted_cache_control("max-age=\"60\"", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("max-age with decimal value")
+        {
+            test_parse_targeted_cache_control("max-age=60.0", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("max-age overwritten with decimal value")
+        {
+            test_parse_targeted_cache_control("max-age=30, max-age=60.0", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("no-store with token")
+        {
+            test_parse_targeted_cache_control("no-store=yes", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("must-revalidate with token")
+        {
+            test_parse_targeted_cache_control("must-revalidate=yes", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("private with string")
+        {
+            test_parse_targeted_cache_control("private=\"field1\"", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("no-cache with string")
+        {
+            test_parse_targeted_cache_control("no-cache=\"field1\"", false, hsfv_targeted_cache_control_t{0});
         }
         SECTION("true value must be omitted")
         {
@@ -188,13 +236,12 @@ TEST_CASE("parse_targeted_cache_control", "[parse][cache_control]")
         }
     }
 
-#if 0
-    SECTION("ignore")
+    SECTION("ignore private with field-name token")
     {
-        // We ignore private with field-name
         test_parse_targeted_cache_control("private=field1", false, hsfv_targeted_cache_control_t{0});
-        // We ignore no-cache with field-name
+    }
+    SECTION("ignore no-cache with field-name token")
+    {
         test_parse_targeted_cache_control("no-cache=field1", false, hsfv_targeted_cache_control_t{0});
     }
-#endif
 }
