@@ -147,7 +147,8 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/skip.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/skip.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/targeted_cache_control.cpp)
 
 add_executable(
   httpsfv_tests

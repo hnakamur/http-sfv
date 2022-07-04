@@ -324,6 +324,8 @@ bool hsfv_skip_dictionary_member_value(const char *input, const char *input_end,
 void hsfv_skip_sp(const char *input, const char *input_end, const char **out_rest);
 bool hsfv_skip_ows_comma_ows(const char *input, const char *input_end, const char **out_rest);
 
+#define HSFV_IS_OWS(c) ((c) == ' ' || (c) == '\t')
+
 #define HSFV_SKIP_SP(input, input_end)                                                                                             \
     while ((input) < (input_end) && *(input) == ' ') {                                                                             \
         ++(input);                                                                                                                 \

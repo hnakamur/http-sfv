@@ -320,7 +320,7 @@ void hsfv_skip_sp(const char *input, const char *input_end, const char **out_res
 
 void hsfv_skip_ows(const char *input, const char *input_end, const char **out_rest)
 {
-    while (input < input_end && (*input == ' ' || *input == '\t')) {
+    while (input < input_end && HSFV_IS_OWS(*input)) {
         ++input;
     }
     *out_rest = input;
