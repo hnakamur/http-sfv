@@ -211,11 +211,11 @@ TEST_CASE("skip_string", "[skip][string]")
     }
     SECTION("invalid control characer")
     {
-        test_skip_string_ng("\x1f");
+        test_skip_string_ng("\"\x1f");
     }
     SECTION("invalid control characer DEL")
     {
-        test_skip_string_ng("\x7f");
+        test_skip_string_ng("\"\x7f");
     }
     SECTION("unclosed string")
     {
@@ -374,6 +374,10 @@ TEST_CASE("skip_byte_seq", "[skip][byte_seq]")
     SECTION("bad base64 encode")
     {
         test_skip_byte_seq_ng(":a:");
+    }
+    SECTION("bad base64 char")
+    {
+        test_skip_byte_seq_ng(":abc\x80:");
     }
     SECTION("no closing colon case 2")
     {
@@ -567,6 +571,10 @@ TEST_CASE("skip_inner_list", "[skip][inner_list]")
     {
         test_skip_inner_list_ng("(a ");
     }
+    SECTION("unexpected close")
+    {
+        test_skip_inner_list_ng("(a}");
+    }
 }
 
 static void test_skip_dictionary_member_value_ok(const char *input, size_t want_rest_len)
@@ -617,10 +625,17 @@ TEST_CASE("skip_dictionary_member_value", "[skip][dictionary_member_value]")
     {
         test_skip_dictionary_member_value_ng("=");
     }
-
     SECTION("comma after equal")
     {
         test_skip_dictionary_member_value_ng("=,");
+    }
+    SECTION("invalid inner_list")
+    {
+        test_skip_dictionary_member_value_ng("=(b");
+    }
+    SECTION("invalid paramters")
+    {
+        test_skip_dictionary_member_value_ng(";?");
     }
 }
 

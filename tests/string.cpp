@@ -66,6 +66,16 @@ TEST_CASE("hsfv_strncasecmp", "[string]")
         CHECK(hsfv_strncasecmp("\x80\xff", "\x80\xff", 0) == 0);
     }
 
+    SECTION("shorter than n")
+    {
+        CHECK(hsfv_strncasecmp("ab", "ab", 3) == 0);
+    }
+
+    SECTION("shorter than n for strncasecmp")
+    {
+        CHECK(strncasecmp("ab", "ab", 3) == 0);
+    }
+
     SECTION("not equal")
     {
         CHECK(hsfv_strncasecmp("b", "a", 1) > 0);

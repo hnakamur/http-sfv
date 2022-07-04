@@ -23,3 +23,12 @@ TEST_CASE("decode base64", "[base64]")
         CHECK(err == HSFV_ERR);
     }
 }
+
+TEST_CASE("hsfv_is_base64_decodable", "[base64]")
+{
+    SECTION("invalid char")
+    {
+        hsfv_iovec_const_t v = {.base = (const hsfv_byte_t *)"\xff", .len = 1};
+        CHECK(!hsfv_is_base64_decodable(&v));
+    }
+}

@@ -277,7 +277,7 @@ bool hsfv_skip_inner_list(const char *input, const char *input_end, const char *
         }
 
         if (input == input_end) {
-            return false;
+            break;
         }
         c = *input;
         if (c != ' ' && c != ')') {
