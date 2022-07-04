@@ -210,7 +210,7 @@ bool hsfv_skip_parameters(const char *input, const char *input_end, const char *
         }
         ++input;
 
-        HSFV_SKIP_SP(input, input_end);
+        hsfv_skip_sp(input, input_end, &input);
 
         if (!hsfv_skip_key(input, input_end, &input)) {
             return false;
@@ -257,7 +257,7 @@ bool hsfv_skip_inner_list(const char *input, const char *input_end, const char *
     ++input;
 
     while (input < input_end) {
-        HSFV_SKIP_SP(input, input_end);
+        hsfv_skip_sp(input, input_end, &input);
 
         if (input == input_end) {
             return false;

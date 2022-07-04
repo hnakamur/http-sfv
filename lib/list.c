@@ -125,11 +125,11 @@ hsfv_err_t hsfv_parse_list(hsfv_list_t *list, hsfv_allocator_t *allocator, const
             goto error1;
         }
 
-        HSFV_SKIP_OWS(input, input_end);
+        hsfv_skip_ows(input, input_end, &input);
         if (input < input_end) {
             if (*input == ',') {
                 ++input;
-                HSFV_SKIP_OWS(input, input_end);
+                hsfv_skip_ows(input, input_end, &input);
                 if (input == input_end) {
                     err = HSFV_ERR_EOF;
                     goto error2;

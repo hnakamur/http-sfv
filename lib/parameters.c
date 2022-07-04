@@ -111,7 +111,7 @@ hsfv_err_t hsfv_parse_parameters(hsfv_parameters_t *parameters, hsfv_allocator_t
         }
         ++input;
 
-        HSFV_SKIP_SP(input, input_end);
+        hsfv_skip_sp(input, input_end, &input);
 
         err = hsfv_parse_key(&param.key, allocator, input, input_end, &input);
         if (err) {

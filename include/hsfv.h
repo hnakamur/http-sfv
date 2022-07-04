@@ -322,19 +322,18 @@ bool hsfv_skip_inner_list(const char *input, const char *input_end, const char *
 bool hsfv_skip_dictionary_member_value(const char *input, const char *input_end, const char **out_rest);
 
 void hsfv_skip_sp(const char *input, const char *input_end, const char **out_rest);
+void hsfv_skip_ows(const char *input, const char *input_end, const char **out_rest);
 bool hsfv_skip_ows_comma_ows(const char *input, const char *input_end, const char **out_rest);
 
 #define HSFV_IS_OWS(c) ((c) == ' ' || (c) == '\t')
+#define HSFV_IS_DIGIT(c) ('0' <= (c) && (c) <= '9')
+#define HSFV_IS_ASCII(c) ((c) <= '\x7f')
 
-#define HSFV_SKIP_SP(input, input_end)                                                                                             \
-    while ((input) < (input_end) && *(input) == ' ') {                                                                             \
-        ++(input);                                                                                                                 \
-    }
+bool hsfv_is_ascii_string(const char *input, const char *input_end);
 
-#define HSFV_SKIP_OWS(input, input_end)                                                                                            \
-    while ((input) < (input_end) && (*(input) == ' ' || *(input) == '\t')) {                                                       \
-        ++(input);                                                                                                                 \
-    }
+extern const char hsfv_base64_char_map[256];
+
+#define HSFV_IS_BASE64_CHAR(c) hsfv_base64_char_map[(unsigned char)(c)]
 
 #define HSFV_BASE64_ENCODED_LENGTH(len) (((len + 2) / 3) * 4)
 #define HSFV_BASE64_DECODED_LENGTH(len) (((len + 3) / 4) * 3)
@@ -342,8 +341,6 @@ bool hsfv_skip_ows_comma_ows(const char *input, const char *input_end, const cha
 void hsfv_encode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src);
 hsfv_err_t hsfv_decode_base64(hsfv_iovec_t *dst, const hsfv_iovec_const_t *src);
 bool hsfv_is_base64_decodable(const hsfv_iovec_const_t *src);
-
-#define HSFV_IS_DIGIT(c) ('0' <= (c) && (c) <= '9')
 
 extern const char hsfv_key_leading_char_map[256];
 extern const char hsfv_key_trailing_char_map[256];
@@ -356,14 +353,6 @@ extern const char hsfv_token_trailing_char_map[256];
 
 #define HSFV_IS_TOKEN_LEADING_CHAR(c) hsfv_token_leading_char_map[(unsigned char)(c)]
 #define HSFV_IS_TOKEN_TRAILING_CHAR(c) hsfv_token_trailing_char_map[(unsigned char)(c)]
-
-extern const char hsfv_base64_char_map[256];
-
-#define HSFV_IS_BASE64_CHAR(c) hsfv_base64_char_map[(unsigned char)(c)]
-
-#define HSFV_IS_ASCII(c) ((c) <= '\x7f')
-
-bool hsfv_is_ascii_string(const char *input, const char *input_end);
 
 #ifdef __cplusplus
 }
