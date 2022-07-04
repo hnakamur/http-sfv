@@ -27,7 +27,7 @@ static bool is_token_trailing_char_ref_impl(char c)
     }
 }
 
-TEST_CASE("is_token_trailing_char", "[ctype]")
+TEST_CASE("is_token_trailing_char", "[string]")
 {
     SECTION("result is equal to reference implementation")
     {
@@ -37,7 +37,7 @@ TEST_CASE("is_token_trailing_char", "[ctype]")
     }
 }
 
-TEST_CASE("hsfv_is_ascii_string", "[ctype]")
+TEST_CASE("hsfv_is_ascii_string", "[string]")
 {
     SECTION("ok")
     {
@@ -51,5 +51,25 @@ TEST_CASE("hsfv_is_ascii_string", "[ctype]")
         const char *input = "ab\x80";
         const char *input_end = input + strlen(input);
         CHECK(!hsfv_is_ascii_string(input, input_end));
+    }
+}
+
+TEST_CASE("hsfv_strncasecmp", "[string]")
+{
+    SECTION("equal")
+    {
+        CHECK(hsfv_strncasecmp("abc", "abc", 3) == 0);
+        CHECK(hsfv_strncasecmp("ABC", "abcd", 3) == 0);
+        CHECK(hsfv_strncasecmp("ABCD", "abce", 3) == 0);
+        CHECK(hsfv_strncasecmp("a", "b", 0) == 0);
+        CHECK(hsfv_strncasecmp("\x80\xff", "\x80\xff", 0) == 0);
+    }
+
+    SECTION("not equal")
+    {
+        CHECK(hsfv_strncasecmp("b", "a", 1) > 0);
+        CHECK(hsfv_strncasecmp("b", "A", 1) > 0);
+        CHECK(hsfv_strncasecmp("a", "b", 1) < 0);
+        CHECK(hsfv_strncasecmp("A", "b", 1) < 0);
     }
 }

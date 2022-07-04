@@ -117,7 +117,6 @@ set(HttpSfv_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/hsfv.h)
 set(HttpSfv_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/allocator.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/base64.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/ctype.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/field_value.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/iovec.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/list.c
@@ -127,7 +126,8 @@ set(HttpSfv_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/inner_list.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/item.c
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/parameters.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/skip.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/skip.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/string.c)
 add_library(httpsfv STATIC ${HttpSfv_SOURCE_FILES})
 set_target_properties(httpsfv PROPERTIES PUBLIC_HEADER ${HttpSfv_HEADER_FILES})
 include(GNUInstallDirs)
@@ -138,7 +138,6 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/bare_item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/base64.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/buffer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/ctype.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/dictionary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/field_value.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/httpwg.cpp
@@ -148,6 +147,7 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/parameters.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/skip.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/string.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/targeted_cache_control.cpp)
 
 add_executable(

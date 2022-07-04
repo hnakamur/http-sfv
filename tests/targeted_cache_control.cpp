@@ -9,33 +9,6 @@ typedef struct st_hsfv_targeted_cache_control_t {
     bool private_;
 } hsfv_targeted_cache_control_t;
 
-static int hsfv_strncasecmp(const char *s1, const char *s2, size_t n)
-{
-    const hsfv_byte_t *bytes1 = (const hsfv_byte_t *)s1;
-    const hsfv_byte_t *bytes2 = (const hsfv_byte_t *)s2;
-    while (n) {
-        hsfv_byte_t c1 = *bytes1++;
-        hsfv_byte_t c2 = *bytes2++;
-
-        c1 = (c1 >= 'A' && c1 <= 'Z') ? (c1 | 0x20) : c1;
-        c2 = (c2 >= 'A' && c2 <= 'Z') ? (c2 | 0x20) : c2;
-
-        if (c1 == c2) {
-
-            if (c1) {
-                n--;
-                continue;
-            }
-
-            return 0;
-        }
-
-        return c1 < c2 ? -1 : 1;
-    }
-
-    return 0;
-}
-
 static bool hsfv_skip_boolean_true_dictionary_member_value(const char *input, const char *input_end, const char **rest)
 {
     if (!hsfv_skip_dictionary_member_value(input, input_end, rest)) {

@@ -330,6 +330,7 @@ bool hsfv_skip_ows_comma_ows(const char *input, const char *input_end, const cha
 #define HSFV_IS_ASCII(c) ((c) <= '\x7f')
 
 bool hsfv_is_ascii_string(const char *input, const char *input_end);
+int hsfv_strncasecmp(const char *s1, const char *s2, size_t n);
 
 extern const char hsfv_base64_char_map[256];
 
