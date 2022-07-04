@@ -4,6 +4,9 @@ http-sfv
 This library is an implementation for [RFC 8941: Structured Field Values for HTTP](https://www.rfc-editor.org/rfc/rfc8941) written in C.
 The API is not frozen yet and may change in the future.
 
+A function for parsing values of [RFC 9213: Targeted HTTP Cache Control](https://www.rfc-editor.org/rfc/rfc9213.html) is included.
+This function requires no memory allocation.
+
 ## How to build
 
 Install code formatters.
