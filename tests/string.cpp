@@ -59,6 +59,7 @@ TEST_CASE("hsfv_strncasecmp", "[string]")
     SECTION("equal")
     {
         CHECK(hsfv_strncasecmp("abc", "abc", 3) == 0);
+        CHECK(hsfv_strncasecmp("Max-Age", "max-age", 7) == 0);
         CHECK(hsfv_strncasecmp("ABC", "abcd", 3) == 0);
         CHECK(hsfv_strncasecmp("ABCD", "abce", 3) == 0);
         CHECK(hsfv_strncasecmp("a", "b", 0) == 0);

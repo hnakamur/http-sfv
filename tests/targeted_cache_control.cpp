@@ -120,21 +120,79 @@ static void test_parse_targeted_cache_control(const char *input, bool want_valid
 
 TEST_CASE("parse_targeted_cache_control", "[parse][cache_control]")
 {
-    SECTION("false")
+    SECTION("valid max-age and mulst-revalidate")
     {
         test_parse_targeted_cache_control("max-age=60, must-revalidate", true,
                                           hsfv_targeted_cache_control_t{.max_age = 60, .must_revalidate = true});
-        test_parse_targeted_cache_control("private", true, hsfv_targeted_cache_control_t{.private_ = true});
-        test_parse_targeted_cache_control("must-revalidate", true, hsfv_targeted_cache_control_t{.must_revalidate = true});
-        test_parse_targeted_cache_control("no-store", true, hsfv_targeted_cache_control_t{.no_store = true});
-        test_parse_targeted_cache_control("no-cache", true, hsfv_targeted_cache_control_t{.no_cache = true});
-        test_parse_targeted_cache_control("private;p=1", true, hsfv_targeted_cache_control_t{.private_ = true});
-
-        test_parse_targeted_cache_control("private=yes", false, hsfv_targeted_cache_control_t{0});
-        test_parse_targeted_cache_control("private=?1", false, hsfv_targeted_cache_control_t{0});
-        test_parse_targeted_cache_control("private=?0", false, hsfv_targeted_cache_control_t{0});
-        test_parse_targeted_cache_control("private=?1, no_store=?0", false, hsfv_targeted_cache_control_t{0});
-        test_parse_targeted_cache_control("private=?1 , no_store=?0", false, hsfv_targeted_cache_control_t{0});
-        test_parse_targeted_cache_control("private=?1\t, no_store=?0", false, hsfv_targeted_cache_control_t{0});
     }
+    SECTION("max-age overwritten")
+    {
+        test_parse_targeted_cache_control("max-age=60, max-age=30", true, hsfv_targeted_cache_control_t{.max_age = 30});
+    }
+    SECTION("private")
+    {
+        test_parse_targeted_cache_control("private", true, hsfv_targeted_cache_control_t{.private_ = true});
+    }
+    SECTION("must-revalidate")
+    {
+        test_parse_targeted_cache_control("must-revalidate", true, hsfv_targeted_cache_control_t{.must_revalidate = true});
+    }
+    SECTION("no-store")
+    {
+        test_parse_targeted_cache_control("no-store", true, hsfv_targeted_cache_control_t{.no_store = true});
+    }
+    SECTION("no-cache")
+    {
+        test_parse_targeted_cache_control("no-cache", true, hsfv_targeted_cache_control_t{.no_cache = true});
+    }
+    SECTION("ignore parameters")
+    {
+        test_parse_targeted_cache_control("private;p=1", true, hsfv_targeted_cache_control_t{.private_ = true});
+    }
+
+    SECTION("invalid")
+    {
+        SECTION("uppercase is not valid key")
+        {
+            test_parse_targeted_cache_control("Max-Age=60", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("non boolean value")
+        {
+            test_parse_targeted_cache_control("private=yes", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("true value must be omitted")
+        {
+            test_parse_targeted_cache_control("private=?1", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("false value not allowed")
+        {
+            test_parse_targeted_cache_control("private=?0", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("valid true then invalid false")
+        {
+            test_parse_targeted_cache_control("private, private=?0", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("comma after invalid value")
+        {
+            test_parse_targeted_cache_control("private=?1, no_store=?0", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("space after invalid value")
+        {
+            test_parse_targeted_cache_control("private=?1 , no_store=?0", false, hsfv_targeted_cache_control_t{0});
+        }
+        SECTION("tab after invalid value")
+        {
+            test_parse_targeted_cache_control("private=?1\t, no_store=?0", false, hsfv_targeted_cache_control_t{0});
+        }
+    }
+
+#if 0
+    SECTION("ignore")
+    {
+        // We ignore private with field-name
+        test_parse_targeted_cache_control("private=field1", false, hsfv_targeted_cache_control_t{0});
+        // We ignore no-cache with field-name
+        test_parse_targeted_cache_control("no-cache=field1", false, hsfv_targeted_cache_control_t{0});
+    }
+#endif
 }
