@@ -7,13 +7,15 @@ The API is not frozen yet and may change in the future.
 A function for parsing values of [RFC 9213: Targeted HTTP Cache Control](https://www.rfc-editor.org/rfc/rfc9213.html) is included.
 This function requires no memory allocation.
 
+I wrote a blog entry in Japanese at [Targeted Cache Control のライブラリをC言語で書いた · hnakamur's blog](https://hnakamur.github.io/blog/2022/07/09/targeted-cache-control-impl/).
+
 ## How to build
 
-Install code formatters.
+Install clang and code formatters. Run the following commands on a Ubuntu 22.04 LTS machine:
 
 ```
 sudo apt-get update \
-sudo apt-get install -y clang-14 clang-format cmake-format
+sudo apt-get install -y clang-14 clang-format-14 cmake-format
 ```
 
 Generate Makefile.
